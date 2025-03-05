@@ -66,6 +66,12 @@ func New(db *sql.DB) (AppDatabase, error) {
 		}
 	}
 
+	sqlStmt := `CREATE TABLE example_table (id INTEGER NOT NULL PRIMARY KEY, name TEXT);`
+	_, err = db.Exec(sqlStmt)
+	if err != nil {
+		return nil, fmt.Errorf("error creating database structure: %w", err)
+	}
+
 	return &appdbimpl{
 		c: db,
 	}, nil
