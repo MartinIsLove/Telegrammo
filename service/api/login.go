@@ -7,16 +7,8 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-type Richiesta struct {
-	Username string `json:"username"`
-}
-
-type Risposta struct {
-	Id int `json:"id"`
-}
-
 func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var richiestaLogin Richiesta
+	var richiestaLogin Utente
 
 	err := json.NewDecoder(r.Body).Decode(&richiestaLogin)
 	if err != nil {
@@ -24,7 +16,7 @@ func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, ps httprouter
 		return
 	}
 	// fmt.Println(richiestaLogin)
-	var rispostaLogin Risposta
+	var rispostaLogin Utente
 
 	rispostaLogin.Id, err = rt.db.DoLogin(richiestaLogin.Username)
 	if err != nil {
