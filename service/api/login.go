@@ -11,6 +11,10 @@ type Richiesta struct {
 	Username string `json:"username"`
 }
 
+type Risposta struct {
+	Id int `json:"id"`
+}
+
 func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var richiestaLogin Richiesta
 
@@ -20,5 +24,21 @@ func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, ps httprouter
 		return
 	}
 	// fmt.Println(richiestaLogin)
+	var rispostaLogin Risposta
+
+	rispostaLogin.Id, err = rt.db.DoLogin(richiestaLogin.Username)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	w.Header().Set("content-type", "application/json")
+	idJson, err := json.Marshal(rispostaLogin.Id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(idJson)
 
 }
