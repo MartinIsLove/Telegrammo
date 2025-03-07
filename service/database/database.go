@@ -38,6 +38,7 @@ import (
 
 // AppDatabase is the high level interface for the DB
 type AppDatabase interface {
+	DoLogin(string) (int, error)
 	Ping() error
 }
 
@@ -57,23 +58,27 @@ func New(db *sql.DB) (AppDatabase, error) {
 	err := db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='example_table';`).Scan(&tableName)
 	if errors.Is(err, sql.ErrNoRows) {
 
-		sqlStmt := `CREATE TABLE if not exist utenti (id INTEGER NOT NULL PRIMARY KEY, username TEXT, propic BLOB);`
+		sqlStmt := `CREATE TABLE if not exists utenti (id INTEGER NOT NULL PRIMARY KEY, username TEXT, propic BLOB);`
 		_, err = db.Exec(sqlStmt)
 		if err != nil {
 			return nil, fmt.Errorf("error creating database structure utenti: %w", err)
 		}
 
-		sqlStmt = `CREATE TABLE if not exist membri (id_utenti INTEGER NOT NULL,id_chat INTEGER NOT NULL) FOREIGN KEY
-		(id_utenti) REFERENCES utenti(id), FOREIGN KEY (id_chat) REFERENCES chat(id);`
-		_, err = db.Exec(sqlStmt)
-		if err != nil {
-			return nil, fmt.Errorf("error creating database structure membri: %w", err)
-		}
-
-		sqlStmt = `CREATE TABLE if not exist chat (id INTEGER NOT NULL PRIMARY KEY, nome TEXT, propic BLOB,gruppo BOOL);`
+		sqlStmt = `CREATE TABLE if not exists chat (id INTEGER NOT NULL PRIMARY KEY, nome TEXT, propic BLOB,gruppo BOOL);`
 		_, err = db.Exec(sqlStmt)
 		if err != nil {
 			return nil, fmt.Errorf("error creating database structure chat: %w", err)
+		}
+
+		sqlStmt = `CREATE TABLE if not exists membri (
+			id_utenti INTEGER NOT NULL,
+			id_chat INTEGER NOT NULL,
+			FOREIGN KEY (id_utenti) REFERENCES utenti(id), 
+			FOREIGN KEY (id_chat) REFERENCES chat(id)
+			); `
+		_, err = db.Exec(sqlStmt)
+		if err != nil {
+			return nil, fmt.Errorf("error creating database structure membri: %w", err)
 		}
 	}
 	return &appdbimpl{
