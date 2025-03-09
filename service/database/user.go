@@ -4,13 +4,14 @@ import "fmt"
 
 func (db *appdbimpl) SetMyUserName(username string, cs int) error {
 	var righe int64
+	var aut int
 
-	err := db.c.QueryRow("SELECT count(username) as righe FROM utenti WHERE id=$1", cs).Scan(&righe)
+	aut, err := db.Authentication(cs)
 	if err != nil {
-		return fmt.Errorf("user: error find cs in database: %w", err)
+		return fmt.Errorf("user: error in autentication")
 	}
-	if righe == 0 {
-		return fmt.Errorf("non e' stato trovato alcun utente con lo stesso id specificato")
+	if aut == -1 {
+		return err
 	}
 
 	err = db.c.QueryRow("SELECT count(username) as righe FROM utenti WHERE username= $1", username).Scan(&righe)
@@ -28,3 +29,7 @@ func (db *appdbimpl) SetMyUserName(username string, cs int) error {
 	}
 	return nil
 }
+
+// func (db *appdbimpl) SetMyPhoto(username string, cs int) error {
+
+// }
