@@ -2,7 +2,16 @@
 import { RouterLink, RouterView } from 'vue-router'
 </script>
 <script>
-export default {}
+export default {
+	data: function() {
+		return {}
+	},
+	methods:{
+		profileButtonHandler() {
+			this.$router.push("/profile");
+		}
+	}
+}
 </script>
 
 <template>
@@ -52,7 +61,20 @@ export default {}
 								Item 1
 							</RouterLink>
 						</li>
+						<li class="nav-item">
+							<RouterLink :to="'/some/' + 'variable_here' + '/path'" class="nav-link">
+								<svg class="feather"><use href="/feather-sprite-v4.29.0.svg#file-text"/></svg>
+								Item 1
+							</RouterLink>
+						</li>
 					</ul>
+				</div>
+				<div class="position-relative" >
+					<div class="position-absolute bottom-0 start-0">
+						<button class="btn btn-dark ms-2 mb-2" @click="profileButtonHandler">
+							profile
+						</button>
+					</div>
 				</div>
 			</nav>
 

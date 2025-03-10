@@ -35,3 +35,33 @@ func (rt *_router) setMyUserName(w http.ResponseWriter, r *http.Request, ps http
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
 }
+func (rt *_router) setMyPhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var richiesta Utente
+	auth, err := rt.AuthenticationApi(r)
+
+	if err != nil {
+		http.Error(w, "error: authentication user", http.StatusUnauthorized)
+		return
+	}
+	if auth == 1 {
+		photo_multipart, handler, err := r.FormFile("photo")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		photo, err := validatePhoto(photo_multipart, handler, err)
+		if err != nil {
+			http.Error(w, "error: bad input", http.StatusBadRequest)
+		}
+
+		richiesta.Id = auth
+		richiesta.Propic = photo
+		err = rt.db.SetMyPhoto(richiesta.Propic, richiesta.Id)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+	}
+
+}

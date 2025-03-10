@@ -30,6 +30,20 @@ func (db *appdbimpl) SetMyUserName(username string, cs int) error {
 	return nil
 }
 
-// func (db *appdbimpl) SetMyPhoto(username string, cs int) error {
+func (db *appdbimpl) SetMyPhoto(photo []byte, cs int) error {
 
-// }
+	auth, err := db.Authentication(cs)
+	if err != nil {
+		return fmt.Errorf("error in authentication")
+	}
+	if auth == -1 {
+		return err
+	}
+	_, err = db.c.Exec("UPDATE utenti SET propic=$1 WHERE id=$2", photo, cs)
+
+	if err != nil {
+		return fmt.Errorf("error in UPDATE db")
+	}
+	return nil
+
+}
