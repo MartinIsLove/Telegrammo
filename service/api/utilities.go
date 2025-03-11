@@ -5,6 +5,7 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
+	"strconv"
 )
 
 func (rt *_router) AuthenticationApi(r *http.Request) (int, error) {
@@ -13,7 +14,12 @@ func (rt *_router) AuthenticationApi(r *http.Request) (int, error) {
 
 		return -1, fmt.Errorf("non è stato restituito alcun autenticatore")
 	}
-	return 1, nil
+	id, err := strconv.Atoi(cs)
+
+	if err != nil {
+		return -1, fmt.Errorf("error in conversion string to int in authenticationApi")
+	}
+	return id, nil
 }
 func validatePhoto(photo_multipart multipart.File, handler *multipart.FileHeader, err error) ([]byte, error) {
 	var photo []byte

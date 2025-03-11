@@ -34,6 +34,8 @@ func (rt *_router) setMyUserName(w http.ResponseWriter, r *http.Request, ps http
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
+
+	w.WriteHeader(http.StatusOK)
 }
 func (rt *_router) setMyPhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var richiesta Utente
@@ -43,7 +45,7 @@ func (rt *_router) setMyPhoto(w http.ResponseWriter, r *http.Request, ps httprou
 		http.Error(w, "error: authentication user", http.StatusUnauthorized)
 		return
 	}
-	if auth == 1 {
+	if auth > 0 {
 		photo_multipart, handler, err := r.FormFile("photo")
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -63,5 +65,37 @@ func (rt *_router) setMyPhoto(w http.ResponseWriter, r *http.Request, ps httprou
 		}
 
 	}
+	w.WriteHeader(http.StatusOK)
+}
+func (rt *_router) getMyUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var richiesta Utente
+	auth, err := rt.AuthenticationApi(r)
 
+	if err != nil {
+		http.Error(w, "error: authentication user", http.StatusUnauthorized)
+		return
+	}
+	if auth > 0 {
+		var string_id string = ps.ByName("id")
+		id, err := strconv.Atoi(string_id)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		richiesta.Username, richiesta.Propic, richiesta.Id, err = rt.db.GetMyUser(id)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNotFound)
+		}
+		w.Header().Set("content-type", "application/json")
+		json, err := json.Marshal(richiesta)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write(json)
+	}
 }

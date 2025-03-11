@@ -104,6 +104,37 @@ paths:
           description: "non autenticato"
         "500":
           description: "errore server"
+  /users/{id}:
+    get:
+      tags: ["user"]
+      security:
+        - bearerAuth: []
+      operationId: getUser
+      summary: "prende tutti i parametri dello user"
+      description: "prende tutti i parametri dello user (id, username, propic)"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: "indica l'id dell'utente"
+          schema:
+            description: "indica l'id dell'utente"
+            type: integer
+            minimum: 1
+            maximum: 99999999
+            example: 1
+      responses:
+        "200":
+          description: "ritorno username, propic e id"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/user"
+        "401":
+          description: "non autenticato"
+        "404":
+          description: "utente non trovato"
+
   /conversations: 
     post:
       tags: ["conversation"]
@@ -164,6 +195,34 @@ paths:
 
                 
 components:
+  schemas:
+    id: 
+      description: "id dell'utente"
+      type: integer
+      minimum: 1
+      maximum: 99999999
+      example: 1
+    username:
+      description: "l'username dell'utente"
+      type: string
+      minLenght: 1
+      maxLenght: 16
+      example: pippo
+      pattern: ^[a-zA-Z0-9]+$
+    propic:
+      description: "la foto profilo dell'utente"
+      type: string
+      format: binary
+    user:
+      description: "rappresenta un oggetto di tipo user che racchiude id, username e propic"
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/id"
+        username:
+          $ref: "#/components/schemas/username"
+        propic:
+          $ref: "#/components/schemas/propic"
   responses:
     input_malformato:
       description: "errore log in"
@@ -178,6 +237,7 @@ components:
                 minLength: 1
                 maxLength: 1000
                 example: "errore nella struttura dei dati"
+    
 
 
  

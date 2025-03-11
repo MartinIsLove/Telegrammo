@@ -38,6 +38,7 @@ import (
 
 // AppDatabase is the high level interface for the DB
 type AppDatabase interface {
+	GetMyUser(cs int) (string, []byte, int, error)
 	SetMyPhoto([]byte, int) error
 	SetMyUserName(string, int) error
 	DoLogin(string) (int, error)

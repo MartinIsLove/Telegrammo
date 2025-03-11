@@ -47,3 +47,28 @@ func (db *appdbimpl) SetMyPhoto(photo []byte, cs int) error {
 	return nil
 
 }
+
+func (db *appdbimpl) GetMyUser(cs int) (string, []byte, int, error) {
+
+	var username string
+	var propic []byte
+	var id int
+
+	auth, err := db.Authentication(cs)
+	if err != nil {
+		var tmp []byte
+		return "", tmp, 0, fmt.Errorf("error in authentication")
+	}
+	if auth == -1 {
+		var tmp []byte
+		return "", tmp, 0, err
+	}
+
+	err = db.c.QueryRow("SELECT id, username, propic FROM utenti WHERE id=$1", cs).Scan(&id, &username, &propic)
+	if err != nil {
+		var tmp []byte
+		return "", tmp, 0, fmt.Errorf("user: error find username in database: %w", err)
+	}
+
+	return username, propic, id, nil
+}
