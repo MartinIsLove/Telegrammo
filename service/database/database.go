@@ -83,6 +83,31 @@ func New(db *sql.DB) (AppDatabase, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error creating database structure membri: %w", err)
 		}
+
+		sqlStmt = `CREATE TABLE if not exists messaggi (id INTEGER NOT NULL PRIMARY KEY, testo TEXT, image BLOB, data DATE, mittente INTEGER NOT NULL, id_reply INTEGER,
+		FOREIGN KEY(mittente) REFERENCES utenti(id), FOREIGN KEY (id_reply) REFERENCES messaggi(id ));`
+		_, err = db.Exec(sqlStmt)
+		if err != nil {
+			return nil, fmt.Errorf("error creating database structure messaggi: %w", err)
+		}
+
+		sqlStmt = `CREATE TABLE if not exists messaggi_di_chat (id_chat INTEGER NOT NULL, id_messaggio INTEGER NOT NULL, FOREIGN KEY(id_chat) REFERENCES chat(id), FOREIGN KEY(id_messaggio) REFERENCES messaggi(id));`
+		_, err = db.Exec(sqlStmt)
+		if err != nil {
+			return nil, fmt.Errorf("error creating database structure messaggi_di_chat: %w", err)
+		}
+
+		sqlStmt = `CREATE TABLE if not exists emoticon (id_utente INTEGER NOT NULL, id_messaggio INTEGER NOT NULL,emoji VARCHAR(3) , FOREIGN KEY(id_utente) REFERENCES utenti(id), FOREIGN KEY(id_messaggio) REFERENCES messaggi(id));`
+		_, err = db.Exec(sqlStmt)
+		if err != nil {
+			return nil, fmt.Errorf("error creating database structure emoticon: %w", err)
+		}
+
+		sqlStmt = `CREATE TABLE if not exists accessi_chat (id_utente INTEGER NOT NULL, id_chat INTEGER NOT NULL, data DATE, FOREIGN KEY(id_utente) REFERENCES utenti(id), FOREIGN KEY(id_chat) REFERENCES chat(id));`
+		_, err = db.Exec(sqlStmt)
+		if err != nil {
+			return nil, fmt.Errorf("error creating database structure accessi_chat: %w", err)
+		}
 	}
 	return &appdbimpl{
 		c: db,

@@ -135,7 +135,7 @@ paths:
         "404":
           description: "utente non trovato"
 
-  /conversations: 
+  /conversation: 
     post:
       tags: ["conversation"]
       operationId: CreateConversation
