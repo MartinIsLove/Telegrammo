@@ -192,7 +192,14 @@ paths:
                     minimum: 1
                     maximum: 99999999
                     example: 124
-
+        "400":
+          $ref: "#/components/responses/input_malformato"
+        "401":
+          description: "non autenticato"
+        "404":
+          description: "utente non trovato per creare la chat"
+        "409":
+          description: "chat gia' esistente"
                 
 components:
   schemas:

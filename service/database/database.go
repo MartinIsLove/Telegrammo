@@ -97,7 +97,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 			return nil, fmt.Errorf("error creating database structure messaggi_di_chat: %w", err)
 		}
 
-		sqlStmt = `CREATE TABLE if not exists emoticon (id_utente INTEGER NOT NULL, id_messaggio INTEGER NOT NULL,emoji VARCHAR(3) , FOREIGN KEY(id_utente) REFERENCES utenti(id), FOREIGN KEY(id_messaggio) REFERENCES messaggi(id));`
+		sqlStmt = `CREATE TABLE if not exists emoticon (id_utente INTEGER NOT NULL, id_messaggio INTEGER NOT NULL,emoji VARCHAR(3) NOT NULL, FOREIGN KEY(id_utente) REFERENCES utenti(id), FOREIGN KEY(id_messaggio) REFERENCES messaggi(id));`
 		_, err = db.Exec(sqlStmt)
 		if err != nil {
 			return nil, fmt.Errorf("error creating database structure emoticon: %w", err)

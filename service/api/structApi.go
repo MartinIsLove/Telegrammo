@@ -5,3 +5,10 @@ type Utente struct {
 	Id       int    `json:"id"`
 	Propic   []byte `json:"propic"`
 }
+
+type Chat struct {
+	Id     int    `json:"id"`
+	Nome   string `json:"nome"`
+	Propic []byte `json:"propic"`
+	Gruppo bool   `json:"gruppo"`
+}
