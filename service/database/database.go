@@ -45,6 +45,7 @@ type AppDatabase interface {
 	DoLogin(string) (int, error)
 
 	CreateChat(int, int) error
+	CheckNames(int, string) ([]UtenteDb, error)
 
 	Ping() error
 }

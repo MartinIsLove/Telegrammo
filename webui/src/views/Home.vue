@@ -19,6 +19,9 @@ export default {
 			}
 			this.loading = false;
 		},
+		createChatButtonHandler() {
+			this.$router.push("/chat");
+		}
 	},
 	mounted() {
 		this.refresh()
@@ -27,4 +30,10 @@ export default {
 </script>
 <template>
     
+		<div class="position-absolute bottom-0 start-1">
+			<button class="btn btn-dark ms-2 mb-2" @click="createChatButtonHandler">
+				Create Chat
+			</button>
+		</div>
+	
 </template>

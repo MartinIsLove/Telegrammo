@@ -25,6 +25,14 @@ func (db *appdbimpl) IsChatDuplicated(cs int, id int) (bool, error) {
 
 func (db *appdbimpl) CreateChat(cs int, id int) error {
 
+	auth, err := db.Authentication(cs)
+	if err != nil {
+		return fmt.Errorf("error in authentication CreateChat")
+	}
+	if auth == -1 {
+		return err
+	}
+
 	Isduplicated, err := db.IsChatDuplicated(cs, id)
 
 	if err != nil {
@@ -48,4 +56,38 @@ func (db *appdbimpl) CreateChat(cs int, id int) error {
 
 	}
 	return nil
+}
+func (db *appdbimpl) CheckNames(cs int, toFind string) ([]UtenteDb, error) {
+	var utenti []UtenteDb
+	auth, err := db.Authentication(cs)
+	if err != nil {
+		return utenti, fmt.Errorf("error in authentication Checknames")
+	}
+	if auth == -1 {
+		return utenti, err
+	}
+
+	// ----------------------------------
+
+	rows, err := db.c.Query("SELECT * FROM utenti WHERE username LIKE $1 || '%'", toFind)
+	if err != nil {
+		return utenti, fmt.Errorf("chat: error querying users: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var utente UtenteDb
+		if err := rows.Scan(&utente.Id, &utente.Username, &utente.Propic); err != nil {
+			return utenti, fmt.Errorf("chat: error scanning user: %w", err)
+		}
+		utenti = append(utenti, utente)
+	}
+
+	if err := rows.Err(); err != nil {
+		return utenti, fmt.Errorf("chat: error iterating over users: %w", err)
+	}
+
+	// ----------------------------------------------
+
+	return utenti, nil
 }
