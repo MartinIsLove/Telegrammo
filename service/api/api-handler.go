@@ -16,7 +16,7 @@ func (rt *_router) Handler() http.Handler {
 
 	rt.router.GET("/users/:id", rt.getMyUser)
 
-	rt.router.GET("/user/:username", rt.checknames)
+	rt.router.GET("/search/users/:username", rt.checknames)
 
 	rt.router.POST("/conversation", rt.createChat)
 

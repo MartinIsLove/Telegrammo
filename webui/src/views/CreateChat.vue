@@ -9,14 +9,16 @@ export default {
             cs: '',
             chUsername: '',
             users: [],
+            selectedUser: null, // Aggiungi questa proprietà per memorizzare l'utente selezionato
+            searchCompleted: false // Aggiungi questa proprietà per tracciare se la ricerca è stata completata
 		}
 	},
 	methods: {
 		async getUsers() {
 			try{
                 this.cs = sessionStorage.getItem("cs")
-                console.log(this.chUsername)
-                let response = await this.$axios.get(`/user/${this.chUsername}`, {headers: {cs:this.cs}});
+                let response = await this.$axios.get(`/search/users/${this.chUsername}`, {headers: {cs:this.cs}});
+                this.searchCompleted=true
                 this.users = response.data
             }
             catch(error){
@@ -26,6 +28,17 @@ export default {
                 
 
 
+        },
+        async handleSelectedUser(){
+            try{
+                
+                this.cs = sessionStorage.getItem("cs")
+                let response = await this.$axios.post(`/conversation`,{id: this.selectedUser.id} ,{headers: {cs:this.cs}});
+            }
+            catch(error){
+                this.error=error
+                console.error('error create chat user data: ', error)
+            }
         }
 	},
 	mounted() {
@@ -46,8 +59,16 @@ export default {
                     <button class="btn btn-secondary mt-2"  >find</button>
                 </form>
             <div class="col-6"></div>
-            <div v-for="user in users" :key="id">
-                {{ user.username }}
+            <div v-for="user in users" :key="id" >
+                <div class="form-check">
+                <input class="form-check-input" type="radio" name="selectedUser" :value="user" v-model="selectedUser">
+                    <label class="form-check-label" :for="'user-'+user.id">
+                        {{ user.username }}
+                    </label>
+                </div>
+            </div>
+            <div v-if="searchCompleted">
+                <button class="btn btn-primary mt-2" @click="handleSelectedUser">Select</button>
             </div>
         </div>
     </div>
