@@ -10,22 +10,16 @@ import (
 
 func (rt *_router) setMyUserName(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var richiesta Utente
-	cs := r.Header.Get("cs") // cs stà per check session
-	if cs == "" {
-		http.Error(w, "non è stato restituito alcun autenticatore", http.StatusBadRequest)
+
+	id, err := rt.AuthenticationApi(r)
+
+	if err != nil {
+		http.Error(w, "error: authentication user"+err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	err := json.NewDecoder(r.Body).Decode(&richiesta)
-	if err != nil {
-		http.Error(w, "error: conversion json to username"+err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	id, err := strconv.Atoi(cs)
-
-	if err != nil {
-		http.Error(w, "error: conversion string to integer  "+err.Error(), http.StatusBadRequest)
+	if err := json.NewDecoder(r.Body).Decode(&richiesta); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -33,6 +27,7 @@ func (rt *_router) setMyUserName(w http.ResponseWriter, r *http.Request, ps http
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -42,7 +37,7 @@ func (rt *_router) setMyPhoto(w http.ResponseWriter, r *http.Request, ps httprou
 	auth, err := rt.AuthenticationApi(r)
 
 	if err != nil {
-		http.Error(w, "error: authentication user", http.StatusUnauthorized)
+		http.Error(w, "error: authentication user"+err.Error(), http.StatusUnauthorized)
 		return
 	}
 	if auth > 0 {
@@ -53,7 +48,8 @@ func (rt *_router) setMyPhoto(w http.ResponseWriter, r *http.Request, ps httprou
 		}
 		photo, err := validatePhoto(photo_multipart, handler, err)
 		if err != nil {
-			http.Error(w, "error: bad input", http.StatusBadRequest)
+			http.Error(w, "error: bad input"+err.Error(), http.StatusBadRequest)
+			return
 		}
 
 		richiesta.Id = auth
@@ -62,6 +58,7 @@ func (rt *_router) setMyPhoto(w http.ResponseWriter, r *http.Request, ps httprou
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
 	}
@@ -72,7 +69,7 @@ func (rt *_router) getMyUser(w http.ResponseWriter, r *http.Request, ps httprout
 	auth, err := rt.AuthenticationApi(r)
 
 	if err != nil {
-		http.Error(w, "error: authentication user", http.StatusUnauthorized)
+		http.Error(w, "error: authentication user"+err.Error(), http.StatusUnauthorized)
 		return
 	}
 	if auth > 0 {
@@ -88,6 +85,7 @@ func (rt *_router) getMyUser(w http.ResponseWriter, r *http.Request, ps httprout
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
+			return
 		}
 		w.Header().Set("content-type", "application/json")
 		json, err := json.Marshal(richiesta)

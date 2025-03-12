@@ -41,7 +41,11 @@ type AppDatabase interface {
 	GetMyUser(cs int) (string, []byte, int, error)
 	SetMyPhoto([]byte, int) error
 	SetMyUserName(string, int) error
+
 	DoLogin(string) (int, error)
+
+	CreateChat(int, int) error
+
 	Ping() error
 }
 
@@ -76,34 +80,33 @@ func New(db *sql.DB) (AppDatabase, error) {
 		sqlStmt = `CREATE TABLE if not exists membri (
 			id_utenti INTEGER NOT NULL,
 			id_chat INTEGER NOT NULL,
-			FOREIGN KEY (id_utenti) REFERENCES utenti(id), 
-			FOREIGN KEY (id_chat) REFERENCES chat(id)
+			FOREIGN KEY (id_utenti) REFERENCES utenti(id) ON DELETE CASCADE, 
+			FOREIGN KEY (id_chat) REFERENCES chat(id) ON DELETE CASCADE
 			); `
 		_, err = db.Exec(sqlStmt)
 		if err != nil {
 			return nil, fmt.Errorf("error creating database structure membri: %w", err)
 		}
 
-		sqlStmt = `CREATE TABLE if not exists messaggi (id INTEGER NOT NULL PRIMARY KEY, testo TEXT, image BLOB, data DATE, mittente INTEGER NOT NULL, id_reply INTEGER,
-		FOREIGN KEY(mittente) REFERENCES utenti(id), FOREIGN KEY (id_reply) REFERENCES messaggi(id ));`
+		sqlStmt = `CREATE TABLE if not exists messaggi (id INTEGER NOT NULL PRIMARY KEY, testo TEXT, image BLOB, data DATE, mittente INTEGER NOT NULL, id_reply INTEGER, FOREIGN KEY (id_reply) REFERENCES messaggi(id));`
 		_, err = db.Exec(sqlStmt)
 		if err != nil {
 			return nil, fmt.Errorf("error creating database structure messaggi: %w", err)
 		}
 
-		sqlStmt = `CREATE TABLE if not exists messaggi_di_chat (id_chat INTEGER NOT NULL, id_messaggio INTEGER NOT NULL, FOREIGN KEY(id_chat) REFERENCES chat(id), FOREIGN KEY(id_messaggio) REFERENCES messaggi(id));`
+		sqlStmt = `CREATE TABLE if not exists messaggi_di_chat (id_chat INTEGER NOT NULL, id_messaggio INTEGER NOT NULL, FOREIGN KEY(id_chat) REFERENCES chat(id) ON DELETE CASCADE, FOREIGN KEY(id_messaggio) REFERENCES messaggi(id) ON DELETE CASCADE);`
 		_, err = db.Exec(sqlStmt)
 		if err != nil {
 			return nil, fmt.Errorf("error creating database structure messaggi_di_chat: %w", err)
 		}
 
-		sqlStmt = `CREATE TABLE if not exists emoticon (id_utente INTEGER NOT NULL, id_messaggio INTEGER NOT NULL,emoji VARCHAR(3) NOT NULL, FOREIGN KEY(id_utente) REFERENCES utenti(id), FOREIGN KEY(id_messaggio) REFERENCES messaggi(id));`
+		sqlStmt = `CREATE TABLE if not exists emoticon (id_utente INTEGER NOT NULL, id_messaggio INTEGER NOT NULL,emoji VARCHAR(3) NOT NULL, FOREIGN KEY(id_utente) REFERENCES utenti(id) ON DELETE CASCADE, FOREIGN KEY(id_messaggio) REFERENCES messaggi(id) ON DELETE CASCADE);`
 		_, err = db.Exec(sqlStmt)
 		if err != nil {
 			return nil, fmt.Errorf("error creating database structure emoticon: %w", err)
 		}
 
-		sqlStmt = `CREATE TABLE if not exists accessi_chat (id_utente INTEGER NOT NULL, id_chat INTEGER NOT NULL, data DATE, FOREIGN KEY(id_utente) REFERENCES utenti(id), FOREIGN KEY(id_chat) REFERENCES chat(id));`
+		sqlStmt = `CREATE TABLE if not exists accessi_chat (id_utente INTEGER NOT NULL, id_chat INTEGER NOT NULL, data DATE, FOREIGN KEY(id_utente) REFERENCES utenti(id) ON DELETE CASCADE, FOREIGN KEY(id_chat) REFERENCES chat(id) ON DELETE CASCADE);`
 		_, err = db.Exec(sqlStmt)
 		if err != nil {
 			return nil, fmt.Errorf("error creating database structure accessi_chat: %w", err)

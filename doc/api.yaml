@@ -138,9 +138,9 @@ paths:
   /conversation: 
     post:
       tags: ["conversation"]
-      operationId: CreateConversation
-      summary: "crea una conversazione"
-      description: "se la conversazione gia' esiste non la crea, se non esiste la crea"
+      operationId: createChat
+      summary: "crea una chat"
+      description: "se la chat gia' esiste non la crea, se non esiste la crea"
       requestBody:
         description: "dati chat"
         content:
