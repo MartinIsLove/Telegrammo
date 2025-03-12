@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -34,20 +33,21 @@ func (rt *_router) createChat(w http.ResponseWriter, r *http.Request, ps httprou
 }
 func (rt *_router) checknames(w http.ResponseWriter, r *http.Request, ps httprouter.Params) { // cerca tutti gli utenti che iniziano per una data stringa
 	var richiesta []Utente
-	var str Utente
+	var str string
 	cs, err := rt.AuthenticationApi(r)
 
 	if err != nil {
 		http.Error(w, "error: authentication user checkname"+err.Error(), http.StatusBadRequest)
 		return
 	}
+	str = ps.ByName("username")
 
-	if err := json.NewDecoder(r.Body).Decode(&str); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+	// if err := json.NewDecoder(r.Body).Decode(&str); err != nil {
+	// 	http.Error(w, err.Error(), http.StatusBadRequest)
+	// 	return
+	// }
 
-	tmp, err := rt.db.CheckNames(cs, str.Username)
+	tmp, err := rt.db.CheckNames(cs, str)
 	if err != nil {
 		http.Error(w, "error in database"+err.Error(), http.StatusBadRequest)
 		return
@@ -57,6 +57,15 @@ func (rt *_router) checknames(w http.ResponseWriter, r *http.Request, ps httprou
 	for i, user := range tmp {
 		richiesta[i] = NewUser(user)
 	}
-	fmt.Println(richiesta)
 
+	w.Header().Set("content-type", "application/json")
+	json, err := json.Marshal(richiesta)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	_, _ = w.Write(json)
+
+	w.WriteHeader(http.StatusOK)
 }

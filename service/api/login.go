@@ -25,6 +25,7 @@ func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, ps httprouter
 
 	w.Header().Set("content-type", "application/json")
 	idJson, err := json.Marshal(rispostaLogin.Id)
+	// fmt.Println(idJson)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

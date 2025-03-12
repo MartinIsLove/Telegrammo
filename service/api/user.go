@@ -93,7 +93,9 @@ func (rt *_router) getMyUser(w http.ResponseWriter, r *http.Request, ps httprout
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		w.WriteHeader(http.StatusOK)
+
 		_, _ = w.Write(json)
+
+		w.WriteHeader(http.StatusOK)
 	}
 }

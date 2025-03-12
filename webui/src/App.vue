@@ -25,10 +25,10 @@ export default {
 
 	<div class="container-fluid">
 		<div class="row">
-			<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+			<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse">
 				<div class="position-sticky pt-3 sidebar-sticky">
 					<h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted text-uppercase">
-						<span>General</span>
+						<span class="text-dark">General</span>
 					</h6>
 					<ul class="nav flex-column">
 						<li class="nav-item">
@@ -52,7 +52,7 @@ export default {
 					</ul>
 
 					<h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted text-uppercase">
-						<span>Secondary menu</span>
+						<span class="text-dark">Secondary menu</span>
 					</h6>
 					<ul class="nav flex-column">
 						<li class="nav-item">
@@ -86,4 +86,8 @@ export default {
 </template>
 
 <style>
+#sidebarMenu{
+	background-color: #dddad4;
+}
+
 </style>
