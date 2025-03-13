@@ -10,8 +10,8 @@ paths:
     post:
       tags: ["login"]
       operationId: doLogin
-      summary: "effettua il log in"
-      description: "fa il log in all'utente se esiste, altrimenti lo crea"
+      summary: "login"
+      description: "logs in the user if it exists, otherwise creates it"
       requestBody: 
         description: "username"
         content:
@@ -42,7 +42,9 @@ paths:
                     maximum: 99999999
                     example: 124
         "400":
-          $ref: "#/components/responses/input_malformato"
+          $ref: "#/components/responses/bad_input"
+        "500":
+          description: "internal server error"
   /user/name:
     put:
       tags: ["user"]
@@ -50,14 +52,14 @@ paths:
         - bearerAuth: []
       
       operationId: setMyUserName
-      summary: "modifica username"
-      description: "prima controlla che l'username dell'utente non sia duplicato, poi lo modifica"
+      summary: "modify username"
+      description: "first check that the user's username is not duplicated, then change it"
       requestBody: 
-        description: "prende nuovo username"
+        description: "take new username"
         content:
           application/json: 
             schema: 
-              description: "nuovo username"
+              description: "new username"
               type: object
               properties:
                 
@@ -68,14 +70,16 @@ paths:
                   pattern: ^[a-zA-Z0-9]+$
                   example: "pippobaudo12"
       responses: 
-        "201": 
-          description: "username cambiato"
+        "200": 
+          description: "username changed"
         "400":
-          $ref: "#/components/responses/input_malformato"
+          $ref: "#/components/responses/bad_input"
         "401":
-          description: "non autenticato"
+          $ref: "#/components/responses/401_Unauthorized"
         "409":
-          description: "username gia' esistente"
+          $ref: "#/components/responses/409_conflict"
+        "500":
+          $ref: "#/components/responses/500_ISE"
   /user/photo:
     put:
       tags: ["user"]
@@ -96,44 +100,51 @@ paths:
                   type: string
                   format: binary
       responses:
-        "201": 
+        "204": 
           description: "foto cambiata"
         "400":
-          $ref: "#/components/responses/input_malformato"
+          $ref: "#/components/responses/bad_input"
         "401":
-          description: "non autenticato"
+          $ref: "#/components/responses/401_Unauthorized"
         "500":
-          description: "errore server"
+          $ref: "#/components/responses/500_ISE"
+        
   /users/{id}:
     get:
       tags: ["user"]
       security:
         - bearerAuth: []
       operationId: getUser
-      summary: "prende tutti i parametri dello user"
-      description: "prende tutti i parametri dello user (id, username, propic)"
+      summary: "takes all the user's parameters"
+      description: "takes all the user's parameters(id, username, propic)"
       parameters:
         - name: id
           in: path
           required: true
-          description: "indica l'id dell'utente"
+          description: "user id"
           schema:
-            description: "indica l'id dell'utente"
+            description: "user id"
             type: integer
             minimum: 1
             maximum: 99999999
             example: 1
       responses:
         "200":
-          description: "ritorno username, propic e id"
+          description: "return username, propic and id"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/user"
+        "400":
+          $ref: "#/components/responses/bad_input"
         "401":
-          description: "non autenticato"
+          $ref: "#/components/responses/401_Unauthorized"
         "404":
-          description: "utente non trovato"
+          $ref: "#/components/responses/404_NotFound"
+        "400":
+          $ref: "#/components/responses/bad_input"
+        "500":
+          $ref: "#/components/responses/500_ISE"
 
   /conversation: 
     post:
@@ -171,20 +182,20 @@ paths:
                   maxLength: 999999
                   example: "carciofo"
                 gruppo:
-                  description: "False se non e' un gruppo, True se e' un gruppo"
+                  description: "False if is not a group, True if is a group"
                   type: boolean 
                   example: False
                 propic:
-                  description: "immagine del gruppo"
+                  description: "group propic"
                   type: string
                   format: binary
       responses:
         "200": 
-          description: "chat/gruppo creato correttamente"
+          description: "chat create successfully"
           content:
             application/json:
               schema:
-                description: "restituisce id"
+                description: "return id"
                 type: object
                 properties:
                   identifier: 
@@ -192,36 +203,74 @@ paths:
                     minimum: 1
                     maximum: 99999999
                     example: 124
-        "400":
-          $ref: "#/components/responses/input_malformato"
         "401":
-          description: "non autenticato"
+          $ref: "#/components/responses/401_Unauthorized"
         "404":
-          description: "utente non trovato per creare la chat"
+          $ref: "#/components/responses/404_NotFound"
         "409":
-          description: "chat gia' esistente"
-                
+          $ref: "#/components/responses/409_conflict"
+        "500":
+          $ref: "#/components/responses/500_ISE"
+
+  /search/users/{username}:
+    get:  
+      tags: ["user"]
+      security:
+        - bearerAuth: []
+      operationId: getUser
+      summary: "takes some users"
+      description: "takes all the user's parameters(id, username, propic) that username input is substring of username"
+      parameters:
+        - name: username
+          in: path
+          required: true
+          description: "username to find"
+          schema:
+            description: "username to find"
+            type: string
+            minlength: 1
+            pattern: ^[a-zA-Z0-9]+$
+            maxlength: 99999999
+            example: "giorgio"
+      responses:
+        "200":
+          description: "return username, propic and id of all users who meet the requirement "
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/user"
+        "400":
+          $ref: "#/components/responses/bad_input"
+        "401":
+          $ref: "#/components/responses/401_Unauthorized"
+        "404":
+          $ref: "#/components/responses/404_NotFound"
+        "500":
+          $ref: "#/components/responses/500_ISE"
+
 components:
   schemas:
     id: 
-      description: "id dell'utente"
+      description: "user id"
       type: integer
       minimum: 1
       maximum: 99999999
       example: 1
     username:
-      description: "l'username dell'utente"
+      description: "user username"
       type: string
       minLenght: 1
       maxLenght: 16
       example: pippo
       pattern: ^[a-zA-Z0-9]+$
     propic:
-      description: "la foto profilo dell'utente"
+      description: "user profile photo"
       type: string
       format: binary
     user:
-      description: "rappresenta un oggetto di tipo user che racchiude id, username e propic"
+      description: "type user object with username, id and propic inside"
       type: object
       properties:
         id:
@@ -231,20 +280,98 @@ components:
         propic:
           $ref: "#/components/schemas/propic"
   responses:
-    input_malformato:
-      description: "errore log in"
+    bad_input:
+      description: "error in log in"
       content:
         application/json:
           schema:
-            description: "restituisce errore"
+            description: "return an error"
             type: object
             properties:
               error: 
                 type: string
                 minLength: 1
                 maxLength: 1000
-                example: "errore nella struttura dei dati"
-    
+                example: "error in data structure"
+    204_NoContent:
+    description: No content, operation successful
 
+    401_Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            description: Unauthorized response
+            type: object
+            properties:
+              message:
+                description: Unauthorized message
+                type: string
+                example: "Unauthorized"
+                minLength: 0
+                maxLength: 999999999
+                pattern: "^.*?$"
 
+    403_Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            description: Forbidden response
+            type: object
+            properties:
+              message:
+                description: Forbidden message
+                type: string
+                example: "Forbidden"
+                minLength: 0
+                maxLength: 999999999
+                pattern: "^.*?$"
+
+    404_NotFound:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            description: Not Found response
+            type: object
+            properties:
+              message:
+                description: Not Found message
+                type: string
+                example: "Not Found"
+                minLength: 0
+                maxLength: 999999999
+                pattern: "^.*?$"
+
+    409_Conflict:
+      description: Conflict
+      content:
+        application/json:
+          schema:
+            description: Conflict response
+            type: object
+            properties:
+              message:
+                description: Conflict
+                type: string
+                example: "Conflict"
+                minLength: 0
+                maxLength: 999999999
+                pattern: "^.*?$" 
+    500_ISE:
+      description: internal server error
+      content:
+        application/json:
+          schema:
+            description: internal server error response
+            type: object
+            properties:
+              message:
+                description: internal server error
+                type: string
+                example: "internal server error"
+                minlength: 0
+                maxlength: 999999999
+                pattern: "^.*?$" 
  

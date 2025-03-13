@@ -9,15 +9,24 @@ export default {
             cs: '',
             chUsername: '',
             users: [],
-            selectedUser: null, // Aggiungi questa proprietà per memorizzare l'utente selezionato
-            searchCompleted: false // Aggiungi questa proprietà per tracciare se la ricerca è stata completata
+            selectedUser: null, 
+            searchCompleted: false,
+
+            error: '',
+            message: '',
 		}
 	},
 	methods: {
 		async getUsers() {
 			try{
+                this.message=''
+                this.error=''
+                this.users=[]
                 this.cs = sessionStorage.getItem("cs")
                 let response = await this.$axios.get(`/search/users/${this.chUsername}`, {headers: {cs:this.cs}});
+                if (response.status === 200){
+                        this.message = 'usernames find';
+                    }
                 this.searchCompleted=true
                 this.users = response.data
             }
@@ -34,6 +43,10 @@ export default {
                 
                 this.cs = sessionStorage.getItem("cs")
                 let response = await this.$axios.post(`/conversation`,{id: this.selectedUser.id} ,{headers: {cs:this.cs}});
+                if (response.status === 200){
+                        this.message = 'chat created';
+                        this.$router.push("/profile")
+                    }
             }
             catch(error){
                 this.error=error
@@ -69,6 +82,16 @@ export default {
             </div>
             <div v-if="searchCompleted">
                 <button class="btn btn-primary mt-2" @click="handleSelectedUser">Select</button>
+            </div>
+            <div>
+                <p v-if=error>
+                    {{ error }}
+                </p>
+                <p v-if=message>
+                    {{ message }}
+                </p>
+
+
             </div>
         </div>
     </div>

@@ -20,7 +20,7 @@ export default {
 			this.loading = false;
 		},
 		createChatButtonHandler() {
-			this.$router.push("/chat");
+			this.$router.push("/createChat");
 		}
 	},
 	mounted() {

@@ -3,7 +3,9 @@ import HomeView from '../views/HomeView.vue'
 import Login from '../views/Login.vue'
 import Home from '../views/Home.vue'
 import Profile from '../views/Profile.vue'
-import Chat from '../views/CreateChat.vue'
+import CreateChat from '../views/CreateChat.vue'
+import Chat from '../views/Chat.vue'
+
 
 const router = createRouter({
 	history: createWebHashHistory(import.meta.env.BASE_URL),
@@ -11,6 +13,7 @@ const router = createRouter({
 		{path: '/', component: Login},
 		{path: '/home', component: Home},
 		{path: '/profile', component: Profile},
+		{path: '/createChat', component: CreateChat},
 		{path: '/chat', component: Chat},
 
 	]

@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -13,19 +14,27 @@ func (rt *_router) createChat(w http.ResponseWriter, r *http.Request, ps httprou
 	cs, err := rt.AuthenticationApi(r)
 
 	if err != nil {
-		http.Error(w, "error: authentication user createChat"+err.Error(), http.StatusBadRequest)
+		http.Error(w, "error: authentication user createChat"+err.Error(), http.StatusUnauthorized)
 		return
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&richiesta); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	err = rt.db.CreateChat(cs, richiesta.Id)
 
+	if err != nil && strings.HasPrefix(err.Error(), "chat: error this chat already exist:") {
+		http.Error(w, err.Error(), http.StatusConflict)
+		return
+	}
+	if err != nil && strings.HasPrefix(err.Error(), "error in authentication CreateChat:") {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -37,19 +46,31 @@ func (rt *_router) checknames(w http.ResponseWriter, r *http.Request, ps httprou
 	cs, err := rt.AuthenticationApi(r)
 
 	if err != nil {
-		http.Error(w, "error: authentication user checkname"+err.Error(), http.StatusBadRequest)
+		http.Error(w, "error: authentication user checkname"+err.Error(), http.StatusUnauthorized)
 		return
 	}
 	str = ps.ByName("username")
-
+	if len(str) == 0 {
+		http.Error(w, "error: username too short", http.StatusBadRequest)
+		return
+	}
 	// if err := json.NewDecoder(r.Body).Decode(&str); err != nil {
 	// 	http.Error(w, err.Error(), http.StatusBadRequest)
 	// 	return
 	// }
 
 	tmp, err := rt.db.CheckNames(cs, str)
+
+	if err != nil && strings.HasPrefix(err.Error(), "error in authentication Checknames:") {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	if err != nil && strings.HasPrefix(err.Error(), "chat: no user found:") {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
 	if err != nil {
-		http.Error(w, "error in database"+err.Error(), http.StatusBadRequest)
+		http.Error(w, "error in database"+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -68,4 +89,7 @@ func (rt *_router) checknames(w http.ResponseWriter, r *http.Request, ps httprou
 	_, _ = w.Write(json)
 
 	w.WriteHeader(http.StatusOK)
+}
+func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+
 }

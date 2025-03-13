@@ -20,14 +20,14 @@ func (db *appdbimpl) IsChatDuplicated(cs int, id int) (bool, error) {
 	if num_righe == 0 {
 		return false, nil
 	}
-	return true, fmt.Errorf("chat: error this chat already exist")
+	return true, fmt.Errorf("chat: error this chat already exist: %w", err)
 }
 
 func (db *appdbimpl) CreateChat(cs int, id int) error {
 
 	auth, err := db.Authentication(cs)
 	if err != nil {
-		return fmt.Errorf("error in authentication CreateChat")
+		return fmt.Errorf("error in authentication CreateChat: %w", err)
 	}
 	if auth == -1 {
 		return err
@@ -40,7 +40,7 @@ func (db *appdbimpl) CreateChat(cs int, id int) error {
 	}
 
 	if !Isduplicated {
-		str_chat, err := db.c.Exec("INSERT INTO chat (gruppo) VALUES  (FALSE)")
+		str_chat, err := db.c.Exec("INSERT INTO chat (gruppo) VALUES (FALSE)")
 		if err != nil {
 			return fmt.Errorf("chat: error insert chat in table chat: %w", err)
 		}
@@ -61,7 +61,7 @@ func (db *appdbimpl) CheckNames(cs int, toFind string) ([]UtenteDb, error) {
 	var utenti []UtenteDb
 	auth, err := db.Authentication(cs)
 	if err != nil {
-		return utenti, fmt.Errorf("error in authentication Checknames")
+		return utenti, fmt.Errorf("error in authentication Checknames: %w", err)
 	}
 	if auth == -1 {
 		return utenti, err
@@ -73,16 +73,22 @@ func (db *appdbimpl) CheckNames(cs int, toFind string) ([]UtenteDb, error) {
 	if err != nil {
 		return utenti, fmt.Errorf("chat: error querying users: %w", err)
 	}
+
+	var cont int
+
 	defer rows.Close()
 
 	for rows.Next() {
+		cont++
 		var utente UtenteDb
 		if err := rows.Scan(&utente.Id, &utente.Username, &utente.Propic); err != nil {
 			return utenti, fmt.Errorf("chat: error scanning user: %w", err)
 		}
 		utenti = append(utenti, utente)
 	}
-
+	if cont == 0 {
+		return utenti, fmt.Errorf("chat: no user found: %w", err)
+	}
 	if err := rows.Err(); err != nil {
 		return utenti, fmt.Errorf("chat: error iterating over users: %w", err)
 	}

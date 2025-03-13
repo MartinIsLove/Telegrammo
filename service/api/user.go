@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -14,17 +15,25 @@ func (rt *_router) setMyUserName(w http.ResponseWriter, r *http.Request, ps http
 	id, err := rt.AuthenticationApi(r)
 
 	if err != nil {
-		http.Error(w, "error: authentication user"+err.Error(), http.StatusBadRequest)
+		http.Error(w, "error: authentication user"+err.Error(), http.StatusUnauthorized)
 		return
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&richiesta); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	err = rt.db.SetMyUserName(richiesta.Username, id)
 
+	if err != nil && strings.HasPrefix(err.Error(), "user: error in authentication:") {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	if err != nil && strings.HasPrefix(err.Error(), "l'username scelto e' gia stato utilizzato, sceglierne un altro:") {
+		http.Error(w, err.Error(), http.StatusConflict)
+		return
+	}
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -56,13 +65,18 @@ func (rt *_router) setMyPhoto(w http.ResponseWriter, r *http.Request, ps httprou
 		richiesta.Propic = photo
 		err = rt.db.SetMyPhoto(richiesta.Propic, richiesta.Id)
 
+		if err != nil && strings.HasPrefix(err.Error(), "error in authentication:") {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 	}
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusNoContent)
 }
 func (rt *_router) getMyUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var richiesta Utente
@@ -82,6 +96,11 @@ func (rt *_router) getMyUser(w http.ResponseWriter, r *http.Request, ps httprout
 		}
 
 		richiesta.Username, richiesta.Propic, richiesta.Id, err = rt.db.GetMyUser(id)
+
+		if err != nil && strings.HasPrefix(err.Error(), "error in authentication:") {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)

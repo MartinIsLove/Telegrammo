@@ -8,7 +8,7 @@ func (db *appdbimpl) SetMyUserName(username string, cs int) error {
 
 	aut, err := db.Authentication(cs)
 	if err != nil {
-		return fmt.Errorf("user: error in autentication")
+		return fmt.Errorf("user: error in authentication: %w", err)
 	}
 	if aut == -1 {
 		return err
@@ -20,12 +20,12 @@ func (db *appdbimpl) SetMyUserName(username string, cs int) error {
 		return fmt.Errorf("user: error find username in database: %w", err)
 	}
 	if righe > 0 {
-		return fmt.Errorf("l'username scelto e' gia stato utilizzato, sceglierne un altro")
+		return fmt.Errorf("l'username scelto e' gia stato utilizzato, sceglierne un altro: %w", err)
 	}
 
 	_, err = db.c.Exec("UPDATE utenti SET username=$1 WHERE id=$2", username, cs)
 	if err != nil {
-		return fmt.Errorf("error: database UPDATE not successful")
+		return fmt.Errorf("error: database UPDATE not successful: %w", err)
 	}
 	return nil
 }
@@ -34,7 +34,7 @@ func (db *appdbimpl) SetMyPhoto(photo []byte, cs int) error {
 
 	auth, err := db.Authentication(cs)
 	if err != nil {
-		return fmt.Errorf("error in authentication")
+		return fmt.Errorf("error in authentication: %w", err)
 	}
 	if auth == -1 {
 		return err
@@ -57,7 +57,7 @@ func (db *appdbimpl) GetMyUser(cs int) (string, []byte, int, error) {
 	auth, err := db.Authentication(cs)
 	if err != nil {
 		var tmp []byte
-		return "", tmp, 0, fmt.Errorf("error in authentication")
+		return "", tmp, 0, fmt.Errorf("error in authentication: %w", err)
 	}
 	if auth == -1 {
 		var tmp []byte

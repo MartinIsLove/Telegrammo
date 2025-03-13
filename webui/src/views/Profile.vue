@@ -33,6 +33,8 @@ export default {
             this.chPhoto=event.target.files[0]
         },
         async changeUserDetails(){
+        this.message=''
+        this.error=''
             if (this.chPhoto === null && this.chUsername !== '' ){
                 try{
                     let response = await this.$axios.put(`/user/name`,{username:this.chUsername}, {headers: {cs:this.id}});
@@ -75,7 +77,7 @@ export default {
                 try{
                     let response = await this.$axios.put(`/user/name`,{username:this.chUsername}, {headers: {cs:this.id}});
                     if (response.status === 200){
-                        this.message = 'Username changed successfully';
+                        this.message = 'Username and photo changed successfully';
                     }
                     
 
@@ -125,7 +127,7 @@ export default {
                 {{ error }}
             </p>
             <p v-if=message>
-                {{ messagge }}
+                {{ message }}
             </p>
             <div class="col-6"></div>
         </div>
