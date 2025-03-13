@@ -45,7 +45,7 @@ export default {
                 let response = await this.$axios.post(`/conversation`,{id: this.selectedUser.id} ,{headers: {cs:this.cs}});
                 if (response.status === 200){
                         this.message = 'chat created';
-                        this.$router.push("/profile")
+                        this.$router.push("/chat")
                     }
             }
             catch(error){

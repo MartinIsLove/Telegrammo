@@ -90,6 +90,14 @@ func (rt *_router) checknames(w http.ResponseWriter, r *http.Request, ps httprou
 
 	w.WriteHeader(http.StatusOK)
 }
-func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
-}
+// func (rt *_router) getMyConversations(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+
+// 	cs, err := rt.AuthenticationApi(r)
+
+// 	if err != nil {
+// 		http.Error(w, "error: authentication user checkname"+err.Error(), http.StatusUnauthorized)
+// 		return
+// 	}
+
+// }

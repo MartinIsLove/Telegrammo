@@ -25,12 +25,9 @@ func (db *appdbimpl) IsChatDuplicated(cs int, id int) (bool, error) {
 
 func (db *appdbimpl) CreateChat(cs int, id int) error {
 
-	auth, err := db.Authentication(cs)
+	_, err := db.Authentication(cs)
 	if err != nil {
 		return fmt.Errorf("error in authentication CreateChat: %w", err)
-	}
-	if auth == -1 {
-		return err
 	}
 
 	Isduplicated, err := db.IsChatDuplicated(cs, id)
@@ -59,17 +56,14 @@ func (db *appdbimpl) CreateChat(cs int, id int) error {
 }
 func (db *appdbimpl) CheckNames(cs int, toFind string) ([]UtenteDb, error) {
 	var utenti []UtenteDb
-	auth, err := db.Authentication(cs)
+	_, err := db.Authentication(cs)
 	if err != nil {
 		return utenti, fmt.Errorf("error in authentication Checknames: %w", err)
-	}
-	if auth == -1 {
-		return utenti, err
 	}
 
 	// ----------------------------------
 
-	rows, err := db.c.Query("SELECT * FROM utenti WHERE username LIKE $1 || '%'", toFind)
+	rows, err := db.c.Query("SELECT * FROM utenti WHERE (username LIKE $1 || '%') AND (id!=$2)", toFind, cs)
 	if err != nil {
 		return utenti, fmt.Errorf("chat: error querying users: %w", err)
 	}
@@ -97,3 +91,22 @@ func (db *appdbimpl) CheckNames(cs int, toFind string) ([]UtenteDb, error) {
 
 	return utenti, nil
 }
+
+// func (db *appdbimpl) GetMyConversations(cs int) ([]ChatDb, error) {
+// 	var chat []ChatDb
+// 	_, err := db.Authentication(cs)
+// 	if err != nil {
+// 		return chat, fmt.Errorf("error in authentication GetConversation: %w", err)
+// 	}
+// 	// la query sotto ritorna gli id degli utenti con cui ha la chat l'utente connesso, che non siano gruppi e l'id della chat
+// 	rows, err := db.c.Query("SELECT m.id_utenti, c.id FROM chat c JOIN membri m ON c.id=m.id_chat WHERE m.id_utenti!=$1 AND c.id IN(SELECT  c.id from chat c JOIN membri m ON c.id=m.id_chat WHERE m.id_utenti=$1 AND gruppo=0) AND gruppo=0;", cs)
+// 	if err != nil {
+// 		return chat, fmt.Errorf("chat: error querying users: %w", err)
+// 	}
+// 	// questa query ritorna tutti i dati della join tra membri e chat dove l'utente appartiene al gruppo
+// 	rows2, err := db.c.Query("SELECT * from chat c JOIN membri m ON c.id=m.id_chat WHERE m.id_utenti=$1 AND gruppo=1;", cs)
+// 	if err != nil {
+// 		return chat, fmt.Errorf("chat: error querying users: %w", err)
+// 	}
+
+// }

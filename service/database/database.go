@@ -89,7 +89,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 			return nil, fmt.Errorf("error creating database structure membri: %w", err)
 		}
 
-		sqlStmt = `CREATE TABLE if not exists messaggi (id INTEGER NOT NULL PRIMARY KEY, testo TEXT, image BLOB, data DATE, mittente INTEGER NOT NULL, id_reply INTEGER, FOREIGN KEY (id_reply) REFERENCES messaggi(id));`
+		sqlStmt = `CREATE TABLE if not exists messaggi (id INTEGER NOT NULL PRIMARY KEY, testo TEXT, image BLOB, data TIMESTAMP DEFAULT CURRENT_TIMESTAMP, mittente INTEGER NOT NULL, id_reply INTEGER, FOREIGN KEY(mittente) REFERENCES utenti(id), FOREIGN KEY (id_reply) REFERENCES messaggi(id));`
 		_, err = db.Exec(sqlStmt)
 		if err != nil {
 			return nil, fmt.Errorf("error creating database structure messaggi: %w", err)
@@ -107,7 +107,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 			return nil, fmt.Errorf("error creating database structure emoticon: %w", err)
 		}
 
-		sqlStmt = `CREATE TABLE if not exists accessi_chat (id_utente INTEGER NOT NULL, id_chat INTEGER NOT NULL, data DATE, FOREIGN KEY(id_utente) REFERENCES utenti(id) ON DELETE CASCADE, FOREIGN KEY(id_chat) REFERENCES chat(id) ON DELETE CASCADE);`
+		sqlStmt = `CREATE TABLE if not exists accessi_chat (id_utente INTEGER NOT NULL, id_chat INTEGER NOT NULL, data TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(id_utente) REFERENCES utenti(id) ON DELETE CASCADE, FOREIGN KEY(id_chat) REFERENCES chat(id) ON DELETE CASCADE);`
 		_, err = db.Exec(sqlStmt)
 		if err != nil {
 			return nil, fmt.Errorf("error creating database structure accessi_chat: %w", err)

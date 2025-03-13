@@ -4,14 +4,10 @@ import "fmt"
 
 func (db *appdbimpl) SetMyUserName(username string, cs int) error {
 	var righe int64
-	var aut int
 
-	aut, err := db.Authentication(cs)
+	_, err := db.Authentication(cs)
 	if err != nil {
 		return fmt.Errorf("user: error in authentication: %w", err)
-	}
-	if aut == -1 {
-		return err
 	}
 
 	err = db.c.QueryRow("SELECT count(username) as righe FROM utenti WHERE username= $1", username).Scan(&righe)
@@ -32,12 +28,9 @@ func (db *appdbimpl) SetMyUserName(username string, cs int) error {
 
 func (db *appdbimpl) SetMyPhoto(photo []byte, cs int) error {
 
-	auth, err := db.Authentication(cs)
+	_, err := db.Authentication(cs)
 	if err != nil {
 		return fmt.Errorf("error in authentication: %w", err)
-	}
-	if auth == -1 {
-		return err
 	}
 	_, err = db.c.Exec("UPDATE utenti SET propic=$1 WHERE id=$2", photo, cs)
 
@@ -54,14 +47,10 @@ func (db *appdbimpl) GetMyUser(cs int) (string, []byte, int, error) {
 	var propic []byte
 	var id int
 
-	auth, err := db.Authentication(cs)
+	_, err := db.Authentication(cs)
 	if err != nil {
 		var tmp []byte
 		return "", tmp, 0, fmt.Errorf("error in authentication: %w", err)
-	}
-	if auth == -1 {
-		var tmp []byte
-		return "", tmp, 0, err
 	}
 
 	err = db.c.QueryRow("SELECT id, username, propic FROM utenti WHERE id=$1", cs).Scan(&id, &username, &propic)
