@@ -3,6 +3,7 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"time"
 )
 
 func (db *appdbimpl) IsChatDuplicated(cs int, id int) (bool, error) {
@@ -92,21 +93,76 @@ func (db *appdbimpl) CheckNames(cs int, toFind string) ([]UtenteDb, error) {
 	return utenti, nil
 }
 
-// func (db *appdbimpl) GetMyConversations(cs int) ([]ChatDb, error) {
-// 	var chat []ChatDb
-// 	_, err := db.Authentication(cs)
-// 	if err != nil {
-// 		return chat, fmt.Errorf("error in authentication GetConversation: %w", err)
-// 	}
-// 	// la query sotto ritorna gli id degli utenti con cui ha la chat l'utente connesso, che non siano gruppi e l'id della chat
-// 	rows, err := db.c.Query("SELECT m.id_utenti, c.id FROM chat c JOIN membri m ON c.id=m.id_chat WHERE m.id_utenti!=$1 AND c.id IN(SELECT  c.id from chat c JOIN membri m ON c.id=m.id_chat WHERE m.id_utenti=$1 AND gruppo=0) AND gruppo=0;", cs)
-// 	if err != nil {
-// 		return chat, fmt.Errorf("chat: error querying users: %w", err)
-// 	}
-// 	// questa query ritorna tutti i dati della join tra membri e chat dove l'utente appartiene al gruppo
-// 	rows2, err := db.c.Query("SELECT * from chat c JOIN membri m ON c.id=m.id_chat WHERE m.id_utenti=$1 AND gruppo=1;", cs)
-// 	if err != nil {
-// 		return chat, fmt.Errorf("chat: error querying users: %w", err)
-// 	}
+func (db *appdbimpl) GetMyConversations(cs int) ([]ChatUtenteDb, error) {
+	var chat []ChatUtenteDb
+	_, err := db.Authentication(cs)
+	if err != nil {
+		return []ChatUtenteDb{}, fmt.Errorf("error in authentication GetConversation: %w", err)
+	}
+	// la query sotto ritorna gli id degli utenti con cui ha la chat l'utente connesso, che non siano gruppi e l'id della chat
+	rows, err := db.c.Query("SELECT u.username, u.propic, m.id_utenti, c.id FROM chat c JOIN membri m ON c.id=m.id_chat JOIN utenti u ON u.id = m.id_utenti WHERE m.id_utenti!=$1 AND c.id IN(SELECT  c.id from chat c JOIN membri m ON c.id=m.id_chat WHERE m.id_utenti=$1 AND gruppo=0) AND gruppo=0;", cs)
+	if err != nil {
+		return []ChatUtenteDb{}, fmt.Errorf("chat: error querying users: %w", err)
+	}
 
-// }
+	defer rows.Close()
+
+	for rows.Next() {
+		var c ChatUtenteDb
+		if err := rows.Scan(&c.Nome, &c.Propic, &c.Id, &c.IdChat); err != nil {
+			return []ChatUtenteDb{}, fmt.Errorf("chat: error scanning user: %w", err)
+		}
+		chat = append(chat, c)
+	}
+	if err := rows.Err(); err != nil {
+		return []ChatUtenteDb{}, fmt.Errorf("chat: error iterating over users: %w", err)
+	}
+
+	// questa query ritorna tutti i dati della join tra membri e chat dove l'utente appartiene al gruppo
+	rows2, err := db.c.Query("SELECT  c.id AS id, c.propic, c.nome from chat c JOIN membri m ON c.id=m.id_chat JOIN utenti u ON u.id=m.id_utenti WHERE m.id_utenti=$1 AND gruppo=1;", cs)
+	if err != nil {
+		return []ChatUtenteDb{}, fmt.Errorf("chat: error querying users: %w", err)
+	}
+
+	defer rows2.Close()
+
+	for rows2.Next() {
+		var c ChatUtenteDb
+		if err := rows2.Scan(&c.IdChat, &c.Propic, &c.Nome); err != nil {
+			return []ChatUtenteDb{}, fmt.Errorf("chat: error scanning user: %w", err)
+		}
+		chat = append(chat, c)
+	}
+	if err := rows2.Err(); err != nil {
+		return []ChatUtenteDb{}, fmt.Errorf("chat: error iterating over users: %w", err)
+	}
+	fmt.Println("funz")
+
+	for i := range chat {
+		var lastMsg, username string
+		var id int
+		var tmp time.Time
+		c := &chat[i]
+		rows3 := db.c.QueryRow("SELECT m.testo, m.mittente, u.username, m.data FROM chat c JOIN messaggi_di_chat mdc ON c.id=mdc.id_chat JOIN messaggi m ON mdc.id_messaggio=m.id JOIN membri me ON me.id_chat=c.id JOIN utenti u ON u.id=me.id_utenti WHERE c.id=$1 ORDER BY m.data DESC LIMIT 1;", c.IdChat)
+		err := rows3.Scan(&lastMsg, &id, &username, &tmp)
+		if err == sql.ErrNoRows {
+
+			c.LastMSg = ""
+			c.Data = time.Time{}
+
+		} else if err != nil {
+			return []ChatUtenteDb{}, fmt.Errorf("chat: error querying users: %w", err)
+
+		} else {
+			c.LastMSg = lastMsg
+			c.Id = id
+			c.Username = username
+			c.Data = tmp
+		}
+	}
+	for _, c := range chat {
+		fmt.Printf("il nome della chat e': %s Username: %s, Propic: %s, UserId: %d, ChatId: %d , lastmsg: %s, data: %s \n", c.Nome, c.Username, c.Propic, c.Id, c.IdChat, c.LastMSg, c.Data.Format(time.RFC3339))
+	}
+
+	return chat, nil
+}

@@ -18,6 +18,8 @@ func (rt *_router) Handler() http.Handler {
 
 	rt.router.GET("/search/users/:username", rt.checknames)
 
+	rt.router.GET("/conversations", rt.getMyConversations)
+
 	rt.router.POST("/conversation", rt.createChat)
 
 	// Special routes

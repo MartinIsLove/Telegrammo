@@ -91,13 +91,32 @@ func (rt *_router) checknames(w http.ResponseWriter, r *http.Request, ps httprou
 	w.WriteHeader(http.StatusOK)
 }
 
-// func (rt *_router) getMyConversations(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (rt *_router) getMyConversations(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var richiesta []ChatUtente
+	cs, err := rt.AuthenticationApi(r)
+	if err != nil {
+		http.Error(w, "error: authentication user checkname"+err.Error(), http.StatusUnauthorized)
+		return
+	}
+	tmp, err := rt.db.GetMyConversations(cs)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	richiesta = make([]ChatUtente, len(tmp))
+	for i, user := range tmp {
+		richiesta[i] = NewChatUtente(user)
+	}
 
-// 	cs, err := rt.AuthenticationApi(r)
+	w.Header().Set("content-type", "application/json")
+	json, err := json.Marshal(richiesta)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-// 	if err != nil {
-// 		http.Error(w, "error: authentication user checkname"+err.Error(), http.StatusUnauthorized)
-// 		return
-// 	}
+	_, _ = w.Write(json)
 
-// }
+	w.WriteHeader(http.StatusOK)
+	// fmt.Println(err.Error())
+}
