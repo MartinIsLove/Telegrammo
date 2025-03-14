@@ -119,7 +119,7 @@ func (db *appdbimpl) GetMyConversations(cs int) ([]ChatUtenteDb, error) {
 	}
 
 	// questa query ritorna tutti i dati della join tra membri e chat dove l'utente appartiene al gruppo
-	rows2, err := db.c.Query("SELECT  c.id AS id, c.propic, c.nome from chat c JOIN membri m ON c.id=m.id_chat JOIN utenti u ON u.id=m.id_utenti WHERE m.id_utenti=$1 AND gruppo=1;", cs)
+	rows2, err := db.c.Query("SELECT  c.id AS id, c.propic, c.nome, c.gruppo from chat c JOIN membri m ON c.id=m.id_chat JOIN utenti u ON u.id=m.id_utenti WHERE m.id_utenti=$1 AND gruppo=1;", cs)
 	if err != nil {
 		return []ChatUtenteDb{}, fmt.Errorf("chat: error querying users: %w", err)
 	}
@@ -128,7 +128,7 @@ func (db *appdbimpl) GetMyConversations(cs int) ([]ChatUtenteDb, error) {
 
 	for rows2.Next() {
 		var c ChatUtenteDb
-		if err := rows2.Scan(&c.IdChat, &c.Propic, &c.Nome); err != nil {
+		if err := rows2.Scan(&c.IdChat, &c.Propic, &c.Nome, &c.Gruppo); err != nil {
 			return []ChatUtenteDb{}, fmt.Errorf("chat: error scanning user: %w", err)
 		}
 		chat = append(chat, c)
@@ -161,7 +161,7 @@ func (db *appdbimpl) GetMyConversations(cs int) ([]ChatUtenteDb, error) {
 		}
 	}
 	for _, c := range chat {
-		fmt.Printf("il nome della chat e': %s Username: %s, Propic: %s, UserId: %d, ChatId: %d , lastmsg: %s, data: %s \n", c.Nome, c.Username, c.Propic, c.Id, c.IdChat, c.LastMSg, c.Data.Format(time.RFC3339))
+		fmt.Printf("il nome della chat e': %s Username di chi ha inviato l'ultimo messaggio: %s, Propic: %s, UserId di chi ha inviato l'ultimo messaggio: %d, ChatId: %d , lastmsg: %s, data: %s, e' un gruppo: %t \n", c.Nome, c.Username, c.Propic, c.Id, c.IdChat, c.LastMSg, c.Data.Format(time.RFC3339), c.Gruppo)
 	}
 
 	return chat, nil

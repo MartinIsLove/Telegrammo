@@ -1,6 +1,10 @@
 package api
 
-import "github.com/MartinIsLove/Telegrammo/service/database"
+import (
+	"time"
+
+	"github.com/MartinIsLove/Telegrammo/service/database"
+)
 
 type Utente struct {
 	Username string `json:"username"`
@@ -9,12 +13,14 @@ type Utente struct {
 }
 
 type ChatUtente struct {
-	IdChat   int    `json:"id_chat"`
-	Nome     string `json:"nome"`
-	Gruppo   bool   `json:"gruppo"`
-	Username string `json:"username"`
-	Id       int    `json:"id_utenti"`
-	Propic   []byte `json:"propic"`
+	IdChat   int       `json:"id_chat"`
+	Nome     string    `json:"nome"`
+	Gruppo   bool      `json:"gruppo"`
+	Username string    `json:"username"`
+	Id       int       `json:"id_utenti"`
+	Propic   []byte    `json:"propic"`
+	LastMSg  string    `json:"lastmsg"`
+	Data     time.Time `json:"data"`
 }
 
 func NewChatUtente(chatUtente database.ChatUtenteDb) ChatUtente {
@@ -25,6 +31,8 @@ func NewChatUtente(chatUtente database.ChatUtenteDb) ChatUtente {
 		Username: chatUtente.Username,
 		Id:       chatUtente.Id,
 		Propic:   chatUtente.Propic,
+		LastMSg:  chatUtente.LastMSg,
+		Data:     chatUtente.Data,
 	}
 }
 func NewUser(user database.UtenteDb) Utente {
