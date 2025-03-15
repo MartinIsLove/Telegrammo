@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
 )
 
 func (db *appdbimpl) DoLogin(username string) (int, error) {
@@ -11,7 +13,13 @@ func (db *appdbimpl) DoLogin(username string) (int, error) {
 	var if_id int64
 	err := db.c.QueryRow("SELECT username,id FROM utenti WHERE username= $1", username).Scan(&if_username, &if_id)
 	if errors.Is(err, sql.ErrNoRows) {
-		response, err2 := db.c.Exec("INSERT INTO utenti (username) VALUES ($1)", username)
+		noPhotoPath := filepath.Join("/workspace/webui/src/assets/", "NoPhoto.png")
+		noPhotoBytes, err := os.ReadFile(noPhotoPath)
+		if err != nil {
+			return 0, fmt.Errorf("login: error reading noPhoto.svg: %w", err)
+		}
+
+		response, err2 := db.c.Exec("INSERT INTO utenti (username, propic) VALUES ($1, $2)", username, noPhotoBytes)
 
 		if err2 != nil {
 			return 0, fmt.Errorf("login: error insert user: %w", err)

@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+	"sort"
 	"strings"
 
 	"github.com/julienschmidt/httprouter"
@@ -107,6 +108,16 @@ func (rt *_router) getMyConversations(w http.ResponseWriter, r *http.Request, ps
 	for i, user := range tmp {
 		richiesta[i] = NewChatUtente(user)
 	}
+
+	sort.Slice(richiesta, func(i, j int) bool {
+		if richiesta[i].Data.IsZero() {
+			return false
+		}
+		if richiesta[j].Data.IsZero() {
+			return true
+		}
+		return richiesta[i].Data.After(richiesta[j].Data)
+	})
 
 	w.Header().Set("content-type", "application/json")
 	json, err := json.Marshal(richiesta)

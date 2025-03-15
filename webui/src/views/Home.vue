@@ -55,11 +55,12 @@ export default {
 							<br>
 
 							<span v-if="chat.gruppo">
-								<span class="text-capitalize fw-bold">{{ chat.username }}</span>: {{ chat.lastmsg }}
+								<span class="text-capitalize fw-bold">{{ chat.username }}</span>: {{ chat.lastmsg }}  
 							</span>
 
 							<span v-else>
-								{{ chat.lastmsg }}
+								{{ chat.lastmsg  }}   
+								
 							</span>
 						</div>
 
