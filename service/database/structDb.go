@@ -17,3 +17,11 @@ type ChatUtenteDb struct {
 	LastMSg  string    `json:"lastmsg"`
 	Data     time.Time `json:"data"`
 }
+type MessDb struct {
+	IdMess int       `json:"id_mess"`
+	Nome   string    `json:"nome"`
+	IdMitt int       `json:"id_mitt"`
+	Testo  string    `json:"testo"`
+	Data   time.Time `json:"data"`
+	Visual bool      `json:"visual"`
+}

@@ -21,7 +21,7 @@ func (rt *_router) Handler() http.Handler {
 	rt.router.GET("/conversations", rt.getMyConversations)
 
 	rt.router.POST("/conversation", rt.createChat)
-
+	// rt.router.GET("/conversation/:id", rt.getConversation)
 	// Special routes
 	rt.router.GET("/liveness", rt.liveness)
 

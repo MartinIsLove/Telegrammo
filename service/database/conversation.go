@@ -166,3 +166,12 @@ func (db *appdbimpl) GetMyConversations(cs int) ([]ChatUtenteDb, error) {
 
 	return chat, nil
 }
+
+// func (db *appdbimpl) GetConversation(cs int, id_chat int) ([]MessDb, error) {
+// 	var mess []MessDb
+// 	_, err := db.Authentication(cs)
+// 	if err != nil {
+// 		return []MessDb{}, fmt.Errorf("error in authentication GetConversation: %w", err)
+// 	}
+
+// }

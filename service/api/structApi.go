@@ -23,6 +23,25 @@ type ChatUtente struct {
 	Data     time.Time `json:"data"`
 }
 
+type Mess struct {
+	IdMess int       `json:"id_mess"`
+	Nome   string    `json:"nome"`
+	IdMitt int       `json:"id_mitt"`
+	Testo  string    `json:"testo"`
+	Data   time.Time `json:"data"`
+	Visual bool      `json:"visual"`
+}
+
+func NewMess(Messaggio database.MessDb) Mess {
+	return Mess{
+		IdMess: Messaggio.IdMess,
+		Nome:   Messaggio.Nome,
+		IdMitt: Messaggio.IdMitt,
+		Testo:  Messaggio.Testo,
+		Data:   Messaggio.Data,
+		Visual: Messaggio.Visual,
+	}
+}
 func NewChatUtente(chatUtente database.ChatUtenteDb) ChatUtente {
 	return ChatUtente{
 		IdChat:   chatUtente.IdChat,

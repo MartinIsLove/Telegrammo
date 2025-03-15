@@ -131,3 +131,27 @@ func (rt *_router) getMyConversations(w http.ResponseWriter, r *http.Request, ps
 	w.WriteHeader(http.StatusOK)
 	// fmt.Println(err.Error())
 }
+
+// func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+
+// 	cs, err := rt.AuthenticationApi(r)
+// 	var messaggi []Mess
+
+// 	if err != nil {
+// 		http.Error(w, "error: authentication user checkname"+err.Error(), http.StatusUnauthorized)
+// 		return
+// 	}
+// 	// var id_chat_tmp string
+// 	id_chat_tmp := ps.ByName("idChat")
+// 	id_chat, err := strconv.Atoi(id_chat_tmp)
+
+// 	tmp, err := rt.db.GetConversation(cs, id_chat)
+// 	if err != nil {
+// 		http.Error(w, err.Error(), http.StatusInternalServerError)
+// 		return
+// 	}
+// 	messaggi = make([]Mess, len(tmp))
+// 	for i, user := range tmp {
+// 		messaggi[i] = NewMess(user)
+// 	}
+// }

@@ -48,6 +48,7 @@ type AppDatabase interface {
 	CheckNames(int, string) ([]UtenteDb, error)
 
 	GetMyConversations(int) ([]ChatUtenteDb, error)
+	// GetConversation(int, int) ([]MessDb, error)
 	Ping() error
 }
 
