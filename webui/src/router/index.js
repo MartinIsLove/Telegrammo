@@ -14,7 +14,7 @@ const router = createRouter({
 		{path: '/home', component: Home},
 		{path: '/profile', component: Profile},
 		{path: '/createChat', component: CreateChat},
-		{path: '/chat', component: Chat},
+		{path: '/chat/:id', component: Chat},
 
 	]
 })

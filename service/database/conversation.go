@@ -173,5 +173,37 @@ func (db *appdbimpl) GetMyConversations(cs int) ([]ChatUtenteDb, error) {
 // 	if err != nil {
 // 		return []MessDb{}, fmt.Errorf("error in authentication GetConversation: %w", err)
 // 	}
+// 	rows, err := db.c.Query("SELECT m.testo, m.mittente, u.username, m.data, m.image,
+// FROM messaggi m
+// JOIN messaggi_di_chat d ON d.id_messaggio=m.id
+// JOIN chat c ON c.id=d.id_chat
+// JOIN utenti u ON u.id=m.mittente
+// WHERE c.id=$1;")
+// 	if err != nil {
+// 		return []MessDb{}, fmt.Errorf("chat: error querying users: %w", err)
+// 	}
 
 // }
+
+func (db *appdbimpl) SendMessage(cs int, id_chat int, message string, photo []byte) error {
+	_, err := db.Authentication(cs)
+	if err != nil {
+		return fmt.Errorf("error in authentication GetConversation: %w", err)
+	}
+	str_mess, err := db.c.Exec("INSERT INTO messaggi (image, mittente, testo) VALUES ($1, $2, $3);", photo, cs, message)
+	if err != nil {
+		return fmt.Errorf("chat: error insert chat in table chat: %w", err)
+	}
+
+	id_mess, err := str_mess.LastInsertId()
+	if err != nil {
+		return fmt.Errorf("chat: error catch number of rows from query: %w", err)
+	}
+
+	_, err = db.c.Exec("INSERT INTO messaggi_di_chat (id_chat, id_messaggio) VALUES  ($1, $2)", id_chat, id_mess)
+	if err != nil {
+		return fmt.Errorf("chat: error insert messaggio in messagg_di_chat : %w", err)
+	}
+
+	return nil
+}

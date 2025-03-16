@@ -30,6 +30,7 @@ type Mess struct {
 	Testo  string    `json:"testo"`
 	Data   time.Time `json:"data"`
 	Visual bool      `json:"visual"`
+	Photo  []byte    `json:"photo"`
 }
 
 func NewMess(Messaggio database.MessDb) Mess {

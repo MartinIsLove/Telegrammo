@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/julienschmidt/httprouter"
@@ -138,7 +139,7 @@ func (rt *_router) getMyConversations(w http.ResponseWriter, r *http.Request, ps
 // 	var messaggi []Mess
 
 // 	if err != nil {
-// 		http.Error(w, "error: authentication user checkname"+err.Error(), http.StatusUnauthorized)
+// 		http.Error(w, "error: authentication user getConversation"+err.Error(), http.StatusUnauthorized)
 // 		return
 // 	}
 // 	// var id_chat_tmp string
@@ -155,3 +156,30 @@ func (rt *_router) getMyConversations(w http.ResponseWriter, r *http.Request, ps
 // 		messaggi[i] = NewMess(user)
 // 	}
 // }
+
+func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var richiesta Mess
+	cs, err := rt.AuthenticationApi(r)
+	if err != nil {
+		http.Error(w, "error: authentication user sendMessage"+err.Error(), http.StatusUnauthorized)
+		return
+	}
+	id_chat_tmp := ps.ByName("idChat")
+	id_chat, err := strconv.Atoi(id_chat_tmp)
+	if err != nil {
+		http.Error(w, "error: conversion id_chat_tmp (string) to id_chat (int)", http.StatusInternalServerError)
+		return
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&richiesta); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	erro := rt.db.SendMessage(cs, id_chat, richiesta.Testo, richiesta.Photo)
+	if erro != nil {
+		http.Error(w, erro.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}

@@ -37,51 +37,80 @@ export default {
 </script>
 <template>
     
-		<div class="position-absolute top-1 start-1">
-			<button class="btn btn-secondary ms-2 mb-2" @click="createChatButtonHandler">
-				Create Chat
-			</button>
-		</div>
-		<div class="mt-5">
+	<div class="position-absolute top-1 start-1">
+		<button class="btn btn-secondary ms-2 mb-2" @click="createChatButtonHandler">
+			Create Chat
+		</button>
+	</div>
+	<div class="mt-5">
 
-		</div>
-		<div v-for="chat in chats" >
-			
-			<ol class="list-group list-group mt-1">
-				<button class="btn btn-secondary w-100 " @click="openChat(chat)">
-				<li class="list-group-item d-flex justify-content-between align-items-start">
+	</div>
+	<!-- <div v-for="chat in chats" >
+		<ol class="list-group list-group mt-1">
+			<li class="list-group-item d-flex justify-content-between align-items-start">
+				
+				<div class="me-auto row custom-box">
 					
-					<div class="me-auto row custom-box">
-						
-						<div class="col-4">
-							<img v-if="chat.propic" :src="'data:image/png;base64,'+ chat.propic" class="img-fluid rounded-circle" width="140" height="140" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="var(--bs-secondary-color)"></rect>
-						</div>
-						<div class="col-auto">
-							<span class="fw-bold">
-								{{chat.nome}}
-							</span>
-							
-							<br>
-
-							<span v-if="chat.gruppo">
-								<span class="text-capitalize fw-bold">{{ chat.username }}</span>:{{ chat.lastmsg }}  
-							</span>
-
-							<span v-else>
-								<span>{{ chat.lastmsg  }}</span>
-								
-							</span>
-						</div>
-					<!-- </button> -->
+					<div class="col-2 ms-0 me-2">
+						<img v-if="chat.propic" :src="'data:image/png;base64,'+ chat.propic" class=" rounded-circle me-2" width="70" height="70"  role="img" focusable="false" style="object-fit: cover;">
 					</div>
-					<!-- </button> -->
-					<span class="badge text-bg-secondary rounded-pill">14</span>
-				</li>
-				</button>
-			</ol>
-			<!-- </button> -->
-		</div>
+					<div class="col-10 d-flex">
 	
+						<p class="fw-bold">
+							
+							{{chat.nome}}
+						</p>
+													
+						<p v-if="chat.gruppo" class="text-wrap">
+							<span class="text-capitalize fw-bold">{{ chat.username }}</span>:{{ chat.lastmsg }}  
+						</p>
+						
+						<p v-else>
+							<span>{{ chat.lastmsg  }}</span>
+							
+						</p>
+				
+					</div>
+				</div>
+				<span class="badge text-bg-secondary rounded-pill">14</span>
+			</li>
+		</ol>
+	</div> -->
+
+	<div v-for="chat in chats" >
+		<RouterLink :to="'/chat/' + chat.id_chat" class="nav-link">
+		<div class="row g-0 border rounded my-2 p-2">
+
+
+				
+				<div class="col-md-1 col-2">
+					<img v-if="chat.propic" :src="'data:image/png;base64,'+ chat.propic" class=" rounded-circle me-2" width="70" height="70"  role="img" focusable="false" style="object-fit: cover;">
+				</div>
+				
+				<div class="col-md-11 col-10">
+					<div class="card-body">
+						
+						<h5>{{chat.nome}}</h5>
+						
+						<div class="d-flex justify-content-between">
+							<p v-if="chat.gruppo" class="text-wrap">
+								<span class="text-capitalize fw-bold">{{ chat.username }}</span>:{{ chat.lastmsg }}  
+							</p>
+							
+							<p v-else> 
+								<span>{{ chat.lastmsg  }}</span>
+							</p>
+						</div>
+						
+					</div>
+				</div>
+				
+				
+			</div>
+		</RouterLink>
+		
+	</div>
+
 </template>
 
 <style>
