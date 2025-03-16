@@ -18,9 +18,15 @@ func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, ps httprouter
 	// fmt.Println(richiestaLogin)
 	var rispostaLogin Utente
 
+	if len(richiestaLogin.Username) < 1 {
+		http.Error(w, "messaggio troppo corto", http.StatusBadRequest)
+		return
+	}
+
 	rispostaLogin.Id, err = rt.db.DoLogin(richiestaLogin.Username)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	w.Header().Set("content-type", "application/json")

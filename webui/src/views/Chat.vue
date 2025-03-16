@@ -6,6 +6,7 @@ export default {
 			loading: false,
 			some_data: null,
 
+			messaggi:[],
             photo: [],
             messaggio: '',
 			id: null,
@@ -18,10 +19,12 @@ export default {
 			this.errormsg = null;
             this.id = sessionStorage.getItem("cs")
             this.chatId = parseInt(this.$route.params.id, 10);
+			this.fetchMessage()
+
 		},
         async fetchMessage(){
-            
-
+            let response = await this.$axios.get(`/conversation/${this.chatId}`, {headers:{cs:this.id}});
+			this.messaggi = response.data
 
         },
 		async send() {
@@ -38,10 +41,22 @@ export default {
 
 <template>
     
+	<div v-for="mes in messaggi">
+		<div class="row g-0 border rounded my-2 p-2">
+			<div class="d-flex justify-content-between">
+				<p v-if="mes.gruppo" class="text-wrap">
+					<span class="text-capitalize fw-bold">{{ mes.nome }}</span>
+					{{ mes.testo }}
+				</p>
+				
+				<p v-else> 
+					<span>{{ mes.testo  }}</span>
+				</p>
+			</div>
+		</div>
+	</div>
+
 <div class="min-vh-100">
-
-
-    
 </div>
 <form  @submit.prevent="send" class="sticky-bottom mb-2">
 <div >

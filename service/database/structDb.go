@@ -26,4 +26,5 @@ type MessDb struct {
 	Visual bool      `json:"visual"`
 	Photo  []byte    `json:"photo"`
 	IdChat int       `json:"id_chat"`
+	Gruppo bool      `json:"grupo"`
 }

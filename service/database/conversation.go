@@ -177,7 +177,7 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) ([]MessDb, error) {
 	if err != nil {
 		return []MessDb{}, fmt.Errorf("error in authentication GetConversation: %w", err)
 	}
-	rows, err := db.c.Query("SELECT m.testo, m.mittente, u.username, m.data, m.image, m.id FROM messaggi m JOIN messaggi_di_chat d ON d.id_messaggio=m.id JOIN chat c ON c.id=d.id_chat JOIN utenti u ON u.id=m.mittente WHERE c.id=$1;", id_chat)
+	rows, err := db.c.Query("SELECT c.gruppo, m.testo, m.mittente, u.username, m.data, m.image, m.id FROM messaggi m JOIN messaggi_di_chat d ON d.id_messaggio=m.id JOIN chat c ON c.id=d.id_chat JOIN utenti u ON u.id=m.mittente WHERE c.id=$1 ORDER BY m.data;", id_chat)
 	if err != nil {
 		return []MessDb{}, fmt.Errorf("chat: error querying users: %w", err)
 	}
@@ -186,7 +186,7 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) ([]MessDb, error) {
 
 	for rows.Next() {
 		var c MessDb
-		if err := rows.Scan(&c.Testo, &c.IdMitt, &c.Nome, &c.Data, &c.Photo, &c.IdMess); err != nil {
+		if err := rows.Scan(&c.Gruppo, &c.Testo, &c.IdMitt, &c.Nome, &c.Data, &c.Photo, &c.IdMess); err != nil {
 			return []MessDb{}, fmt.Errorf("chat: error scanning user: %w", err)
 		}
 		mess = append(mess, c)
@@ -194,7 +194,23 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) ([]MessDb, error) {
 	if err := rows.Err(); err != nil {
 		return []MessDb{}, fmt.Errorf("chat: error iterating over users: %w", err)
 	}
-	return mess, nil
+
+	var result []MessDb
+	var lastDate time.Time
+
+	for _, m := range mess {
+		if !m.Data.Truncate(24 * time.Hour).Equal(lastDate.Truncate(24 * time.Hour)) {
+			// Aggiungi un messaggio senza testo con solo la data
+			dateMessage := MessDb{
+				Data: m.Data.Truncate(24 * time.Hour),
+			}
+			result = append(result, dateMessage)
+			lastDate = m.Data
+		}
+		result = append(result, m)
+	}
+
+	return result, nil
 }
 
 func (db *appdbimpl) SendMessage(cs int, id_chat int, message string, photo []byte) error {

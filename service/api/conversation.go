@@ -162,7 +162,6 @@ func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, ps ht
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 	_, _ = w.Write(json)
 
 	w.WriteHeader(http.StatusOK)
@@ -187,7 +186,10 @@ func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, ps httpro
 		http.Error(w, "sendMessage:"+err.Error(), http.StatusInternalServerError)
 		return
 	}
-
+	if len(richiesta.Testo) < 1 {
+		http.Error(w, "messaggio troppo corto", http.StatusBadRequest)
+		return
+	}
 	erro := rt.db.SendMessage(cs, richiesta.IdChat, richiesta.Testo, richiesta.Photo)
 	if erro != nil {
 		http.Error(w, erro.Error(), http.StatusInternalServerError)
