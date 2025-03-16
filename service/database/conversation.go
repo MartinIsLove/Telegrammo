@@ -154,7 +154,11 @@ func (db *appdbimpl) GetMyConversations(cs int) ([]ChatUtenteDb, error) {
 			return []ChatUtenteDb{}, fmt.Errorf("chat: error querying users: %w", err)
 
 		} else {
-			c.LastMSg = lastMsg
+			if len(lastMsg) > 100 {
+				c.LastMSg = lastMsg[:100] + "..."
+			} else {
+				c.LastMSg = lastMsg
+			}
 			c.Id = id
 			c.Username = username
 			c.Data = tmp
