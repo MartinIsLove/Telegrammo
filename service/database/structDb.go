@@ -25,4 +25,5 @@ type MessDb struct {
 	Data   time.Time `json:"data"`
 	Visual bool      `json:"visual"`
 	Photo  []byte    `json:"photo"`
+	IdChat int       `json:"id_chat"`
 }

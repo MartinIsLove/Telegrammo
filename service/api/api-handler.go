@@ -21,8 +21,10 @@ func (rt *_router) Handler() http.Handler {
 	rt.router.GET("/conversations", rt.getMyConversations)
 
 	rt.router.POST("/conversation", rt.createChat)
-	rt.router.POST("/conversation/message/:idChat", rt.sendMessage)
-	// rt.router.GET("/conversation/:id", rt.getConversation)
+	rt.router.POST("/conversation/message", rt.sendMessage)
+	rt.router.GET("/conversation/:idChat", rt.getConversation)
+	// rt.router.POST("/conversation/message/:idChat", rt.sendMessage)
+
 	// Special routes
 	rt.router.GET("/liveness", rt.liveness)
 

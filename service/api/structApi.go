@@ -31,6 +31,7 @@ type Mess struct {
 	Data   time.Time `json:"data"`
 	Visual bool      `json:"visual"`
 	Photo  []byte    `json:"photo"`
+	IdChat int       `json:"id_chat"`
 }
 
 func NewMess(Messaggio database.MessDb) Mess {
@@ -41,6 +42,8 @@ func NewMess(Messaggio database.MessDb) Mess {
 		Testo:  Messaggio.Testo,
 		Data:   Messaggio.Data,
 		Visual: Messaggio.Visual,
+		Photo:  Messaggio.Photo,
+		IdChat: Messaggio.IdChat,
 	}
 }
 func NewChatUtente(chatUtente database.ChatUtenteDb) ChatUtente {

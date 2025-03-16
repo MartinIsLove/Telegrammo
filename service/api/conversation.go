@@ -133,29 +133,41 @@ func (rt *_router) getMyConversations(w http.ResponseWriter, r *http.Request, ps
 	// fmt.Println(err.Error())
 }
 
-// func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
-// 	cs, err := rt.AuthenticationApi(r)
-// 	var messaggi []Mess
+	cs, err := rt.AuthenticationApi(r)
+	var messaggi []Mess
 
-// 	if err != nil {
-// 		http.Error(w, "error: authentication user getConversation"+err.Error(), http.StatusUnauthorized)
-// 		return
-// 	}
-// 	// var id_chat_tmp string
-// 	id_chat_tmp := ps.ByName("idChat")
-// 	id_chat, err := strconv.Atoi(id_chat_tmp)
+	if err != nil {
+		http.Error(w, "error: authentication user getConversation"+err.Error(), http.StatusUnauthorized)
+		return
+	}
+	// var id_chat_tmp string
+	id_chat_tmp := ps.ByName("idChat")
+	id_chat, _ := strconv.Atoi(id_chat_tmp)
 
-// 	tmp, err := rt.db.GetConversation(cs, id_chat)
-// 	if err != nil {
-// 		http.Error(w, err.Error(), http.StatusInternalServerError)
-// 		return
-// 	}
-// 	messaggi = make([]Mess, len(tmp))
-// 	for i, user := range tmp {
-// 		messaggi[i] = NewMess(user)
-// 	}
-// }
+	tmp, err := rt.db.GetConversation(cs, id_chat)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	messaggi = make([]Mess, len(tmp))
+	for i, user := range tmp {
+		messaggi[i] = NewMess(user)
+	}
+
+	w.Header().Set("content-type", "application/json")
+	json, err := json.Marshal(messaggi)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	_, _ = w.Write(json)
+
+	w.WriteHeader(http.StatusOK)
+
+}
 
 func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var richiesta Mess
@@ -164,19 +176,19 @@ func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, ps httpro
 		http.Error(w, "error: authentication user sendMessage"+err.Error(), http.StatusUnauthorized)
 		return
 	}
-	id_chat_tmp := ps.ByName("idChat")
-	id_chat, err := strconv.Atoi(id_chat_tmp)
-	if err != nil {
-		http.Error(w, "error: conversion id_chat_tmp (string) to id_chat (int)", http.StatusInternalServerError)
-		return
-	}
+	// id_chat_tmp := ps.ByName("idChat")
+	// id_chat, err := strconv.Atoi(id_chat_tmp)
+	// if err != nil {
+	// 	http.Error(w, "error: conversion id_chat_tmp (string) to id_chat (int)", http.StatusInternalServerError)
+	// 	return
+	// }
 
 	if err := json.NewDecoder(r.Body).Decode(&richiesta); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "sendMessage:"+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	erro := rt.db.SendMessage(cs, id_chat, richiesta.Testo, richiesta.Photo)
+	erro := rt.db.SendMessage(cs, richiesta.IdChat, richiesta.Testo, richiesta.Photo)
 	if erro != nil {
 		http.Error(w, erro.Error(), http.StatusInternalServerError)
 		return
