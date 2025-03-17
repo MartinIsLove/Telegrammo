@@ -57,7 +57,10 @@ export default {
             if (container) {
                 container.scrollTop = container.scrollHeight;
             }
-        }
+        },
+		optionsButtonHandler() {
+			this.$router.push("/options/group/"+ this.chatId);
+		},
 	},
 	mounted() {
 		this.refresh()
@@ -71,7 +74,7 @@ export default {
 		<div class="d-flex justify-content-between align-items-center w-100">
 		<div v-if="messaggi.gruppo == true" class="d-flex justify-content-start align-items-center">
 			
-			<button class="btn btn-secondary mt-2 rounded text-tart" >
+			<button class="btn btn-secondary mt-2 rounded text-tart"  @click="optionsButtonHandler">
 				options
 			</button>
 		</div>

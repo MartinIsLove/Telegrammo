@@ -61,3 +61,16 @@ func (db *appdbimpl) GetMyUser(cs int) (string, []byte, int, error) {
 
 	return username, propic, id, nil
 }
+func (db *appdbimpl) UserExist(id int) bool {
+	var tmp int
+	err := db.c.QueryRow("SELECT count(id) FROM utenti WHERE id=$1;", id).Scan(&tmp)
+
+	if err != nil {
+		return false
+	}
+	if tmp == 0 {
+		return false
+	}
+
+	return true
+}

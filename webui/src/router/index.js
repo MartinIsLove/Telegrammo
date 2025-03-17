@@ -5,7 +5,7 @@ import Home from '../views/Home.vue'
 import Profile from '../views/Profile.vue'
 import CreateChat from '../views/CreateChat.vue'
 import Chat from '../views/Chat.vue'
-
+import Options from '../views/GroupOptions.vue'
 
 const router = createRouter({
 	history: createWebHashHistory(import.meta.env.BASE_URL),
@@ -15,7 +15,7 @@ const router = createRouter({
 		{path: '/profile', component: Profile},
 		{path: '/createChat', component: CreateChat},
 		{path: '/chat/:id', component: Chat},
-
+		{path: '/options/group/:id', component: Options},
 	]
 })
 
