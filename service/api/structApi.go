@@ -11,7 +11,11 @@ type Utente struct {
 	Id       int    `json:"id"`
 	Propic   []byte `json:"propic"`
 }
-
+type Group struct {
+	NomeChat string `json:"nome_chat"`
+	Propic   []byte `json:"propic"`
+	Membri   []int  `json:"membri"`
+}
 type ChatUtente struct {
 	IdChat   int       `json:"id_chat"`
 	Nome     string    `json:"nome"`
@@ -25,7 +29,7 @@ type ChatUtente struct {
 
 type Mess struct {
 	IdMess int       `json:"id_mess"`
-	Nome   string    `json:"nome"`
+	Nome   string    `json:"nome"` // nome mittente
 	IdMitt int       `json:"id_mitt"`
 	Testo  string    `json:"testo"`
 	Data   time.Time `json:"data"`

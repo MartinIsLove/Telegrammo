@@ -42,8 +42,8 @@ func (rt *_router) createChat(w http.ResponseWriter, r *http.Request, ps httprou
 
 	w.WriteHeader(http.StatusOK)
 }
-func (rt *_router) checknames(w http.ResponseWriter, r *http.Request, ps httprouter.Params) { // cerca tutti gli utenti che iniziano per una data stringa
-	var richiesta []Utente
+func (rt *_router) checknames(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var richiesta []Utente // cerca tutti gli utenti che iniziano per una data stringa
 	var str string
 	cs, err := rt.AuthenticationApi(r)
 
@@ -221,5 +221,29 @@ func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, ps httpro
 		http.Error(w, erro.Error(), http.StatusInternalServerError)
 		return
 	}
+	w.WriteHeader(http.StatusOK)
+}
+func (rt *_router) createGroup(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var richiesta Group
+
+	cs, err := rt.AuthenticationApi(r)
+
+	if err != nil {
+		http.Error(w, "error: authentication user createChat"+err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&richiesta); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = rt.db.CreateGroup(cs, richiesta.NomeChat, richiesta.Propic, richiesta.Membri)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
 }

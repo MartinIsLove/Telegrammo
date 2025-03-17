@@ -264,3 +264,47 @@ func (db *appdbimpl) SendMessage(cs int, id_chat int, message string, photo []by
 
 	return nil
 }
+func (db *appdbimpl) UserExist(id int) bool {
+	var tmp int
+	err := db.c.QueryRow("SELECT count(id) FROM utenti WHERE id=$1;", id).Scan(&tmp)
+
+	if err != nil {
+		return false
+	}
+	if tmp == 0 {
+		return false
+	}
+
+	return true
+}
+func (db *appdbimpl) CreateGroup(cs int, nome string, propic []byte, membri []int) error {
+	_, err := db.Authentication(cs)
+	if err != nil {
+		return fmt.Errorf("error in authentication CreateGroup: %w", err)
+	}
+
+	str_group, err := db.c.Exec("INSERT INTO chat (nome, propic, gruppo) VALUES ($1, $2, TRUE)", nome, propic)
+	if err != nil {
+		return fmt.Errorf("group: error insert group in table chat: %w", err)
+	}
+
+	id_group, err := str_group.LastInsertId()
+	if err != nil {
+		return fmt.Errorf("chat: error catch number of rows from query: %w", err)
+	}
+	_, err = db.c.Exec("INSERT INTO membri (id_utenti, id_chat) VALUES ($1, $2)", cs, id_group)
+	if err != nil {
+		return fmt.Errorf("group: error insert group in table chat: %w", err)
+	}
+	for _, m := range membri {
+		value := db.UserExist(m)
+		if value {
+			_, err := db.c.Exec("INSERT INTO membri (id_utenti, id_chat) VALUES ($1, $2)", m, id_group)
+			if err != nil {
+				return fmt.Errorf("group: error insert group in table chat: %w", err)
+			}
+		}
+	}
+
+	return nil
+}
