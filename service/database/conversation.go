@@ -111,7 +111,7 @@ func (db *appdbimpl) GetMyConversations(cs int) ([]ChatUtenteDb, error) {
 	for rows.Next() {
 		var c ChatUtenteDb
 		if err := rows.Scan(&c.Nome, &c.Propic, &c.Id, &c.IdChat); err != nil {
-			return []ChatUtenteDb{}, fmt.Errorf("Getconversations: error scanning user: %w", err)
+			return []ChatUtenteDb{}, fmt.Errorf(" Getconversations: error scanning user: %w", err)
 		}
 		chat = append(chat, c)
 	}
