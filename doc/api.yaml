@@ -509,4 +509,8 @@ components:
                 minlength: 0
                 maxlength: 999999999
                 pattern: "^.*?$" 
- 
+  securitySchemes:
+    bearerAuth: # arbitrary name for the security scheme
+      type: apiKey
+      in: header
+      name: cs
