@@ -18,7 +18,7 @@ func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, ps httprouter
 	// fmt.Println(richiestaLogin)
 	var rispostaLogin Utente
 
-	if len(richiestaLogin.Username) < 1 {
+	if len(richiestaLogin.Username) < 1 && len(richiestaLogin.Username) > 16 {
 		http.Error(w, "messaggio troppo corto", http.StatusBadRequest)
 		return
 	}

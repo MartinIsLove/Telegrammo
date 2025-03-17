@@ -40,21 +40,26 @@ export default {
 </script>
 
 <template>
-    
-	<div v-for="mes in messaggi">
-		<div class="row g-0 border rounded my-2 p-2">
-			<div class="d-flex justify-content-between">
-				<p v-if="mes.gruppo" class="text-wrap">
-					<span class="text-capitalize fw-bold">{{ mes.nome }}</span>
-					{{ mes.testo }}
-				</p>
-				
-				<p v-else> 
-					<span>{{ mes.testo  }}</span>
-				</p>
-			</div>
+	
+	<div class="bg-dark" style="width: 100%; position: sticky; top: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; ">
+        <h2 class="mt-2 fw-bold" style="text-align: center;">{{ messaggi.nome }}</h2>
+        <hr style="width: 100%;">
+    </div>
+	<!-- <div style="height: 8%;"></div> -->
+
+	<div v-for="mes in messaggi.message" class="row g-0 border rounded my-2 p-2">
+		<div class="d-flex justify-content-between">
+			<p v-if="mes.gruppo" class="text-wrap">
+				<span class="text-capitalize fw-bold">{{ mes.nome }}</span>
+				{{ mes.testo }}
+			</p>
+			
+			<p v-else> 
+				<span>{{ mes.testo  }}</span>
+			</p>
 		</div>
 	</div>
+	
 
 <div class="min-vh-100">
 </div>

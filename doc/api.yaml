@@ -250,6 +250,141 @@ paths:
         "500":
           $ref: "#/components/responses/500_ISE"
 
+  /conversations:
+    get:
+      tags: ["conversation"]
+      security:
+        - bearerAuth: []
+      operationId: getMyConversations
+      summary: "get current user chat"
+      description: "get current user chats and groups after authentication "
+      responses:
+        "200":
+          description: "return all user's chats"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    IdChat:
+                      description: "chat or group id"
+                      type: integer
+                      minimum: 1
+                      maximum: 99999999
+                      example: 124
+                    Nome:
+                      description: "chat or group name"
+                      type: string
+                      minLength: 1
+                      maxLength: 999999
+                      example: "carciofo"
+                    Gruppo:
+                      description: "True if is a group, False if is not a group"
+                      type: boolean
+                      example: False
+                    Username:
+                      description: "username of the other user"
+                      type: string
+                      minLength: 1
+                      maxLength: 16
+                      example: "pippobaudo12"
+                    Id:
+                      description: "id of the other user if is not a group"
+                      type: integer
+                      minimum: 1
+                      maximum: 99999999
+                      example: 124
+                    Propic:
+                      description: "propic of the other user or group"
+                      type: string
+                      format: binary
+                    LastMsg:
+                      description: "text of the last message of this chat"
+                      type: string
+                      minLength: 1
+                      maxLength: 999999
+                      example: "ciao"
+                    Data:
+                      description: "date of the last message of this chat"
+                      type: string
+                      format: date-time
+                      example: "2021-06-01T10:00:00Z"
+
+        "401":
+          $ref: "#/components/responses/401_Unauthorized"
+        "500":
+          $ref: "#/components/responses/500_ISE"
+
+  /conversation/{idChat}:
+    get:
+      tags: ["conversation"]
+      security:
+        - bearerAuth: []
+      operationId: getConversation
+      summary: "get chat or group"
+      description: "get the messages of chat or group after authentication"
+      parameters:
+        - name: idChat
+          in: path
+          required: true
+          description: "chat id"
+          schema:
+            description: "chat id"
+            type: integer
+            minimum: 1
+            maximum: 99999999
+            example: 1
+      responses:
+        "200":
+          description: "return all chat's messages"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    IdMess:
+                      description: "message id"
+                      type: integer
+                      minimum: 1
+                      maximum: 99999999
+                      example: 124
+                    Nome:
+                      description: "user id"
+                      type: integer
+                      minimum: 1
+                      maximum: 99999999
+                      example: 124
+                    Username:
+                      description: "username of the user"
+                      type: string
+                      minLength: 1
+                      maxLength: 16
+                      example: "pippobaudo12"
+                    Propic:
+                      description: "propic of the user"
+                      type: string
+                      format: binary
+                    Text:
+                      description: "text of the message"
+                      type: string
+                      minLength: 1
+                      maxLength: 999999
+                      example: "ciao"
+                    Data:
+                      description: "date of the message"
+                      type: string
+                      format: date-time
+                      example: "2021-06-01T10:00:00Z"
+        "401":
+          $ref: "#/components/responses/401_Unauthorized"
+        "404":
+          $ref: "#/components/responses/404_NotFound"
+        "500":
+          $ref: "#/components/responses/500_ISE"
 components:
   schemas:
     id: 

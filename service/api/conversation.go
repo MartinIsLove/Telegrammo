@@ -60,6 +60,9 @@ func (rt *_router) checknames(w http.ResponseWriter, r *http.Request, ps httprou
 	// 	http.Error(w, err.Error(), http.StatusBadRequest)
 	// 	return
 	// }
+	if len(str) < 1 && len(str) > 16 {
+		http.Error(w, "too short message", http.StatusBadRequest)
+	}
 
 	tmp, err := rt.db.CheckNames(cs, str)
 
@@ -97,11 +100,17 @@ func (rt *_router) getMyConversations(w http.ResponseWriter, r *http.Request, ps
 	var richiesta []ChatUtente
 	cs, err := rt.AuthenticationApi(r)
 	if err != nil {
-		http.Error(w, "error: authentication user checkname"+err.Error(), http.StatusUnauthorized)
+		http.Error(w, "error: authentication user getMyConversations"+err.Error(), http.StatusUnauthorized)
 		return
 	}
 	tmp, err := rt.db.GetMyConversations(cs)
-	if err != nil {
+	if err != nil && strings.HasPrefix(err.Error(), "error in authentication GetConversations:") {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	if err != nil && strings.HasPrefix(err.Error(), "GetConversations: no chats or groups find:") {
+
+	} else if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -144,10 +153,19 @@ func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, ps ht
 	}
 	// var id_chat_tmp string
 	id_chat_tmp := ps.ByName("idChat")
-	id_chat, _ := strconv.Atoi(id_chat_tmp)
-
-	tmp, err := rt.db.GetConversation(cs, id_chat)
+	id_chat, err := strconv.Atoi(id_chat_tmp)
 	if err != nil {
+		http.Error(w, "error getConversation: conversion id_chat_tmp (string) to id_chat (int)", http.StatusBadGateway)
+	}
+
+	str, tmp, err := rt.db.GetConversation(cs, id_chat)
+	if err != nil && strings.HasPrefix(err.Error(), "error in authentication GetConversation:") {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	if err != nil && strings.HasPrefix(err.Error(), "GetConversation: no messages found:") {
+
+	} else if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -156,8 +174,12 @@ func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, ps ht
 		messaggi[i] = NewMess(user)
 	}
 
+	var Nome NomeChat
+	Nome.Nome = str
+	Nome.Message = messaggi
 	w.Header().Set("content-type", "application/json")
-	json, err := json.Marshal(messaggi)
+
+	json, err := json.Marshal(Nome)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -183,7 +205,7 @@ func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, ps httpro
 	// }
 
 	if err := json.NewDecoder(r.Body).Decode(&richiesta); err != nil {
-		http.Error(w, "sendMessage:"+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "sendMessage:"+err.Error(), http.StatusBadRequest)
 		return
 	}
 	if len(richiesta.Testo) < 1 {
@@ -191,6 +213,10 @@ func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, ps httpro
 		return
 	}
 	erro := rt.db.SendMessage(cs, richiesta.IdChat, richiesta.Testo, richiesta.Photo)
+	if erro != nil && strings.HasPrefix(erro.Error(), "error in authentication SendMessage:") {
+		http.Error(w, erro.Error(), http.StatusUnauthorized)
+		return
+	}
 	if erro != nil {
 		http.Error(w, erro.Error(), http.StatusInternalServerError)
 		return

@@ -35,6 +35,11 @@ type Mess struct {
 	Gruppo bool      `json:"gruppo"`
 }
 
+type NomeChat struct {
+	Nome    string `json:"nome"`
+	Message []Mess `json:"message"`
+}
+
 func NewMess(Messaggio database.MessDb) Mess {
 	return Mess{
 		IdMess: Messaggio.IdMess,
