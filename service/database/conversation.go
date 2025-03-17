@@ -176,11 +176,11 @@ func (db *appdbimpl) GetMyConversations(cs int) ([]ChatUtenteDb, error) {
 	return chat, nil
 }
 
-func (db *appdbimpl) GetConversation(cs int, id_chat int) (string, []MessDb, error) {
+func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessDb, error) {
 	var mess []MessDb
 	_, err := db.Authentication(cs)
 	if err != nil {
-		return "", []MessDb{}, fmt.Errorf("error in authentication GetConversation: %w", err)
+		return false, "", []MessDb{}, fmt.Errorf("error in authentication GetConversation: %w", err)
 	}
 
 	var group bool
@@ -188,27 +188,27 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (string, []MessDb, err
 	err = db.c.QueryRow("SELECT gruppo FROM chat WHERE id=$1 LIMIT 1;", id_chat).Scan(&group)
 
 	if err != nil {
-		return "", []MessDb{}, fmt.Errorf("GetConversation: error querying users: %w", err)
+		return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying users: %w", err)
 	}
 	var nomeChat string
 	if group {
 		err = db.c.QueryRow("SELECT nome FROM chat WHERE id=$1 LIMIT 1;", id_chat).Scan(&nomeChat)
 		if err != nil {
-			return "", []MessDb{}, fmt.Errorf("GetConversation: error querying users: %w", err)
+			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying users: %w", err)
 		}
 	} else {
 		err = db.c.QueryRow("SELECT utenti.username FROM chat c JOIN membri ON c.id = membri.id_chat JOIN utenti ON membri.id_utenti = utenti.id WHERE c.id=$1 AND utenti.id != $2 LIMIT 1;", id_chat, cs).Scan(&nomeChat)
 		if err != nil {
-			return "", []MessDb{}, fmt.Errorf("GetConversation: error querying users: %w", err)
+			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying users: %w", err)
 		}
 	}
 
 	rows, err := db.c.Query("SELECT c.gruppo, m.testo, m.mittente, u.username, m.data, m.image, m.id FROM messaggi m JOIN messaggi_di_chat d ON d.id_messaggio=m.id JOIN chat c ON c.id=d.id_chat JOIN utenti u ON u.id=m.mittente WHERE c.id=$1 ORDER BY m.data;", id_chat)
 	if errors.Is(err, sql.ErrNoRows) {
-		return "", []MessDb{}, fmt.Errorf("GetConversation: no messages found: %w", err)
+		return false, "", []MessDb{}, fmt.Errorf("GetConversation: no messages found: %w", err)
 	}
 	if err != nil {
-		return "", []MessDb{}, fmt.Errorf("GetConversation: error querying users: %w", err)
+		return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying users: %w", err)
 	}
 
 	defer rows.Close()
@@ -216,12 +216,12 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (string, []MessDb, err
 	for rows.Next() {
 		var c MessDb
 		if err := rows.Scan(&c.Gruppo, &c.Testo, &c.IdMitt, &c.Nome, &c.Data, &c.Photo, &c.IdMess); err != nil {
-			return "", []MessDb{}, fmt.Errorf("GetConversation: error scanning user: %w", err)
+			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error scanning user: %w", err)
 		}
 		mess = append(mess, c)
 	}
 	if err := rows.Err(); err != nil {
-		return "", []MessDb{}, fmt.Errorf("GetConversation: error iterating over users: %w", err)
+		return false, "", []MessDb{}, fmt.Errorf("GetConversation: error iterating over users: %w", err)
 	}
 
 	var result []MessDb
@@ -239,7 +239,7 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (string, []MessDb, err
 		result = append(result, m)
 	}
 
-	return nomeChat, result, nil
+	return group, nomeChat, result, nil
 }
 
 func (db *appdbimpl) SendMessage(cs int, id_chat int, message string, photo []byte) error {

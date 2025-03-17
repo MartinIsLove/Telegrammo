@@ -32,7 +32,7 @@ export default {
         },
 		async send() {
             await this.$axios.post("/conversation/message", {id_chat:this.chatId, testo:this.message, photo:this.photo}, {headers: {cs:this.id}});
-
+			this.message=''
             this.fetchMessage()
 		},
 		formatDate(date) {
@@ -42,6 +42,14 @@ export default {
                 day: '2-digit',
                 month: '2-digit',
                 year: 'numeric'
+            });
+        },
+		formatTime(date) {
+            if (!date) return '';
+            const d = new Date(date);
+            return d.toLocaleTimeString('it-IT', {
+                hour: '2-digit',
+                minute: '2-digit'
             });
         },
 		scrollToBottom() {
@@ -59,9 +67,18 @@ export default {
 
 <template>
 	
-	<div class="bg-dark" style="width: 100%; position: sticky; top: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; ">
-        <h2 class="mt-2 fw-bold" style="text-align: center;">{{ messaggi.nome }}</h2>
-        <hr style="width: 100%;">
+	<div class="bg-dark" style="width: 100%; position: sticky; top: 0;  ">
+		<div class="d-flex justify-content-between align-items-center w-100">
+		<div v-if="messaggi.gruppo == true" class="d-flex justify-content-start align-items-center">
+			
+			<button class="btn btn-secondary mt-2 rounded text-tart" >
+				options
+			</button>
+		</div>
+        
+		<h2 class="mt-2 position-relative fw-bold flex-grow-1 text-center " style="transform: translateX(-40px);" >{{ messaggi.nome }}</h2>
+		</div>
+		<hr style="width: 100%;">
     </div>
 	<!-- <div style="height: 8%;"></div> -->
 	<div ref="messageContainer"  style="overflow-y: auto; max-height: calc(100vh - 150px);">
@@ -74,7 +91,7 @@ export default {
 				</div>
 			</div>
 			<div v-else-if="id == mes.id_mitt" class="d-flex justify-content-end my-2 ">
-				<div class="message-container row g-0 border rounded p-2">
+				<div class=" message-container row g-0 border rounded p-2 position-relative ">
 					<div class="d-flex justify-content-between w-100">
 						<p v-if="mes.gruppo" class="text-wrap message-content">
 							<span class="text-capitalize fw-bold">{{ mes.nome }}</span><br>
@@ -84,9 +101,12 @@ export default {
 							<span>{{ mes.testo }}</span>
 						</p>
 					</div>
+					<div class="message-time text-end">
+                        {{ formatTime(mes.data) }}
+                    </div>
 				</div>
 			</div>
-			<div v-else class="row g-0 border rounded my-2 p-2 message-container">
+			<div v-else class="row g-0 border rounded my-2 p-2 message-container position-relative">
 				<div class="d-flex justify-content-between w-100">
 					<p v-if="mes.gruppo" class="text-wrap message-content">
 						<span class="text-capitalize fw-bold">{{ mes.nome }}</span><br>
@@ -95,6 +115,9 @@ export default {
 					<p v-else class="message-content">
 						<span>{{ mes.testo }}</span>
 					</p>
+					<div class="message-time">
+                        {{ formatTime(mes.data) }}
+                    </div>
 				</div>
 			</div>
 		</div>
@@ -116,6 +139,14 @@ export default {
     
 </template>
 <style>
+
+.message-time {
+    position: absolute; 
+    bottom: 5px;
+    right: 10px;
+    font-size: 0.8em; 
+    color: #888; 
+}
 
 .text-center {
     text-align: center;

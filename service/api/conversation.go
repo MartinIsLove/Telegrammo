@@ -158,7 +158,7 @@ func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, ps ht
 		http.Error(w, "error getConversation: conversion id_chat_tmp (string) to id_chat (int)", http.StatusBadGateway)
 	}
 
-	str, tmp, err := rt.db.GetConversation(cs, id_chat)
+	gp, str, tmp, err := rt.db.GetConversation(cs, id_chat)
 	if err != nil && strings.HasPrefix(err.Error(), "error in authentication GetConversation:") {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
@@ -175,6 +175,7 @@ func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, ps ht
 	}
 
 	var Nome NomeChat
+	Nome.Gruppo = gp
 	Nome.Nome = str
 	Nome.Message = messaggi
 	w.Header().Set("content-type", "application/json")

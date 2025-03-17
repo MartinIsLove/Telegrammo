@@ -40,6 +40,7 @@ type Mess struct {
 }
 
 type NomeChat struct {
+	Gruppo  bool   `json:"gruppo"`
 	Nome    string `json:"nome"`
 	Message []Mess `json:"message"`
 }
