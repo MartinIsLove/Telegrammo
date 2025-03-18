@@ -14,9 +14,12 @@ export default {
             chUsername: '',
             users: [],
             selectedUser: [], 
-            searchCompleted: false,
             if_selection: false,
+            group_id: null,
+            group_name: '',
+            group_photo: null,
 
+            
             error: '',
             message: '',
 		}
@@ -40,27 +43,18 @@ export default {
                 this.message=''
                 this.error=''
                 this.users=[]
-                this.cs = sessionStorage.getItem("cs")
+                this.id = sessionStorage.getItem("cs")
                 if (this.chUsername === ''){
                     let tmp = '$'
-                    await this.$axios.get(`/search/users/${tmp}`, {headers: {cs:this.cs}});
+                    await this.$axios.get(`/search/users/${tmp}`, {headers: {cs:this.id}});
                 }else{
-                let response = await this.$axios.get(`/search/users/${this.chUsername}`, {headers: {cs:this.cs}});
+                let response = await this.$axios.get(`/search/users/${this.chUsername}`, {headers: {cs:this.id}});
                 this.searchCompleted=true
                 this.users = response.data
                 if (response.status === 200){
                         this.message = 'usernames find';
                     }
                 }
-                
-                
-                
-
-                // if (this.selectedUser.length > 0){
-                //     this.if_selection = true
-                // }else {
-                //     this.if_selection = false
-                // }
             }
             catch(error){
                 this.error=error
@@ -69,6 +63,34 @@ export default {
                 
 
 
+        },
+        handleFileUpload(event){
+            this.group_photo = event.target.files[0];
+            
+        },
+        
+        async handleSelectedUser(){
+            try{
+                
+                
+                let formData = new FormData();
+                formData.append('propic', this.group_photo);
+                formData.append('nome_chat', this.group_name);
+                formData.append('membri', JSON.stringify(this.selectedUser.map(user => user.id)));
+                
+                
+                this.id = sessionStorage.getItem("cs")
+                let response = await this.$axios.post(`/conversation/group`,formData ,{headers: {'Content-Type': 'multipart/form-data', cs:this.id}});
+                if (response.status === 200){
+                        this.message = 'chat created';
+                        this.group_id = response.data
+                        this.$router.push('/chat/'+ this.group_id.id_group )
+                    }
+            }
+            catch(error){
+                this.error=error
+                console.error('error create group user data: ', error)
+            }
         },
 	},
 	mounted() {
@@ -80,6 +102,15 @@ export default {
     
     <div class="row">
         <div class="col-4"></div>
+            <form @submit.prevent="handleSelectedUser">
+                <div class="mb-3">
+                    <label for="username" class="form-label">group name</label>
+                    <input type="text" class="form-control" id="group_name" aria-describedby="inserisci username" v-model="group_name">
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+            <label for="photo" class="form-label" >Change Photo</label>
+                <input type="file" class="form-control mb-2" id="photo" @change="handleFileUpload">
             <div class="col-2 mt-2">
                 <h2 class="fw-normal">usernames</h2>
                 <form class="mt-5" @submit.prevent="getUsers">
@@ -98,9 +129,7 @@ export default {
                 </div>
             </div>
             
-            <div v-if="searchCompleted">
-                <button class="btn btn-primary mt-2" @click="handleSelectedUser">Select</button>
-            </div>
+            
             <div class="mt-3"  v-if="if_selection">
                 <h5>utenti selezionati:</h5>
                 <div v-for="user2 in selectedUser" :key="user2.id" class="selected-user">
@@ -117,6 +146,7 @@ export default {
 
 
             </div>
+           
         </div>
     </div>
 

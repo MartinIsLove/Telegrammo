@@ -44,13 +44,13 @@ type AppDatabase interface {
 
 	DoLogin(string) (int, error)
 
-	CreateChat(int, int) error
+	CreateChat(int, int) (int, error)
 	CheckNames(int, string) ([]UtenteDb, error)
 	LeaveGroup(int, int) error
 	GetMyConversations(int) ([]ChatUtenteDb, error)
 	GetConversation(int, int) (bool, string, []MessDb, error)
 	SendMessage(int, int, string, []byte) error
-	CreateGroup(int, string, []byte, []int) error
+	CreateGroup(int, string, []byte, []int) (int, error)
 	Ping() error
 }
 

@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -24,36 +26,39 @@ func (db *appdbimpl) IsChatDuplicated(cs int, id int) (bool, error) {
 	}
 	return true, fmt.Errorf("chat: error this chat already exist: %w", err)
 }
-func (db *appdbimpl) CreateChat(cs int, id int) error {
+func (db *appdbimpl) CreateChat(cs int, id int) (int, error) {
 
 	_, err := db.Authentication(cs)
 	if err != nil {
-		return fmt.Errorf("error in authentication CreateChat: %w", err)
+		return -1, fmt.Errorf("error in authentication CreateChat: %w", err)
 	}
 
 	Isduplicated, err := db.IsChatDuplicated(cs, id)
 
 	if err != nil {
-		return err
+		return -1, err
 	}
 
 	if !Isduplicated {
 		str_chat, err := db.c.Exec("INSERT INTO chat (gruppo) VALUES (FALSE)")
 		if err != nil {
-			return fmt.Errorf("chat: error insert chat in table chat: %w", err)
+			return -1, fmt.Errorf("chat: error insert chat in table chat: %w", err)
 		}
+
 		id_chat, err := str_chat.LastInsertId()
 		if err != nil {
-			return fmt.Errorf("chat: error catch number of rows from query: %w", err)
+			return -1, fmt.Errorf("chat: error catch number of rows from query: %w", err)
 		}
 
 		_, err = db.c.Exec("INSERT INTO membri (id_chat, id_utenti) VALUES  ($1, $2), ($1, $3)", id_chat, cs, id)
 		if err != nil {
-			return fmt.Errorf("chat: error insert chat users in membri : %w", err)
+			return -1, fmt.Errorf("chat: error insert chat users in membri : %w", err)
 		}
-
+		return int(id_chat), nil
+	} else {
+		return -1, err
 	}
-	return nil
+
 }
 func (db *appdbimpl) CheckNames(cs int, toFind string) ([]UtenteDb, error) {
 	var utenti []UtenteDb
@@ -238,36 +243,44 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 
 	return group, nomeChat, result, nil
 }
-func (db *appdbimpl) CreateGroup(cs int, nome string, propic []byte, membri []int) error {
+func (db *appdbimpl) CreateGroup(cs int, nome string, propic []byte, membri []int) (int, error) {
 	_, err := db.Authentication(cs)
 	if err != nil {
-		return fmt.Errorf("error in authentication CreateGroup: %w", err)
+		return -1, fmt.Errorf("error in authentication CreateGroup: %w", err)
+	}
+	noPhotoPath := filepath.Join("/workspace/webui/src/assets/", "NoPhoto.png")
+	noPhotoBytes, err := os.ReadFile(noPhotoPath)
+	if err != nil {
+		return -1, fmt.Errorf("createGroup: error reading noPhoto.png: %w", err)
+	}
+	if propic == nil {
+		propic = noPhotoBytes
 	}
 
 	str_group, err := db.c.Exec("INSERT INTO chat (nome, propic, gruppo) VALUES ($1, $2, TRUE)", nome, propic)
 	if err != nil {
-		return fmt.Errorf("group: error insert group in table chat: %w", err)
+		return -1, fmt.Errorf("group: error insert group in table chat: %w", err)
 	}
 
 	id_group, err := str_group.LastInsertId()
 	if err != nil {
-		return fmt.Errorf("chat: error catch number of rows from query: %w", err)
+		return -1, fmt.Errorf("chat: error catch number of rows from query: %w", err)
 	}
 	_, err = db.c.Exec("INSERT INTO membri (id_utenti, id_chat) VALUES ($1, $2)", cs, id_group)
 	if err != nil {
-		return fmt.Errorf("group: error insert group in table chat: %w", err)
+		return -1, fmt.Errorf("group: error insert group in table chat: %w", err)
 	}
 	for _, m := range membri {
 		value := db.UserExist(m)
 		if value {
 			_, err := db.c.Exec("INSERT INTO membri (id_utenti, id_chat) VALUES ($1, $2)", m, id_group)
 			if err != nil {
-				return fmt.Errorf("group: error insert group in table chat: %w", err)
+				return -1, fmt.Errorf("group: error insert group in table chat: %w", err)
 			}
 		}
 	}
 
-	return nil
+	return int(id_group), nil
 }
 func (db *appdbimpl) LeaveGroup(cs int, idChat int) error {
 

@@ -30,7 +30,7 @@ func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, ps httprouter
 		http.Error(w, "username troppo corto", http.StatusBadRequest)
 		return
 	}
-	if isFirstCharAlphanumeric(richiestaLogin.Username) {
+	if !isFirstCharAlphanumeric(richiestaLogin.Username) {
 		http.Error(w, "l'username deve iniziare per un carattere alfa-numerico", http.StatusBadRequest)
 		return
 	}

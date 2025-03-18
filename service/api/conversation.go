@@ -2,7 +2,10 @@ package api
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -25,7 +28,7 @@ func (rt *_router) createChat(w http.ResponseWriter, r *http.Request, ps httprou
 		return
 	}
 
-	err = rt.db.CreateChat(cs, richiesta.Id)
+	id_chat, err := rt.db.CreateChat(cs, richiesta.Id)
 
 	if err != nil && strings.HasPrefix(err.Error(), "chat: error this chat already exist:") {
 		http.Error(w, err.Error(), http.StatusConflict)
@@ -40,6 +43,17 @@ func (rt *_router) createChat(w http.ResponseWriter, r *http.Request, ps httprou
 		return
 	}
 
+	response := map[string]interface{}{
+		"id_chat": id_chat,
+	}
+	w.Header().Set("content-type", "application/json")
+	json, err := json.Marshal(response)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	_, _ = w.Write(json)
+
 	w.WriteHeader(http.StatusOK)
 }
 func (rt *_router) checknames(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -48,7 +62,7 @@ func (rt *_router) checknames(w http.ResponseWriter, r *http.Request, ps httprou
 	cs, err := rt.AuthenticationApi(r)
 
 	if err != nil {
-		http.Error(w, "error: authentication user checkname"+err.Error(), http.StatusUnauthorized)
+		http.Error(w, "error: authentication user checkname "+err.Error(), http.StatusUnauthorized)
 		return
 	}
 	str = ps.ByName("username")
@@ -193,7 +207,6 @@ func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, ps ht
 
 }
 func (rt *_router) createGroup(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var richiesta Group
 
 	cs, err := rt.AuthenticationApi(r)
 
@@ -201,18 +214,73 @@ func (rt *_router) createGroup(w http.ResponseWriter, r *http.Request, ps httpro
 		http.Error(w, "error: authentication user createChat"+err.Error(), http.StatusUnauthorized)
 		return
 	}
-
-	if err := json.NewDecoder(r.Body).Decode(&richiesta); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	err = r.ParseMultipartForm(10 << 20) // 10 MB
+	if err != nil {
+		http.Error(w, "error parsing multipart form: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	err = rt.db.CreateGroup(cs, richiesta.NomeChat, richiesta.Propic, richiesta.Membri)
+	// Get the file from the form
+	file, _, err := r.FormFile("propic")
+	var photo []byte
+	if err != nil {
+		// If no file is uploaded, use the default photo
+		noPhotoPath := filepath.Join("webui", "src", "assets", "NoPhoto.png")
+		photo, err = os.ReadFile(noPhotoPath)
+		if err != nil {
+			http.Error(w, "error reading default photo: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+	} else {
+		defer file.Close()
+		// Read the file content
+		photo, err = io.ReadAll(file)
+		if err != nil {
+			http.Error(w, "error reading file: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	// Get the other form fields
+	groupName := r.FormValue("nome_chat")
+	membriStr := r.FormValue("membri")
+
+	// Decode the membri field
+	var membri []int
+	err = json.Unmarshal([]byte(membriStr), &membri)
+	if err != nil {
+		http.Error(w, "error decoding membri: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// if err := json.NewDecoder(r.Body).Decode(&richiesta); err != nil {
+	// 	http.Error(w, "error unmarshal "+err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
+
+	if len(groupName) == 0 {
+		http.Error(w, "createGroup error nome chat troppo corto, inserire almeno un carattere:", http.StatusBadRequest)
+		return
+
+	}
+
+	id_group, err := rt.db.CreateGroup(cs, groupName, photo, membri)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	response := map[string]interface{}{
+		"id_group": id_group,
+	}
+	w.Header().Set("content-type", "application/json")
+	json, err := json.Marshal(response)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	_, _ = w.Write(json)
 
 	w.WriteHeader(http.StatusOK)
 }
