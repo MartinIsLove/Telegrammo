@@ -24,3 +24,8 @@ func (db *appdbimpl) SendMessage(cs int, id_chat int, message string, photo []by
 
 	return nil
 }
+
+func (db *appdbimpl) CommentMessage(cs int, id_mes int) error {
+
+	return nil
+}

@@ -7,10 +7,12 @@ export default {
 			some_data: null,
 
 			messaggi:[],
-            photo: [],
             messaggio: '',
 			id: null,
             chatId: null,
+			photo: null,
+
+
 		}
 	},
 	methods: {
@@ -31,7 +33,12 @@ export default {
             });
         },
 		async send() {
-            await this.$axios.post("/conversation/message", {id_chat:this.chatId, testo:this.message, photo:this.photo}, {headers: {cs:this.id}});
+			let formData = new FormData();
+			formData.append('photo', this.photo)
+			formData.append('id_chat', this.chatId)
+			formData.append('testo', this.message)
+			
+            await this.$axios.post("/conversation/message", formData, {headers: {cs:this.id}});
 			this.message=''
             this.fetchMessage()
 		},
@@ -61,6 +68,9 @@ export default {
 		optionsButtonHandler() {
 			this.$router.push("/options/group/"+ this.chatId);
 		},
+		handleFileUpload(event){
+			this.photo = event.target.files[0];
+		},
 	},
 	mounted() {
 		this.refresh()
@@ -69,7 +79,9 @@ export default {
 </script>
 
 <template>
-	
+	<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css">
+	</head>
 	<div class="bg-dark" style="width: 100%; position: sticky; top: 0;  ">
 		<div class="d-flex justify-content-between align-items-center w-100">
 		<div v-if="messaggi.gruppo == true" class="d-flex justify-content-start align-items-center">
@@ -132,8 +144,13 @@ export default {
 <form  @submit.prevent="send" class="sticky-bottom mb-2">
 <div >
     <div class="input-group mb-3">
-    <input type="text" class="form-control rounded" placeholder="write message" aria-label="message" aria-describedby="basic-addon1" v-model="message">
-    <button class="btn btn-secondary mt-2 rounded ms-2"  >Send</button>
+		
+		<input type="text" class="form-control rounded" placeholder="write message" aria-label="message" aria-describedby="basic-addon1" v-model="message">
+		<button class="btn btn-secondary mt-2 rounded ms-2"  >Send</button>
+		<label for="photo" class="btn btn-secondary mt-2 rounded ms-2 btn-paperclip">
+            <i class="bi bi-paperclip"></i>
+            <input type="file" class="d-none" id="photo" @change="handleFileUpload">
+        </label>
     <br>
     </div>
 </div>
@@ -172,5 +189,11 @@ export default {
 body, html {
     overflow: hidden; 
     height: 100%; 
+}
+.btn-paperclip {
+    width: 50px; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 </style>
