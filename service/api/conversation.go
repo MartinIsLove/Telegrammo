@@ -60,17 +60,21 @@ func (rt *_router) checknames(w http.ResponseWriter, r *http.Request, ps httprou
 	// 	http.Error(w, err.Error(), http.StatusBadRequest)
 	// 	return
 	// }
-	if len(str) < 1 && len(str) > 16 {
-		http.Error(w, "too short message", http.StatusBadRequest)
+	if len(str) > 16 {
+		http.Error(w, "too long message", http.StatusBadRequest)
+		return
 	}
-
+	if str == "$" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
 	tmp, err := rt.db.CheckNames(cs, str)
 
 	if err != nil && strings.HasPrefix(err.Error(), "error in authentication Checknames:") {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
-	if err != nil && strings.HasPrefix(err.Error(), "chat: no user found:") {
+	if err != nil && strings.HasPrefix(err.Error(), "checkNames: no user found:") {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}

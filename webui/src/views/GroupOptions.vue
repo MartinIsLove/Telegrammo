@@ -20,6 +20,11 @@ export default {
 			
 
 		},
+		async leavegroup(){
+			await this.$axios.delete(`/conversation/leave/${this.chatId}`, {headers:{cs:this.id}});
+
+			this.$router.push("/home");
+		}
 	},
 	mounted() {
 		this.refresh()
@@ -27,5 +32,7 @@ export default {
 }
 </script>
 <template>
-
+	<button @click="leavegroup" class="btn btn-secondary">
+		leave group
+	</button>
 </template>

@@ -3,10 +3,18 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+	"unicode"
 
 	"github.com/julienschmidt/httprouter"
 )
 
+func isFirstCharAlphanumeric(s string) bool {
+	if len(s) == 0 {
+		return false
+	}
+	r := rune(s[0])
+	return unicode.IsLetter(r) || unicode.IsDigit(r)
+}
 func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var richiestaLogin Utente
 
@@ -18,8 +26,12 @@ func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, ps httprouter
 	// fmt.Println(richiestaLogin)
 	var rispostaLogin Utente
 
-	if len(richiestaLogin.Username) < 1 && len(richiestaLogin.Username) > 16 {
-		http.Error(w, "messaggio troppo corto", http.StatusBadRequest)
+	if len(richiestaLogin.Username) < 1 || len(richiestaLogin.Username) > 16 {
+		http.Error(w, "username troppo corto", http.StatusBadRequest)
+		return
+	}
+	if isFirstCharAlphanumeric(richiestaLogin.Username) {
+		http.Error(w, "l'username deve iniziare per un carattere alfa-numerico", http.StatusBadRequest)
 		return
 	}
 

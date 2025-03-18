@@ -24,8 +24,11 @@ export default {
 			this.loading = false;
 		},
 		createChatButtonHandler() {
-			this.$router.push("/createChat");
+			this.$router.push("/createchat");
 		},
+		createGroupButtonHandler(){
+			this.$router.push("/creategroup");
+		}
 	},
 	mounted() {
 		this.refresh()
@@ -37,6 +40,9 @@ export default {
 	<div class="position-absolute top-1 start-1">
 		<button class="btn btn-secondary ms-2 mb-2" @click="createChatButtonHandler">
 			Create Chat
+		</button>
+		<button class="btn btn-secondary ms-2 mb-2" @click="createGroupButtonHandler">
+			Create Group 
 		</button>
 	</div>
 	<div class="mt-5">
