@@ -95,7 +95,6 @@ func (rt *_router) checknames(w http.ResponseWriter, r *http.Request, ps httprou
 
 	w.WriteHeader(http.StatusOK)
 }
-
 func (rt *_router) getMyConversations(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var richiesta []ChatUtente
 	cs, err := rt.AuthenticationApi(r)
@@ -141,7 +140,6 @@ func (rt *_router) getMyConversations(w http.ResponseWriter, r *http.Request, ps
 	w.WriteHeader(http.StatusOK)
 	// fmt.Println(err.Error())
 }
-
 func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 	cs, err := rt.AuthenticationApi(r)
@@ -155,7 +153,7 @@ func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, ps ht
 	id_chat_tmp := ps.ByName("idChat")
 	id_chat, err := strconv.Atoi(id_chat_tmp)
 	if err != nil {
-		http.Error(w, "error getConversation: conversion id_chat_tmp (string) to id_chat (int)", http.StatusBadGateway)
+		http.Error(w, "error getConversation: conversion id_chat_tmp (string) to id_chat (int)", http.StatusBadRequest)
 	}
 
 	gp, str, tmp, err := rt.db.GetConversation(cs, id_chat)
@@ -190,40 +188,6 @@ func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, ps ht
 	w.WriteHeader(http.StatusOK)
 
 }
-
-func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var richiesta Mess
-	cs, err := rt.AuthenticationApi(r)
-	if err != nil {
-		http.Error(w, "error: authentication user sendMessage"+err.Error(), http.StatusUnauthorized)
-		return
-	}
-	// id_chat_tmp := ps.ByName("idChat")
-	// id_chat, err := strconv.Atoi(id_chat_tmp)
-	// if err != nil {
-	// 	http.Error(w, "error: conversion id_chat_tmp (string) to id_chat (int)", http.StatusInternalServerError)
-	// 	return
-	// }
-
-	if err := json.NewDecoder(r.Body).Decode(&richiesta); err != nil {
-		http.Error(w, "sendMessage:"+err.Error(), http.StatusBadRequest)
-		return
-	}
-	if len(richiesta.Testo) < 1 {
-		http.Error(w, "messaggio troppo corto", http.StatusBadRequest)
-		return
-	}
-	erro := rt.db.SendMessage(cs, richiesta.IdChat, richiesta.Testo, richiesta.Photo)
-	if erro != nil && strings.HasPrefix(erro.Error(), "error in authentication SendMessage:") {
-		http.Error(w, erro.Error(), http.StatusUnauthorized)
-		return
-	}
-	if erro != nil {
-		http.Error(w, erro.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-}
 func (rt *_router) createGroup(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var richiesta Group
 
@@ -246,5 +210,27 @@ func (rt *_router) createGroup(w http.ResponseWriter, r *http.Request, ps httpro
 		return
 	}
 
+	w.WriteHeader(http.StatusOK)
+}
+func (rt *_router) leaveGroup(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	cs, err := rt.AuthenticationApi(r)
+
+	if err != nil {
+		http.Error(w, "error: authentication user createChat"+err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	id_chat_tmp := ps.ByName("idChat")
+	id_chat, err := strconv.Atoi(id_chat_tmp)
+	if err != nil {
+		http.Error(w, "error leaveGroup: conversion id_chat_tmp (string) to id_chat (int)", http.StatusBadRequest)
+		return
+	}
+
+	err = rt.db.LeaveGroup(cs, id_chat)
+	if err != nil {
+		http.Error(w, "error leaveGroup: conversion id_chat_tmp (string) to id_chat (int)", http.StatusBadGateway)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 }

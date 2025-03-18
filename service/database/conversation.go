@@ -24,7 +24,6 @@ func (db *appdbimpl) IsChatDuplicated(cs int, id int) (bool, error) {
 	}
 	return true, fmt.Errorf("chat: error this chat already exist: %w", err)
 }
-
 func (db *appdbimpl) CreateChat(cs int, id int) error {
 
 	_, err := db.Authentication(cs)
@@ -93,7 +92,6 @@ func (db *appdbimpl) CheckNames(cs int, toFind string) ([]UtenteDb, error) {
 
 	return utenti, nil
 }
-
 func (db *appdbimpl) GetMyConversations(cs int) ([]ChatUtenteDb, error) {
 	var chat []ChatUtenteDb
 	_, err := db.Authentication(cs)
@@ -175,7 +173,6 @@ func (db *appdbimpl) GetMyConversations(cs int) ([]ChatUtenteDb, error) {
 
 	return chat, nil
 }
-
 func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessDb, error) {
 	var mess []MessDb
 	_, err := db.Authentication(cs)
@@ -241,7 +238,6 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 
 	return group, nomeChat, result, nil
 }
-
 func (db *appdbimpl) CreateGroup(cs int, nome string, propic []byte, membri []int) error {
 	_, err := db.Authentication(cs)
 	if err != nil {
@@ -269,6 +265,20 @@ func (db *appdbimpl) CreateGroup(cs int, nome string, propic []byte, membri []in
 				return fmt.Errorf("group: error insert group in table chat: %w", err)
 			}
 		}
+	}
+
+	return nil
+}
+func (db *appdbimpl) LeaveGroup(cs int, idChat int) error {
+
+	_, err := db.Authentication(cs)
+	if err != nil {
+		return fmt.Errorf("error in authentication CreateGroup: %w", err)
+	}
+
+	_, err = db.c.Exec("DELETE FROM membri WHERE id_utenti=$1 AND id_chat=$2", cs, idChat)
+	if err != nil {
+		return fmt.Errorf("group: error leave user by a group in table membri: %w", err)
 	}
 
 	return nil
