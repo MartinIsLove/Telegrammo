@@ -151,8 +151,8 @@ func (db *appdbimpl) GetMyConversations(cs int) ([]ChatUtenteDb, error) {
 		var id int
 		var tmp time.Time
 		c := &chat[i]
-		rows3 := db.c.QueryRow("SELECT m.testo, m.mittente, u.username, m.data FROM chat c JOIN messaggi_di_chat mdc ON c.id=mdc.id_chat JOIN messaggi m ON mdc.id_messaggio=m.id JOIN membri me ON me.id_chat=c.id JOIN utenti u ON u.id=me.id_utenti WHERE c.id=$1 ORDER BY m.data DESC LIMIT 1;", c.IdChat)
-		err := rows3.Scan(&lastMsg, &id, &username, &tmp)
+		rows3 := db.c.QueryRow("SELECT m.testo, m.mittente, m.data FROM chat c JOIN messaggi_di_chat mdc ON c.id=mdc.id_chat JOIN messaggi m ON mdc.id_messaggio=m.id JOIN membri me ON me.id_chat=c.id JOIN utenti u ON u.id=me.id_utenti WHERE c.id=$1 ORDER BY m.data DESC LIMIT 1;", c.IdChat)
+		err := rows3.Scan(&lastMsg, &id, &tmp)
 		if err == sql.ErrNoRows {
 
 			c.LastMSg = ""
@@ -168,9 +168,17 @@ func (db *appdbimpl) GetMyConversations(cs int) ([]ChatUtenteDb, error) {
 				c.LastMSg = lastMsg
 			}
 			c.Id = id
-			c.Username = username
 			c.Data = tmp
 		}
+		rows4 := db.c.QueryRow("SELECT username FROM utenti WHERE id=$1 LIMIT 1", id)
+		err = rows4.Scan(&username)
+		if err == sql.ErrNoRows {
+
+		} else if err != nil {
+			return []ChatUtenteDb{}, fmt.Errorf("GetConversations: error querying users: %w", err)
+
+		}
+		c.Username = username
 	}
 	// for _, c := range chat {
 	// 	fmt.Printf("il nome della chat e': %s Username di chi ha inviato l'ultimo messaggio: %s, Propic: %s, UserId di chi ha inviato l'ultimo messaggio: %d, ChatId: %d , lastmsg: %s, data: %s, e' un gruppo: %t \n", c.Nome, c.Username, c.Propic, c.Id, c.IdChat, c.LastMSg, c.Data.Format(time.RFC3339), c.Gruppo)

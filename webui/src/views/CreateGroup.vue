@@ -1,16 +1,14 @@
 <script>
 export default {
-	data: function() {
-		return {
-			errormsg: null,
-			loading: false,
-			some_data: null,
+    data: function() {
+        return {
+            errormsg: null,
+            loading: false,
+            some_data: null,
 
-			
-			id: null,
+            id: null,
             chatId: null,
 
-            
             chUsername: '',
             users: [],
             selectedUser: [], 
@@ -19,27 +17,24 @@ export default {
             group_name: '',
             group_photo: null,
 
-            
             error: '',
             message: '',
-		}
-	},
+        }
+    },
     watch: {
         selectedUser(newVal) {
             this.if_selection = newVal.length > 0;
         }
     },
-	methods: {
-		async refresh() {
-			this.loading = true;
-			this.errormsg = null;
+    methods: {
+        async refresh() {
+            this.loading = true;
+            this.errormsg = null;
             this.id = sessionStorage.getItem("cs")
             this.chatId = parseInt(this.$route.params.id, 10);
-			
-
-		},
+        },
         async getUsers() {
-			try{
+            try{
                 this.message=''
                 this.error=''
                 this.users=[]
@@ -60,97 +55,80 @@ export default {
                 this.error=error
                 console.error('Error fetching user data:', error);
             }
-                
-
-
         },
         handleFileUpload(event){
             this.group_photo = event.target.files[0];
-            
         },
-        
         async handleSelectedUser(){
             try{
-                
-                
                 let formData = new FormData();
                 formData.append('propic', this.group_photo);
                 formData.append('nome_chat', this.group_name);
                 formData.append('membri', JSON.stringify(this.selectedUser.map(user => user.id)));
-                
-                
+
                 this.id = sessionStorage.getItem("cs")
                 let response = await this.$axios.post(`/conversation/group`,formData ,{headers: {'Content-Type': 'multipart/form-data', cs:this.id}});
                 if (response.status === 200){
                         this.message = 'chat created';
                         this.group_id = response.data
                         this.$router.push('/chat/'+ this.group_id.id_group )
-                    }
+                }
             }
             catch(error){
                 this.error=error
                 console.error('error create group user data: ', error)
             }
         },
-	},
-	mounted() {
-		this.refresh()
-	}
+    },
+    mounted() {
+        this.refresh()
+    }
 }
 </script>
+
 <template>
-    
-    <div class="row">
-        <div class="col-4"></div>
+    <div class="d-flex justify-content-center align-items-center vh-100">
+        <div class="col-6">
             <form @submit.prevent="handleSelectedUser">
                 <div class="mb-3">
-                    <label for="username" class="form-label">group name</label>
+                    <label for="group_name" class="form-label">Group Name</label>
                     <input type="text" class="form-control" id="group_name" aria-describedby="inserisci username" v-model="group_name">
                 </div>
                 <button type="submit" class="btn btn-primary">Submit</button>
             </form>
-            <label for="photo" class="form-label" >Change Photo</label>
-                <input type="file" class="form-control mb-2" id="photo" @change="handleFileUpload">
-            <div class="col-2 mt-2">
-                <h2 class="fw-normal">usernames</h2>
-                <form class="mt-5" @submit.prevent="getUsers">
-                    <label for="username" class="form-label ">search user</label>
-                    <input type="text" class="form-control mb-2" id="username" placeholder="insert username" v-model="chUsername" @input="getUsers">
+            <label for="photo" class="form-label mt-3">Change Photo</label>
+            <input type="file" class="form-control mb-2" id="photo" @change="handleFileUpload">
+            <div class="mt-4">
+                <h2 class="fw-normal">Usernames</h2>
+                <form class="mt-3" @submit.prevent="getUsers">
+                    <label for="username" class="form-label">Search User</label>
+                    <input type="text" class="form-control mb-2" id="username" placeholder="Insert Username" v-model="chUsername" @input="getUsers">
                 </form>
-            <div class="col-6"></div>
-            <div v-for="user in users" :key="id" >
-                <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="selectedUser" :value="user" v-model="selectedUser">
-                
+                <div v-for="user in users" :key="user.id" class="form-check">
+                    <input class="form-check-input" type="checkbox" name="selectedUser" :value="user" v-model="selectedUser">
                     <label class="form-check-label" :for="'user-'+user.id">
-                        
                         {{ user.username }}
                     </label>
                 </div>
-            </div>
-            
-            
-            <div class="mt-3"  v-if="if_selection">
-                <h5>utenti selezionati:</h5>
-                <div v-for="user2 in selectedUser" :key="user2.id" class="selected-user">
-                    -{{ user2.username }}
+                <div class="mt-3" v-if="if_selection">
+                    <h5>Selected Users:</h5>
+                    <div v-for="user2 in selectedUser" :key="user2.id" class="selected-user">
+                        -{{ user2.username }}
+                    </div>
+                </div>
+                <div>
+                    <p v-if="error">
+                        {{ error }}
+                    </p>
+                    <p v-if="message">
+                        {{ message }}
+                    </p>
                 </div>
             </div>
-            <div>
-                <p v-if=error>
-                    {{ error }}
-                </p>
-                <p v-if=message>
-                    {{ message }}
-                </p>
-
-
-            </div>
-           
         </div>
     </div>
-
 </template>
+
 <style scoped>
 .selected-user {
     margin: 5px 0;
