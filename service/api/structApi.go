@@ -43,7 +43,7 @@ type NomeChat struct {
 	Gruppo  bool   `json:"gruppo"`
 	Nome    string `json:"nome"`
 	Message []Mess `json:"message"`
-	IdChat  int    `jon:"id_chat"`
+	IdChat  int    `json:"id_chat"` //aggiunto dopo
 }
 
 func NewMess(Messaggio database.MessDb) Mess {

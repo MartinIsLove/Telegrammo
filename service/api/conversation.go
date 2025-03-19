@@ -190,13 +190,13 @@ func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, ps ht
 		messaggi[i] = NewMess(user)
 	}
 
-	var Nome NomeChat
-	Nome.Gruppo = gp
-	Nome.Nome = str
-	Nome.Message = messaggi
+	var nome NomeChat
+	nome.Gruppo = gp
+	nome.Nome = str
+	nome.Message = messaggi
 	w.Header().Set("content-type", "application/json")
 
-	json, err := json.Marshal(Nome)
+	json, err := json.Marshal(nome)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -319,6 +319,7 @@ func (rt *_router) setGroupName(w http.ResponseWriter, r *http.Request, ps httpr
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	println(name.Nome, name.IdChat)
 	err = rt.db.SetGroupName(cs, name.IdChat, name.Nome)
 
 	if err != nil {
