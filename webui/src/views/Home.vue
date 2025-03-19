@@ -65,8 +65,8 @@ export default {
 							<h5>{{chat.nome}}</h5>
 							
 							<div class="d-flex justify-content-between">
-								<p v-if="chat.gruppo" class="text-wrap">
-									<span class="text-capitalize fw-bold">{{ chat.username }}</span>:{{ chat.lastmsg }}  
+								<p v-if="chat.gruppo && chat.lastmsg !== ''" class="text-wrap">
+									<span class="text-capitalize fw-bold">{{ chat.username }}</span>: {{ chat.lastmsg }}  
 								</p>
 								
 								<p v-else> 

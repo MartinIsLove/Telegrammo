@@ -306,3 +306,24 @@ func (db *appdbimpl) LeaveGroup(cs int, idChat int) error {
 
 	return nil
 }
+func (db *appdbimpl) SetGroupName(cs int, idGroup int, nameGroup string) error {
+
+	var righe int64
+	_, err := db.Authentication(cs)
+	if err != nil {
+		return fmt.Errorf("SetGroupName: error in authentication: %w", err)
+	}
+
+	err = db.c.QueryRow("SELECT count(u.id) FROM chat c  JOIN membri m ON m.id_chat=c.id JOIN utenti u ON u.id=m.id_utenti WHERE u.id=$1 AND c.id=$2", cs, idGroup).Scan(&righe)
+
+	if righe == 0 {
+		return fmt.Errorf("you can't change a name of a group that you don't partecipate: %w", err)
+	}
+
+	_, err = db.c.Exec("UPDATE chat SET nome=$1 WHERE id=$2", nameGroup, idGroup)
+	if err != nil {
+		return fmt.Errorf("SetGroupName error: database UPDATE not successful: %w", err)
+	}
+	return nil
+
+}

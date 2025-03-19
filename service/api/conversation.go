@@ -306,3 +306,25 @@ func (rt *_router) leaveGroup(w http.ResponseWriter, r *http.Request, ps httprou
 	}
 	w.WriteHeader(http.StatusOK)
 }
+func (rt *_router) setGroupName(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var name NomeChat
+	cs, err := rt.AuthenticationApi(r)
+
+	if err != nil {
+		http.Error(w, "error: authentication user createChat"+err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&name); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = rt.db.SetGroupName(cs, name.IdChat, name.Nome)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}

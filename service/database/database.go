@@ -51,6 +51,7 @@ type AppDatabase interface {
 	GetConversation(int, int) (bool, string, []MessDb, error)
 	SendMessage(int, int, string, []byte) error
 	CreateGroup(int, string, []byte, []int) (int, error)
+	SetGroupName(int, int, string) error
 	Ping() error
 }
 
