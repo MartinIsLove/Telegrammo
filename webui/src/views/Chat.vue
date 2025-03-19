@@ -39,7 +39,7 @@ export default {
 			formData.append('id_chat', this.chatId)
 			formData.append('testo', this.message)
 			
-            await this.$axios.post("/conversation/message", formData, {headers: {'Content-Type': 'multipart/form-data',cs:this.id}});
+            await this.$axios.post("/message", formData, {headers: {'Content-Type': 'multipart/form-data',cs:this.id}});
 			this.message=''
 			this.photo= null
             this.fetchMessage()
@@ -81,9 +81,9 @@ export default {
 </script>
 
 <template>
-	<head>
+	
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css">
-	</head>
+	
 	<div class="bg-dark" style="width: 100%; position: sticky; top: 0;  ">
 		<div class="d-flex justify-content-between align-items-center w-100">
 		<div v-if="messaggi.gruppo == true" class="d-flex justify-content-start align-items-center">

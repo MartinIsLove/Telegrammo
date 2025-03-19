@@ -19,7 +19,7 @@ func (rt *_router) Handler() http.Handler {
 	rt.router.DELETE("/conversation/leave/:idChat", rt.leaveGroup)
 	rt.router.POST("/conversation", rt.createChat)
 	rt.router.POST("/conversation/group", rt.createGroup)
-	rt.router.POST("/conversation/message", rt.sendMessage)
+	rt.router.POST("/message", rt.sendMessage)
 	rt.router.GET("/conversation/:idChat", rt.getConversation)
 
 	// Special routes

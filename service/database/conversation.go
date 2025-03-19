@@ -238,13 +238,15 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 	var lastDate time.Time
 
 	for _, m := range mess {
-		if !m.Data.Truncate(24 * time.Hour).Equal(lastDate.Truncate(24 * time.Hour)) {
+		localTime := m.Data.Local().Add(+1 * time.Hour)
+		localMidnight := time.Date(localTime.Year(), localTime.Month(), localTime.Day(), 0, 0, 0, 0, localTime.Location())
+		if lastDate.IsZero() || !localMidnight.Equal(lastDate) {
 			// Aggiungi un messaggio senza testo con solo la data
 			dateMessage := MessDb{
-				Data: m.Data.Truncate(24 * time.Hour),
+				Data: localMidnight,
 			}
 			result = append(result, dateMessage)
-			lastDate = m.Data
+			lastDate = localMidnight
 		}
 		result = append(result, m)
 	}
