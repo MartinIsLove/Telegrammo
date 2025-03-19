@@ -33,13 +33,15 @@ export default {
             });
         },
 		async send() {
+
 			let formData = new FormData();
 			formData.append('photo', this.photo)
 			formData.append('id_chat', this.chatId)
 			formData.append('testo', this.message)
 			
-            await this.$axios.post("/conversation/message", formData, {headers: {cs:this.id}});
+            await this.$axios.post("/conversation/message", formData, {headers: {'Content-Type': 'multipart/form-data',cs:this.id}});
 			this.message=''
+			this.photo= null
             this.fetchMessage()
 		},
 		formatDate(date) {
@@ -110,9 +112,16 @@ export default {
 					<div class="d-flex justify-content-between w-100">
 						<p v-if="mes.gruppo" class="text-wrap message-content">
 							<span class="text-capitalize fw-bold">{{ mes.nome }}</span><br>
+							<div v-if="mes.photo !== null">
+                                <img :src="'data:image/png;base64,' + mes.photo" class="img-fluid" />
+							</div>
+							 
 							{{ mes.testo }}
 						</p>
 						<p v-else class="message-content">
+							<div v-if="mes.photo !== null">
+                                <img :src="'data:image/png;base64,' + mes.photo" class="img-fluid" />
+							</div>
 							<span>{{ mes.testo }}</span>
 						</p>
 					</div>
@@ -125,9 +134,15 @@ export default {
 				<div class="d-flex justify-content-between w-100">
 					<p v-if="mes.gruppo" class="text-wrap message-content">
 						<span class="text-capitalize fw-bold">{{ mes.nome }}</span><br>
+						<div v-if="mes.photo !== null">
+                                <img :src="'data:image/png;base64,' + mes.photo" class="img-fluid" />
+						</div>
 						{{ mes.testo }}
 					</p>
 					<p v-else class="message-content">
+						<div v-if="mes.photo !== null">
+                                <img :src="'data:image/png;base64,' + mes.photo" class="img-fluid" />
+						</div>
 						<span>{{ mes.testo }}</span>
 					</p>
 					<div class="message-time">
