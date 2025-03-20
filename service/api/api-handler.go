@@ -20,7 +20,7 @@ func (rt *_router) Handler() http.Handler {
 	rt.router.POST("/conversation", rt.createChat)
 	rt.router.POST("/conversation/group", rt.createGroup)
 	rt.router.PUT("/conversation/group/name", rt.setGroupName)
-
+	rt.router.PUT("/conversation/group/photo", rt.setGroupPhoto)
 	rt.router.POST("/message", rt.sendMessage)
 	rt.router.GET("/conversation/:idChat", rt.getConversation)
 

@@ -15,6 +15,7 @@ type Group struct {
 	NomeChat string `json:"nome_chat"`
 	Propic   []byte `json:"propic"`
 	Membri   []int  `json:"membri"`
+	IdChat   int    `json:"id_chat"`
 }
 type ChatUtente struct {
 	IdChat   int       `json:"id_chat"`
@@ -43,7 +44,6 @@ type NomeChat struct {
 	Gruppo  bool   `json:"gruppo"`
 	Nome    string `json:"nome"`
 	Message []Mess `json:"message"`
-	IdChat  int    `json:"id_chat"` //aggiunto dopo
 }
 
 func NewMess(Messaggio database.MessDb) Mess {

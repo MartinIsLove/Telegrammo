@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -307,7 +308,7 @@ func (rt *_router) leaveGroup(w http.ResponseWriter, r *http.Request, ps httprou
 	w.WriteHeader(http.StatusOK)
 }
 func (rt *_router) setGroupName(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var name NomeChat
+	var name Group
 	cs, err := rt.AuthenticationApi(r)
 
 	if err != nil {
@@ -319,8 +320,44 @@ func (rt *_router) setGroupName(w http.ResponseWriter, r *http.Request, ps httpr
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	println(name.Nome, name.IdChat)
-	err = rt.db.SetGroupName(cs, name.IdChat, name.Nome)
+
+	fmt.Println(name.NomeChat, name.IdChat)
+
+	err = rt.db.SetGroupName(cs, name.IdChat, name.NomeChat)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+func (rt *_router) setGroupPhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	cs, err := rt.AuthenticationApi(r)
+
+	if err != nil {
+		http.Error(w, "error: authentication user createChat"+err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	photo_multipart, handler, err := r.FormFile("propic")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	photo, err := validatePhoto(photo_multipart, handler, err)
+	if err != nil {
+		http.Error(w, "error: bad input"+err.Error(), http.StatusBadRequest)
+		return
+	}
+	idChat_tmp := r.FormValue("id_chat")
+	idChat, err := strconv.Atoi(idChat_tmp)
+	if err != nil {
+		http.Error(w, "error setGroupPhoto: conversion idChat_tmp (string) to idChat (int)", http.StatusBadRequest)
+	}
+
+	fmt.Println(idChat)
+
+	err = rt.db.SetGroupPhoto(cs, idChat, photo)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)

@@ -329,3 +329,26 @@ func (db *appdbimpl) SetGroupName(cs int, idGroup int, nameGroup string) error {
 	return nil
 
 }
+func (db *appdbimpl) SetGroupPhoto(cs int, idGroup int, photoGroup []byte) error {
+	var righe int64
+
+	_, err := db.Authentication(cs)
+	if err != nil {
+		return fmt.Errorf("SetGroupPhoto: error in authentication: %w", err)
+	}
+
+	err = db.c.QueryRow("SELECT count(u.id) FROM chat c  JOIN membri m ON m.id_chat=c.id JOIN utenti u ON u.id=m.id_utenti WHERE u.id=$1 AND c.id=$2", cs, idGroup).Scan(&righe)
+	if err != nil {
+		return fmt.Errorf("SetGroupPhoto: error querying database: %w", err)
+	}
+	if righe == 0 {
+		return fmt.Errorf("you can't change a name of a group that you don't partecipate: %w", err)
+	}
+
+	_, err = db.c.Exec("UPDATE chat SET propic=$1 WHERE id=$2", photoGroup, idGroup)
+	if err != nil {
+		return fmt.Errorf("SetGroupPhoto error: database UPDATE not successful: %w", err)
+	}
+
+	return nil
+}

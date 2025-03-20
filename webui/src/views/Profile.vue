@@ -33,75 +33,75 @@ export default {
             this.chPhoto=event.target.files[0]
         },
         async changeUserDetails(){
-        this.message=''
-        this.error=''
-            if (this.chPhoto === null && this.chUsername !== '' ){
-                try{
-                    let response = await this.$axios.put(`/user/name`,{username:this.chUsername}, {headers: {cs:this.id}});
-                    if (response.status === 200){
-                        this.message = 'Username changed successfully';
+            this.message=''
+            this.error=''
+                if (this.chPhoto === null && this.chUsername !== '' ){
+                    try{
+                        let response = await this.$axios.put(`/user/name`,{username:this.chUsername}, {headers: {cs:this.id}});
+                        if (response.status === 200){
+                            this.message = 'Username changed successfully';
+                        }
+                        
+
                     }
-                    
+                    catch(error){
+                        this.error= error
+                        console.error('error change username')
+                    }
 
                 }
-                catch(error){
-                    this.error= error
-                    console.error('error change username')
-                }
+                if (this.chPhoto !== null && this.chUsername === ''){
+                    let formData = new FormData();
+                    formData.append('photo', this.chPhoto);
+                    try{
+                        
+                        let response = await this.$axios.put(`/user/photo`, formData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                            'cs': this.id
+                        }});
+                        if (response.status === 200){
+                            this.message = 'photo changed successfully';
+                        }
+                        
 
-            }
-            if (this.chPhoto !== null && this.chUsername === ''){
-                let formData = new FormData();
-                formData.append('photo', this.chPhoto);
-                try{
-                    
-                    let response = await this.$axios.put(`/user/photo`, formData, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                        'cs': this.id
-                    }});
-                    if (response.status === 200){
-                        this.message = 'photo changed successfully';
                     }
-                    
+                    catch(error){
+                        this.error= error
+                        console.error('error change photo')
+                    }
+                }
+                if (this.chPhoto !== null && this.chUsername !== ''){
+                    let formData = new FormData();
+                    formData.append('photo', this.chPhoto);
+                    try{
+                        let response = await this.$axios.put(`/user/name`,{username:this.chUsername}, {headers: {cs:this.id}});
+                        if (response.status === 200){
+                            this.message = ' username changed successfully';
+                        }
+                        
 
-                }
-                catch(error){
-                    this.error= error
-                    console.error('error change photo')
-                }
-            }
-            if (this.chPhoto !== null && this.chUsername !== ''){
-                let formData = new FormData();
-                formData.append('photo', this.chPhoto);
-                try{
-                    let response = await this.$axios.put(`/user/name`,{username:this.chUsername}, {headers: {cs:this.id}});
-                    if (response.status === 200){
-                        this.message = 'Username and photo changed successfully';
                     }
-                    
-
-                }
-                catch(error){
-                    this.error= error
-                    console.error('error in change username')
-                }
-                try{
-                    let response2 = await this.$axios.put(`/user/photo`, formData, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                        'cs': this.id
-                    }});
-                    if (response2.status === 200){
-                        this.message = 'photo changed successfully';
+                    catch(error){
+                        this.error= error
+                        console.error('error in change username')
                     }
-                    
+                    try{
+                        let response2 = await this.$axios.put(`/user/photo`, formData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                            'cs': this.id
+                        }});
+                        if (response2.status === 200){
+                            this.message = 'photo changed successfully';
+                        }
+                        
+                    }
+                    catch(error){
+                        this.error= error
+                        console.error('error in change user photo')
+                    }
                 }
-                catch(error){
-                    this.error= error
-                    console.error('error in change user photo')
-                }
-            }
             this.fetchUserData()
         }
 	},
