@@ -50,6 +50,12 @@ func (rt *_router) setMyPhoto(w http.ResponseWriter, r *http.Request, ps httprou
 		return
 	}
 	if auth > 0 {
+		err = r.ParseMultipartForm(10 << 20) // 10 MB
+		if err != nil {
+			http.Error(w, "error parsing multipart form: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+
 		photo_multipart, handler, err := r.FormFile("photo")
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)

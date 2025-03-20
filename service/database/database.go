@@ -53,6 +53,7 @@ type AppDatabase interface {
 	CreateGroup(int, string, []byte, []int) (int, error)
 	SetGroupName(int, int, string) error
 	SetGroupPhoto(int, int, []byte) error
+	AddToGroup(int, int, []int) error
 	Ping() error
 }
 

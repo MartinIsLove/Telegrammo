@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -222,7 +221,7 @@ func (rt *_router) createGroup(w http.ResponseWriter, r *http.Request, ps httpro
 	}
 
 	// Get the file from the form
-	file, _, err := r.FormFile("propic")
+	file, handler, err := r.FormFile("propic")
 	var photo []byte
 	if err != nil {
 		// If no file is uploaded, use the default photo
@@ -235,9 +234,9 @@ func (rt *_router) createGroup(w http.ResponseWriter, r *http.Request, ps httpro
 	} else {
 		defer file.Close()
 		// Read the file content
-		photo, err = io.ReadAll(file)
+		photo, err = validatePhoto(file, handler, err)
 		if err != nil {
-			http.Error(w, "error reading file: "+err.Error(), http.StatusInternalServerError)
+			http.Error(w, "error: bad input"+err.Error(), http.StatusBadRequest)
 			return
 		}
 	}
@@ -321,7 +320,14 @@ func (rt *_router) setGroupName(w http.ResponseWriter, r *http.Request, ps httpr
 		return
 	}
 
-	fmt.Println(name.NomeChat, name.IdChat)
+	if len(name.NomeChat) < 1 {
+		http.Error(w, "group name too short, at least 1 character", http.StatusBadRequest)
+		return
+	}
+	if len(name.NomeChat) > 16 {
+		http.Error(w, "group name too long, up to 16 character", http.StatusBadRequest)
+		return
+	}
 
 	err = rt.db.SetGroupName(cs, name.IdChat, name.NomeChat)
 
@@ -336,6 +342,12 @@ func (rt *_router) setGroupPhoto(w http.ResponseWriter, r *http.Request, ps http
 
 	if err != nil {
 		http.Error(w, "error: authentication user createChat"+err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	err = r.ParseMultipartForm(10 << 20) // 10 MB
+	if err != nil {
+		http.Error(w, "error parsing multipart form: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -359,6 +371,29 @@ func (rt *_router) setGroupPhoto(w http.ResponseWriter, r *http.Request, ps http
 
 	err = rt.db.SetGroupPhoto(cs, idChat, photo)
 
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+func (rt *_router) addToGroup(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var gruppo Group
+	cs, err := rt.AuthenticationApi(r)
+
+	if err != nil {
+		http.Error(w, "error: authentication user createChat"+err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&gruppo); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	fmt.Println(gruppo.IdChat, gruppo.Membri)
+
+	err = rt.db.AddToGroup(cs, gruppo.IdChat, gruppo.Membri)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

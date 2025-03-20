@@ -20,12 +20,15 @@ export default {
             this.id = sessionStorage.getItem("cs")
             this.chatId = parseInt(this.$route.params.id, 10);
 			
-
+			
 		},
 		async leavegroup(){
 			await this.$axios.delete(`/conversation/leave/${this.chatId}`, {headers:{cs:this.id}});
 
 			this.$router.push("/home");
+		},
+		addPartecipants(){
+			this.$router.push(`/options/group/`+this.chatId+`/partecipats/`);
 		},
 		async changeGroupDetails(){
 			this.message=''
@@ -114,9 +117,14 @@ export default {
 </script>
 <template>
 	<div class="mt-2">
+		<div>
 		<button @click="leavegroup" class="btn btn-secondary">
-			leave group
+			-leave group
 		</button>
+		<button @click="addPartecipants" class="btn btn-secondary ms-2">
+			+Add Partecipants
+		</button>
+		</div>
 		<form @submit.prevent="changeGroupDetails">
                 <div class="mb-3">
                     <label for="group_name" class="form-label">Group Name</label>

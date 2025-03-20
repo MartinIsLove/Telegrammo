@@ -352,3 +352,30 @@ func (db *appdbimpl) SetGroupPhoto(cs int, idGroup int, photoGroup []byte) error
 
 	return nil
 }
+func (db *appdbimpl) AddToGroup(cs int, idGroup int, membri []int) error {
+	var righe int64
+
+	_, err := db.Authentication(cs)
+	if err != nil {
+		return fmt.Errorf("AddToGroup: error in authentication: %w", err)
+	}
+
+	err = db.c.QueryRow("SELECT count(u.id) FROM chat c JOIN membri m ON m.id_chat=c.id JOIN utenti u ON u.id=m.id_utenti WHERE u.id=$1 AND c.id=$2", cs, idGroup).Scan(&righe)
+	if err != nil {
+		return fmt.Errorf("AddToGroup: error querying database: %w", err)
+	}
+	if righe == 0 {
+		return fmt.Errorf("you can't add user to a group that you don't partecipate: %w", err)
+	}
+
+	for _, c := range membri {
+
+		_, err := db.c.Exec("INSERT INTO membri (id_utenti, id_chat) SELECT $1, $2 WHERE NOT EXISTS (SELECT 1 FROM membri WHERE id_utenti = $1 AND id_chat = $2);", c, idGroup)
+		if err != nil {
+			return fmt.Errorf("AddToGroup: error insert id_chat and id_utenti in table membri: %w", err)
+		}
+
+	}
+
+	return nil
+}
