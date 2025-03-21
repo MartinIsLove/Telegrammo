@@ -391,8 +391,6 @@ func (rt *_router) addToGroup(w http.ResponseWriter, r *http.Request, ps httprou
 		return
 	}
 
-	fmt.Println(gruppo.IdChat, gruppo.Membri)
-
 	err = rt.db.AddToGroup(cs, gruppo.IdChat, gruppo.Membri)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)

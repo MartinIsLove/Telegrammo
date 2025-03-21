@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -27,15 +28,16 @@ func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, ps httpro
 	// 	http.Error(w, "sendMessage:"+err.Error(), http.StatusBadRequest)
 	// 	return
 	// }
-	err = r.ParseMultipartForm(10 << 20) // 10 MB
-	if err != nil {
-		http.Error(w, "error parsing multipart form: "+err.Error(), http.StatusBadRequest)
-		return
-	}
+	// err = r.ParseMultipartForm(10 << 20) // 10 MB
+	// if err != nil {
+	// 	http.Error(w, "error parsing multipart form: "+err.Error(), http.StatusBadRequest)
+	// 	return
+	// }
 
 	file, _, err := r.FormFile("photo")
 	var photo []byte
 	if err != nil {
+		fmt.Println(err)
 		photo = nil
 	} else {
 		defer file.Close()
@@ -49,6 +51,8 @@ func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, ps httpro
 	id_chat_tmp := r.FormValue("id_chat")
 	testo := r.FormValue("testo")
 
+	fmt.Println(testo, photo)
+
 	id_chat, err := strconv.Atoi(id_chat_tmp)
 	if err != nil {
 		http.Error(w, "error: conversion id_chat_tmp (string) to id_chat (int): "+err.Error(), http.StatusInternalServerError)
@@ -59,6 +63,7 @@ func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, ps httpro
 		http.Error(w, "messaggio troppo corto", http.StatusBadRequest)
 		return
 	}
+
 	erro := rt.db.SendMessage(cs, id_chat, testo, photo)
 	if erro != nil && strings.HasPrefix(erro.Error(), "error in authentication SendMessage:") {
 		http.Error(w, erro.Error(), http.StatusUnauthorized)

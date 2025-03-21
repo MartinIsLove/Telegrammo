@@ -11,7 +11,7 @@ export default {
 			id: null,
             chatId: null,
 			photo: null,
-
+			message: "",
 
 		}
 	},
@@ -33,15 +33,19 @@ export default {
             });
         },
 		async send() {
-
+			if (this.photo === null && this.message === ""){
+				return 
+			}	
 			let formData = new FormData();
 			formData.append('photo', this.photo)
 			formData.append('id_chat', this.chatId)
 			formData.append('testo', this.message)
 			
-            await this.$axios.post("/message", formData, {headers: {'Content-Type': 'multipart/form-data',cs:this.id}});
-			this.message=''
-			this.photo= null
+			
+			await this.$axios.post("/message", formData, {headers: {'Content-Type': 'multipart/form-data', cs: this.id}});
+			this.message = ''
+			this.photo = null 
+            this.$refs.photoInput.value = '' 
             this.fetchMessage()
 		},
 		formatDate(date) {
@@ -164,12 +168,13 @@ export default {
 		<button class="btn btn-secondary mt-2 rounded ms-2"  >Send</button>
 		<label for="photo" class="btn btn-secondary mt-2 rounded ms-2 btn-paperclip">
             <i class="bi bi-paperclip"></i>
-            <input type="file" class="d-none" id="photo" @change="handleFileUpload">
+            <input type="file" class="d-none" id="photo" @change="handleFileUpload" ref="photoInput">
         </label>
     <br>
     </div>
 </div>
 </form>
+
   
     
 </template>

@@ -32,39 +32,41 @@ export default {
             this.chatId = parseInt(this.$route.params.id, 10);
         },
         async getUsers() {
-            try{
-                this.message=''
-                this.error=''
-                this.users=[]
+            try {
+                this.message = ''
+                this.error = ''
+                this.users = []
                 this.id = sessionStorage.getItem("cs")
-                if (this.chUsername === ''){
+                if (this.chUsername === '') {
                     let tmp = '$'
-                    await this.$axios.get(`/search/users/${tmp}`, {headers: {cs:this.id}});
-                }else{
-                let response = await this.$axios.get(`/search/users/${this.chUsername}`, {headers: {cs:this.id}});
-                this.searchCompleted=true
-                this.users = response.data
-                if (response.status === 200){
+                    await this.$axios.get(`/search/users/${tmp}`, {headers: {cs: this.id}});
+                } else {
+                    let response = await this.$axios.get(`/search/users/${this.chUsername}`, {headers: {cs: this.id}});
+                    this.searchCompleted = true
+                    this.users = response.data
+                    if (response.status === 200) {
                         this.message = 'usernames find';
                     }
                 }
-            }
-            catch(error){
-                this.error=error
+            } catch (error) {
+                this.error = error
                 console.error('Error fetching user data:', error);
             }
         },
-        async handleSelectedUser(){
-            try{
-                
+        async handleSelectedUser() {
+            try {
                 this.id = sessionStorage.getItem("cs")
                 const membriIds = this.selectedUser.map(user => user.id);
-                await this.$axios.post(`/conversation/group/user`,{id_chat:this.chatId, membri:membriIds} ,{headers: {cs:this.id}});
-                
-                this.$router.push("/chat/"+this.chatId);
-            }
-            catch(error){
-                this.error=error
+                await this.$axios.post(`/conversation/group/user`, {
+                    id_chat: this.chatId,
+                    membri: membriIds
+                }, {
+                    headers: {cs: this.id}
+                });
+
+                this.$router.push("/chat/" + this.chatId);
+            } catch (error) {
+                this.error = error
                 console.error('error add user to group: ', error)
             }
         },
@@ -79,12 +81,12 @@ export default {
     <div class="d-flex justify-content-center align-items-center vh-100">
         <div class="col-6">
             <div class="mt-4">
+                <h2 class="fw-normal">Usernames</h2>
+                <form class="mt-3" @submit.prevent="getUsers">
+                    <label for="username" class="form-label">Search User</label>
+                    <input type="text" class="form-control mb-2" id="username" placeholder="Insert Username" v-model="chUsername" @input="getUsers">
+                </form>
                 <form @submit.prevent="handleSelectedUser">
-                    <h2 class="fw-normal">Usernames</h2>
-                    <form class="mt-3" @submit.prevent="getUsers">
-                        <label for="username" class="form-label">Search User</label>
-                        <input type="text" class="form-control mb-2" id="username" placeholder="Insert Username" v-model="chUsername" @input="getUsers">
-                    </form>
                     <div v-for="user in users" :key="user.id" class="form-check">
                         <input class="form-check-input" type="checkbox" name="selectedUser" :value="user" v-model="selectedUser">
                         <label class="form-check-label" :for="'user-'+user.id">
