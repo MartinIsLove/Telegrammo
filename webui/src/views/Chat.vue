@@ -87,9 +87,9 @@ export default {
 			if (m !== mes) {
 				m.showEmoji = false;
 			}
-    	});
-    // Apre/chiude il pannello del messaggio selezionato
-    mes.showEmoji = !mes.showEmoji; 
+    		});
+   			 // Apre/chiude il pannello del messaggio selezionato
+    		mes.showEmoji = !mes.showEmoji; 
 		},
 		async handleEmojiChange(mes, selectedEmoji) {
             
@@ -110,7 +110,14 @@ export default {
 	},
 	mounted() {
 		this.refresh()
-	}
+		this.intervalId = setInterval(() => {
+		this.fetchMessage();
+		}, 2000);
+	},
+	beforeDestroy() {
+	// Interrompi l’intervallo quando il componente viene distrutto
+		clearInterval(this.intervalId);
+	},
 }
 </script>
 
