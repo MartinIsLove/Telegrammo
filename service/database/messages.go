@@ -52,7 +52,11 @@ func (db *appdbimpl) CommentMessage(cs int, id_mes int, emoji string, id_chat in
 	}
 
 	if num_righe == 1 {
-		return fmt.Errorf("CommentMessage: you already have one comment, before delete the past comment %w", err)
+		_, err = db.c.Exec("UPDATE emoticon SET emoji=$1 WHERE id_messaggio=$2", emoji, id_mes)
+		if err != nil {
+			return fmt.Errorf("CommentMessage error: database UPDATE not successful: %w", err)
+		}
+		return nil
 	}
 
 	_, err = db.c.Exec("INSERT INTO emoticon (id_utente, id_messaggio, emoji) VALUES  ($1, $2, $3)", cs, id_mes, emoji)

@@ -98,12 +98,13 @@ export default {
 				if (selectedEmoji !== ""){
 					await this.$axios.post(`/message/comment`, {id_chat:this.chatId, emoji:selectedEmoji, id_mes:mes.id_mess},{headers:{cs:this.id}});
 				}
-				// this.fetchMessage()
-				window.location.reload()
+				this.fetchMessage()
+				
 			}
 			catch(e){
-				window.location.reload()
+				console.error(e);
 			}
+			mes.showEmoji = false; 
         },
 		
 	},
