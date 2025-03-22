@@ -54,6 +54,7 @@ type AppDatabase interface {
 	SetGroupName(int, int, string) error
 	SetGroupPhoto(int, int, []byte) error
 	AddToGroup(int, int, []int) error
+	CommentMessage(int, int, string, int) error
 	Ping() error
 }
 

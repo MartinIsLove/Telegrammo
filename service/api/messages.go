@@ -1,7 +1,7 @@
 package api
 
 import (
-	"fmt"
+	"encoding/json"
 	"io"
 	"net/http"
 	"strconv"
@@ -28,16 +28,16 @@ func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, ps httpro
 	// 	http.Error(w, "sendMessage:"+err.Error(), http.StatusBadRequest)
 	// 	return
 	// }
-	// err = r.ParseMultipartForm(10 << 20) // 10 MB
-	// if err != nil {
-	// 	http.Error(w, "error parsing multipart form: "+err.Error(), http.StatusBadRequest)
-	// 	return
-	// }
+	err = r.ParseMultipartForm(10 << 20) // 10 MB
+	if err != nil {
+		http.Error(w, "error parsing multipart form: "+err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	file, _, err := r.FormFile("photo")
 	var photo []byte
 	if err != nil {
-		fmt.Println(err)
+
 		photo = nil
 	} else {
 		defer file.Close()
@@ -50,8 +50,6 @@ func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, ps httpro
 
 	id_chat_tmp := r.FormValue("id_chat")
 	testo := r.FormValue("testo")
-
-	fmt.Println(testo, photo)
 
 	id_chat, err := strconv.Atoi(id_chat_tmp)
 	if err != nil {
@@ -71,6 +69,27 @@ func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, ps httpro
 	}
 	if erro != nil {
 		http.Error(w, erro.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+func (rt *_router) commentMessage(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var emoji Comment
+
+	cs, err := rt.AuthenticationApi(r)
+	if err != nil {
+		http.Error(w, "error: authentication user sendMessage"+err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&emoji); err != nil {
+		http.Error(w, "commentMessage:"+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = rt.db.CommentMessage(cs, emoji.Id_mes, emoji.Emoji, emoji.Id_chat)
+	if err != nil {
+		http.Error(w, "commentMessage:"+err.Error(), http.StatusBadRequest)
 		return
 	}
 	w.WriteHeader(http.StatusOK)

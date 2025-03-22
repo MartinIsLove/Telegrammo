@@ -45,6 +45,11 @@ type NomeChat struct {
 	Nome    string `json:"nome"`
 	Message []Mess `json:"message"`
 }
+type Comment struct {
+	Id_mes  int    `json:"id_mes"`
+	Emoji   string `json:"emoji"`
+	Id_chat int    `json:"id_chat"`
+}
 
 func NewMess(Messaggio database.MessDb) Mess {
 	return Mess{

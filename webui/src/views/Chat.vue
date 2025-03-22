@@ -13,6 +13,8 @@ export default {
 			photo: null,
 			message: "",
 
+			emoji: ["👠", "💅", "👍🏻", "👌🏻"],
+			
 		}
 	},
 	methods: {
@@ -27,7 +29,9 @@ export default {
         async fetchMessage(){
             let response = await this.$axios.get(`/conversation/${this.chatId}`, {headers:{cs:this.id}});
 			this.messaggi = response.data
-
+			this.messaggi.message.forEach(mes => {
+				mes.showEmoji = false; 
+			});
 			this.$nextTick(() => {
                 this.scrollToBottom();
             });
@@ -77,6 +81,31 @@ export default {
 		handleFileUpload(event){
 			this.photo = event.target.files[0];
 		},
+		toggleEmoji(mes) {
+			// Chiude i pannelli di tutti gli altri messaggi
+			this.messaggi.message.forEach(m => {
+			if (m !== mes) {
+				m.showEmoji = false;
+			}
+    	});
+    // Apre/chiude il pannello del messaggio selezionato
+    mes.showEmoji = !mes.showEmoji; 
+		},
+		async handleEmojiChange(mes, selectedEmoji) {
+            
+			console.log(mes, selectedEmoji)
+			try{
+				if (selectedEmoji !== ""){
+					await this.$axios.post(`/message/comment`, {id_chat:this.chatId, emoji:selectedEmoji, id_mes:mes.id_mess},{headers:{cs:this.id}});
+				}
+				// this.fetchMessage()
+				window.location.reload()
+			}
+			catch(e){
+				window.location.reload()
+			}
+        },
+		
 	},
 	mounted() {
 		this.refresh()
@@ -102,8 +131,8 @@ export default {
 		<hr style="width: 100%;">
     </div>
 	<!-- <div style="height: 8%;"></div> -->
-	<div ref="messageContainer"  style="overflow-y: auto; max-height: calc(100vh - 150px);">
-		<div v-for="mes in messaggi.message">
+	<div ref="messageContainer"  style="overflow-y: auto; max-height: calc(100vh - 150px); min-height: 80vh;">
+		<div v-for="mes in messaggi.message" :key="mes.id_mess">
 			<div v-if="mes.testo === '' && mes.photo === null" class="d-flex justify-content-center my-2">
 				<div class="date-container">
 					<p class="text-wrap text-center mb-0">
@@ -114,6 +143,7 @@ export default {
 			<div v-else-if="id == mes.id_mitt" class="d-flex justify-content-end my-2 ">
 				<div class=" message-container row g-0 border rounded p-2 position-relative ">
 					<div class="d-flex justify-content-between w-100">
+						
 						<p v-if="mes.gruppo" class="text-wrap message-content">
 							<span class="text-capitalize fw-bold">{{ mes.nome }}</span><br>
 							<div v-if="mes.photo !== null">
@@ -122,12 +152,24 @@ export default {
 							 
 							{{ mes.testo }}
 						</p>
+						
 						<p v-else class="message-content">
 							<div v-if="mes.photo !== null">
                                 <img :src="'data:image/png;base64,' + mes.photo" class="img-fluid" />
 							</div>
 							<span>{{ mes.testo }}</span>
 						</p>
+						<button @click="toggleEmoji(mes)" class="btn btn-secondary message-button mb-3">
+							emoji
+						</button>
+						<div v-if="mes.showEmoji" class="bottoneEmoji-container ">
+							<div v-for="emojiItem in emoji" :key="emojiItem" :value="emojiItem">
+								<button class="bottoneEmoji btn btn-secondary " @click="handleEmojiChange(mes, emojiItem )">
+									{{ emojiItem }}
+								</button>
+							</div>
+						</div>
+
 					</div>
 					<div class="message-time text-end">
                         {{ formatTime(mes.data) }}
@@ -179,7 +221,32 @@ export default {
     
 </template>
 <style>
-
+.bottoneEmoji {
+  display: block; /* Li rende blocchi indipendenti */
+  margin-bottom: 5px; /* Aggiunge uno spazio tra un bottone e l'altro */
+}
+.bottoneEmoji-container {
+  position: absolute; 
+  top: 40px;    /* regola la posizione verticale */
+  right: 0;    /* regola la posizione orizzontale */
+  z-index: 999; 
+  background-color: #333; /* esempio di colore di sfondo */
+  padding: 5px;
+  border-radius: 5px;
+}
+.message-button{
+	height: 40px;
+    width: 70px;
+    -webkit-appearance: none; /* Per WebKit (Safari, Chrome) */
+    -moz-appearance: none; /* Per Firefox */
+    appearance: none; /* Standard */
+    background: transparent; /* Rimuove lo sfondo */
+    border: none; /* Rimuove il bordo */
+    padding: 0; /* Rimuove il padding */
+    margin: 0; /* Rimuove il margine */
+    cursor: pointer; /* Cambia il cursore */
+    outline: none; /* Rimuove il contorno */
+}
 .message-time {
     position: absolute; 
     bottom: 5px;
