@@ -220,11 +220,10 @@ func (rt *_router) createGroup(w http.ResponseWriter, r *http.Request, ps httpro
 		return
 	}
 
-	// Get the file from the form
 	file, handler, err := r.FormFile("propic")
 	var photo []byte
 	if err != nil {
-		// If no file is uploaded, use the default photo
+
 		noPhotoPath := filepath.Join("webui", "src", "assets", "NoPhoto.png")
 		photo, err = os.ReadFile(noPhotoPath)
 		if err != nil {
@@ -233,7 +232,7 @@ func (rt *_router) createGroup(w http.ResponseWriter, r *http.Request, ps httpro
 		}
 	} else {
 		defer file.Close()
-		// Read the file content
+
 		photo, err = validatePhoto(file, handler, err)
 		if err != nil {
 			http.Error(w, "error: bad input"+err.Error(), http.StatusBadRequest)
@@ -241,11 +240,9 @@ func (rt *_router) createGroup(w http.ResponseWriter, r *http.Request, ps httpro
 		}
 	}
 
-	// Get the other form fields
 	groupName := r.FormValue("nome_chat")
 	membriStr := r.FormValue("membri")
 
-	// Decode the membri field
 	var membri []int
 	err = json.Unmarshal([]byte(membriStr), &membri)
 	if err != nil {

@@ -88,7 +88,7 @@ export default {
 
 <style>
 .custom-box {
-    min-height: 60px;  /* Imposta un'altezza minima di 300px */
+    min-height: 60px;
 }
 .custom-scroll {
         max-height: 95vh;

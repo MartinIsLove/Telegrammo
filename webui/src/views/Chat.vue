@@ -90,7 +90,6 @@ export default {
 		},
 		async handleCheckboxChange(mes, emojiItem) {
             console.log(mes, emojiItem);
-            // Aggiungi qui la tua logica per gestire il clic sulla checkbox
 			try{
 				if (emojiItem !== ""){
 					await this.$axios.post(`/message/comment`, {id_chat:this.chatId, emoji:emojiItem, id_mes:mes.id_mess},{headers:{cs:this.id}});
@@ -244,30 +243,30 @@ export default {
 </template>
 <style>
 .bottoneEmoji {
-  display: block; /* Li rende blocchi indipendenti */
-  margin-bottom: 5px; /* Aggiunge uno spazio tra un bottone e l'altro */
+  display: block; 
+  margin-bottom: 5px; 
 }
 .bottoneEmoji-container {
   position: absolute; 
-  top: 40px;    /* regola la posizione verticale */
-  right: 0;    /* regola la posizione orizzontale */
+  top: 40px;    
+  right: 0;    
   z-index: 999; 
-  background-color: #333; /* esempio di colore di sfondo */
+  background-color: #333; 
   padding: 5px;
   border-radius: 5px;
 }
 .message-button{
 	height: 40px;
     width: 70px;
-    -webkit-appearance: none; /* Per WebKit (Safari, Chrome) */
-    -moz-appearance: none; /* Per Firefox */
-    appearance: none; /* Standard */
-    background: transparent; /* Rimuove lo sfondo */
-    border: none; /* Rimuove il bordo */
-    padding: 0; /* Rimuove il padding */
-    margin: 0; /* Rimuove il margine */
-    cursor: pointer; /* Cambia il cursore */
-    outline: none; /* Rimuove il contorno */
+    -webkit-appearance: none; 
+    -moz-appearance: none; 
+    appearance: none; 
+    background: transparent; 
+    border: none; 
+    padding: 0; 
+    margin: 0;
+    cursor: pointer; 
+    outline: none; 
 }
 .message-time {
     position: absolute; 
@@ -306,11 +305,11 @@ body, html {
     align-items: center;
 }
 .emoji-checkbox-container {
-    display: flex; /* Dispone gli elementi in orizzontale */
-    flex-wrap: wrap; /* Permette agli elementi di andare a capo se necessario */
+    display: flex; 
+    flex-wrap: wrap; 
 	
 }
 .emoji-item {
-    margin-right: 5px; /* Aggiunge uno spazio tra gli elementi */
+    margin-right: 5px; 
 }
 </style>
