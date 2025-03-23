@@ -26,6 +26,13 @@ export default {
 			this.fetchMessage()
 
 		},
+		async fetchMessageNoBottom(){
+            let response = await this.$axios.get(`/conversation/${this.chatId}`, {headers:{cs:this.id}});
+			this.messaggi = response.data
+			this.messaggi.message.forEach(mes => {
+				mes.showEmoji = false; 
+			});
+        },
         async fetchMessage(){
             let response = await this.$axios.get(`/conversation/${this.chatId}`, {headers:{cs:this.id}});
 			this.messaggi = response.data
@@ -81,49 +88,50 @@ export default {
 		handleFileUpload(event){
 			this.photo = event.target.files[0];
 		},
-		toggleEmoji(mes) {
-			// Chiude i pannelli di tutti gli altri messaggi
-			this.messaggi.message.forEach(m => {
-			if (m !== mes) {
-				m.showEmoji = false;
-			}
-    		});
-   			 // Apre/chiude il pannello del messaggio selezionato
-    		mes.showEmoji = !mes.showEmoji; 
-		},
-		async handleEmojiChange(mes, selectedEmoji) {
-            
-			console.log(mes, selectedEmoji)
+		async handleCheckboxChange(mes, emojiItem) {
+            console.log(mes, emojiItem);
+            // Aggiungi qui la tua logica per gestire il clic sulla checkbox
 			try{
-				if (selectedEmoji !== ""){
-					await this.$axios.post(`/message/comment`, {id_chat:this.chatId, emoji:selectedEmoji, id_mes:mes.id_mess},{headers:{cs:this.id}});
+				if (emojiItem !== ""){
+					await this.$axios.post(`/message/comment`, {id_chat:this.chatId, emoji:emojiItem, id_mes:mes.id_mess},{headers:{cs:this.id}});
 				}
-				this.fetchMessage()
+				this.fetchMessageNoBottom()
 				
 			}
 			catch(e){
 				console.error(e);
 			}
-			mes.showEmoji = false; 
+			
         },
-		handleCheckboxChange(emojiItem) {
-            console.log('Checkbox clicked:', emojiItem);
-            // Aggiungi qui la tua logica per gestire il clic sulla checkbox
-        },
+		getEmojiCount(emojiItem){
+			if (emojiItem === "👠"){
+				return 0
+			}if (emojiItem === "❤️"){
+				return 1
+			}if (emojiItem === "👍🏻"){
+				return 2
+			}if (emojiItem === "👌🏻"){
+				return 3
+			}if (emojiItem === "💅"){
+				return 4
+			}
+
+		},
 		
 	},
 	mounted() {
 		this.refresh()
-		
+		setInterval(() => {
+            this.fetchMessageNoBottom();
+        }, 2000); 
+    
 	},
 	
 }
 </script>
 
 <template>
-	
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css">
-	
 	<div class="bg-dark" style="width: 100%; position: sticky; top: 0;  ">
 		<div class="d-flex justify-content-between align-items-center w-100">
 		<div v-if="messaggi.gruppo == true" class="d-flex justify-content-start align-items-center">
@@ -132,12 +140,10 @@ export default {
 				options
 			</button>
 		</div>
-        
 		<h2 class="mt-2 position-relative fw-bold flex-grow-1 text-center " style="transform: translateX(-40px);" >{{ messaggi.nome }}</h2>
 		</div>
 		<hr style="width: 100%;">
     </div>
-	<!-- <div style="height: 8%;"></div> -->
 	<div ref="messageContainer"  style="overflow-y: auto; max-height: calc(100vh - 150px); min-height: 80vh;">
 		<div v-for="mes in messaggi.message" :key="mes.id_mess">
 			<div v-if="mes.testo === '' && mes.photo === null" class="d-flex justify-content-center my-2">
@@ -150,13 +156,11 @@ export default {
 			<div v-else-if="id == mes.id_mitt" class="d-flex justify-content-end my-2 ">
 				<div class=" message-container row g-0 border rounded p-2 position-relative ">
 					<div class="d-flex justify-content-between w-100">
-						
 						<p v-if="mes.gruppo" class="text-wrap message-content">
 							<span class="text-capitalize fw-bold">{{ mes.nome }}</span><br>
 							<div v-if="mes.photo !== null">
                                 <img :src="'data:image/png;base64,' + mes.photo" class="img-fluid" />
 							</div>
-							 
 							{{ mes.testo }}
 						</p>
 						<p v-else class="message-content">
@@ -165,24 +169,21 @@ export default {
 							</div>
 							<span>{{ mes.testo }}</span>
 						</p>
-						<button @click="toggleEmoji(mes)" class="btn btn-secondary message-button mb-3">
-							emoji
-						</button>
-						<div v-if="mes.showEmoji" class="bottoneEmoji-container ">
-							<div v-for="emojiItem in emoji" :key="emojiItem" :value="emojiItem">
-								<button class="bottoneEmoji btn btn-secondary " @click="handleEmojiChange(mes, emojiItem )">
-									{{ emojiItem }}
-								</button>
-							</div>
-						</div>
-
+						
 					</div>
-						<div class="emoji-checkbox-container">
-							<div v-for="emojiItem in emoji" :key="emojiItem" :value="emojiItem" class="emoji-item"> 
-								<input type="checkbox" class="btn-check" :id="'btn-check-' + emojiItem" autocomplete="off" @change="handleCheckboxChange">
-								<label class="btn btn-primary mb-2" :for="'btn-check-' + emojiItem">{{ emojiItem }}</label>					
-							</div>
+					<div class="emoji-checkbox-container " >
+						<div v-for="emojiItem in emoji" :key="emojiItem" :value="emojiItem" class="emoji-item"> 
+							
+							<div v-if="emojiItem === mes.myEmoji">
+								<input type="checkbox" class="btn-check" :id="'btn-check-' + mes.id_mess + '-' + emojiItem" autocomplete="off" @change="handleCheckboxChange(mes, emojiItem)">
+								<label class="btn btn-primary mb-2" :for="'btn-check-' + mes.id_mess + '-' + emojiItem">{{ emojiItem }} {{mes.emoji[getEmojiCount(emojiItem)]}}</label>	
+							</div>		
+							<div v-else>
+								<input type="checkbox" class="btn-check" :id="'btn-check-' + mes.id_mess + '-' + emojiItem" autocomplete="off" @change="handleCheckboxChange(mes, emojiItem)">
+								<label class="btn btn-secondary mb-2" :for="'btn-check-' + mes.id_mess + '-' + emojiItem">{{ emojiItem }} {{mes.emoji[getEmojiCount(emojiItem)]}}</label>	
+							</div>		
 						</div>
+					</div>
 					<div class="message-time text-end">
                         {{ formatTime(mes.data) }}
                     </div>
@@ -203,31 +204,33 @@ export default {
 						</div>
 						<span>{{ mes.testo }}</span>
 					</p>
-					<button @click="toggleEmoji(mes)" class="btn btn-secondary message-button mb-3">
-							emoji
-						</button>
-						<div v-if="mes.showEmoji" class="bottoneEmoji-container ">
-							<div v-for="emojiItem in emoji" :key="emojiItem" :value="emojiItem">
-								<button class="bottoneEmoji btn btn-secondary " @click="handleEmojiChange(mes, emojiItem )">
-									{{ emojiItem }}
-								</button>
-							</div>
-						</div>
+					
 					<div class="message-time">
                         {{ formatTime(mes.data) }}
                     </div>
+					
+				</div>
+				<div class="emoji-checkbox-container " >
+					<div v-for="emojiItem in emoji" :key="emojiItem" :value="emojiItem" class="emoji-item"> 
+						
+						<div v-if="emojiItem === mes.myEmoji">
+							<input type="checkbox" class="btn-check" :id="'btn-check-' + mes.id_mess + '-' + emojiItem" autocomplete="off" @change="handleCheckboxChange(mes, emojiItem)">
+							<label class="btn btn-primary mb-2" :for="'btn-check-' + mes.id_mess + '-' + emojiItem">{{ emojiItem }} {{mes.emoji[getEmojiCount(emojiItem)]}}</label>	
+						</div>		
+						<div v-else>
+							<input type="checkbox" class="btn-check" :id="'btn-check-' + mes.id_mess + '-' + emojiItem" autocomplete="off" @change="handleCheckboxChange(mes, emojiItem)">
+							<label class="btn btn-secondary mb-2" :for="'btn-check-' + mes.id_mess + '-' + emojiItem">{{ emojiItem }} {{mes.emoji[getEmojiCount(emojiItem)]}}</label>	
+						</div>		
+					</div>
 				</div>
 			</div>
 		</div>
 	</div>
-	
-
 <div class="min-vh-100">
 </div>
 <form  @submit.prevent="send" class="sticky-bottom mb-2">
 <div >
     <div class="input-group mb-3">
-		
 		<input type="text" class="form-control rounded" placeholder="write message" aria-label="message" aria-describedby="basic-addon1" v-model="message">
 		<button class="btn btn-secondary mt-2 rounded ms-2"  >Send</button>
 		<label for="photo" class="btn btn-secondary mt-2 rounded ms-2 btn-paperclip">
@@ -238,12 +241,8 @@ export default {
     </div>
 </div>
 </form>
-
-  
-    
 </template>
 <style>
-
 .bottoneEmoji {
   display: block; /* Li rende blocchi indipendenti */
   margin-bottom: 5px; /* Aggiunge uno spazio tra un bottone e l'altro */
@@ -309,6 +308,7 @@ body, html {
 .emoji-checkbox-container {
     display: flex; /* Dispone gli elementi in orizzontale */
     flex-wrap: wrap; /* Permette agli elementi di andare a capo se necessario */
+	
 }
 .emoji-item {
     margin-right: 5px; /* Aggiunge uno spazio tra gli elementi */

@@ -26,7 +26,6 @@ func (db *appdbimpl) SendMessage(cs int, id_chat int, message string, photo []by
 
 	return nil
 }
-
 func (db *appdbimpl) CommentMessage(cs int, id_mes int, emoji string, id_chat int) error {
 
 	_, err := db.Authentication(cs)
@@ -44,15 +43,21 @@ func (db *appdbimpl) CommentMessage(cs int, id_mes int, emoji string, id_chat in
 	if num_righe == 0 {
 		return fmt.Errorf("CommentMessage: you don't are in the chat %w", err)
 	}
-
-	err = db.c.QueryRow("SELECT count(id_utente) FROM emoticon WHERE id_utente=$1 AND id_messaggio=$2", cs, id_mes).Scan(&num_righe)
+	var tmp string
+	err = db.c.QueryRow("SELECT count(id_utente),COALESCE(emoji, '') FROM emoticon WHERE id_utente=$1 AND id_messaggio=$2", cs, id_mes).Scan(&num_righe, &tmp)
 
 	if err != nil {
 		return fmt.Errorf("CommentMessage: query error: %w", err)
 	}
-
+	if num_righe == 1 && emoji == tmp {
+		_, err = db.c.Exec("DELETE FROM emoticon WHERE id_utente=$1 AND id_messaggio=$2", cs, id_mes)
+		if err != nil {
+			return fmt.Errorf("CommentMessage error: database UPDATE not successful: %w", err)
+		}
+		return nil
+	}
 	if num_righe == 1 {
-		_, err = db.c.Exec("UPDATE emoticon SET emoji=$1 WHERE id_messaggio=$2", emoji, id_mes)
+		_, err = db.c.Exec("UPDATE emoticon SET emoji=$1 WHERE id_messaggio=$2 AND id_utente=$3", emoji, id_mes, cs)
 		if err != nil {
 			return fmt.Errorf("CommentMessage error: database UPDATE not successful: %w", err)
 		}
