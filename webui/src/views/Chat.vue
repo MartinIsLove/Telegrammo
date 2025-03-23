@@ -106,6 +106,10 @@ export default {
 			}
 			mes.showEmoji = false; 
         },
+		handleCheckboxChange(emojiItem) {
+            console.log('Checkbox clicked:', emojiItem);
+            // Aggiungi qui la tua logica per gestire il clic sulla checkbox
+        },
 		
 	},
 	mounted() {
@@ -155,7 +159,6 @@ export default {
 							 
 							{{ mes.testo }}
 						</p>
-						
 						<p v-else class="message-content">
 							<div v-if="mes.photo !== null">
                                 <img :src="'data:image/png;base64,' + mes.photo" class="img-fluid" />
@@ -174,6 +177,12 @@ export default {
 						</div>
 
 					</div>
+						<div class="emoji-checkbox-container">
+							<div v-for="emojiItem in emoji" :key="emojiItem" :value="emojiItem" class="emoji-item"> 
+								<input type="checkbox" class="btn-check" :id="'btn-check-' + emojiItem" autocomplete="off" @change="handleCheckboxChange">
+								<label class="btn btn-primary mb-2" :for="'btn-check-' + emojiItem">{{ emojiItem }}</label>					
+							</div>
+						</div>
 					<div class="message-time text-end">
                         {{ formatTime(mes.data) }}
                     </div>
@@ -234,6 +243,7 @@ export default {
     
 </template>
 <style>
+
 .bottoneEmoji {
   display: block; /* Li rende blocchi indipendenti */
   margin-bottom: 5px; /* Aggiunge uno spazio tra un bottone e l'altro */
@@ -295,5 +305,12 @@ body, html {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+.emoji-checkbox-container {
+    display: flex; /* Dispone gli elementi in orizzontale */
+    flex-wrap: wrap; /* Permette agli elementi di andare a capo se necessario */
+}
+.emoji-item {
+    margin-right: 5px; /* Aggiunge uno spazio tra gli elementi */
 }
 </style>

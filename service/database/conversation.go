@@ -238,6 +238,15 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 	var lastDate time.Time
 
 	for _, m := range mess {
+		var emoji string
+
+		err = db.c.QueryRow("SELECT emoji FROM emoticon WHERE id_utente=$1 AND id_messaggio=$2", cs, m.IdMess).Scan(&emoji)
+		if err == sql.ErrNoRows {
+			emoji = ""
+		} else if err != nil {
+			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying users: %w", err)
+		}
+
 		var counts [5]int
 		err = db.c.QueryRow("SELECT SUM(CASE WHEN emoji = '👠' AND id_messaggio=$1 THEN 1 ELSE 0 END) AS tacchi, SUM(CASE WHEN emoji = '❤️' AND id_messaggio=$1 THEN 1 ELSE 0 END) AS cuore, SUM(CASE WHEN emoji = '👍🏻' AND id_messaggio=$1 THEN 1 ELSE 0 END) AS dito_in_su, SUM(CASE WHEN emoji = '👌🏻' AND id_messaggio=$1 THEN 1 ELSE 0 END) AS ok, SUM(CASE WHEN emoji = '💅' AND id_messaggio=$1 THEN 1 ELSE 0 END) AS manicure FROM emoticon;", m.IdMess).Scan(&counts[0], &counts[1], &counts[2], &counts[3], &counts[4])
 		if err != nil {
@@ -254,7 +263,9 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 			result = append(result, dateMessage)
 			lastDate = localMidnight
 		}
-
+		if emoji != "" {
+			m.MyEmoji = emoji
+		}
 		m.Emoji = counts[:]
 		result = append(result, m)
 	}

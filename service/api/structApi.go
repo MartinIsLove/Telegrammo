@@ -29,16 +29,17 @@ type ChatUtente struct {
 }
 
 type Mess struct {
-	IdMess int       `json:"id_mess"`
-	Nome   string    `json:"nome"` // nome mittente
-	IdMitt int       `json:"id_mitt"`
-	Testo  string    `json:"testo"`
-	Data   time.Time `json:"data"`
-	Visual bool      `json:"visual"`
-	Photo  []byte    `json:"photo"`
-	IdChat int       `json:"id_chat"`
-	Gruppo bool      `json:"gruppo"`
-	Emoji  []int     `json:"emoji"` // l'ordine e' tacchi, cuore, ditoSu, ok, manicure
+	IdMess  int       `json:"id_mess"`
+	Nome    string    `json:"nome"` // nome mittente
+	IdMitt  int       `json:"id_mitt"`
+	Testo   string    `json:"testo"`
+	Data    time.Time `json:"data"`
+	Visual  bool      `json:"visual"`
+	Photo   []byte    `json:"photo"`
+	IdChat  int       `json:"id_chat"`
+	Gruppo  bool      `json:"gruppo"`
+	Emoji   []int     `json:"emoji"` // l'ordine e' tacchi, cuore, ditoSu, ok, manicure
+	MyEmoji string    `json:"myEmoji"`
 }
 
 type NomeChat struct {
@@ -54,16 +55,17 @@ type Comment struct {
 
 func NewMess(Messaggio database.MessDb) Mess {
 	return Mess{
-		IdMess: Messaggio.IdMess,
-		Nome:   Messaggio.Nome,
-		IdMitt: Messaggio.IdMitt,
-		Testo:  Messaggio.Testo,
-		Data:   Messaggio.Data,
-		Visual: Messaggio.Visual,
-		Photo:  Messaggio.Photo,
-		IdChat: Messaggio.IdChat,
-		Gruppo: Messaggio.Gruppo,
-		Emoji:  Messaggio.Emoji,
+		IdMess:  Messaggio.IdMess,
+		Nome:    Messaggio.Nome,
+		IdMitt:  Messaggio.IdMitt,
+		Testo:   Messaggio.Testo,
+		Data:    Messaggio.Data,
+		Visual:  Messaggio.Visual,
+		Photo:   Messaggio.Photo,
+		IdChat:  Messaggio.IdChat,
+		Gruppo:  Messaggio.Gruppo,
+		Emoji:   Messaggio.Emoji,
+		MyEmoji: Messaggio.MyEmoji,
 	}
 }
 func NewChatUtente(chatUtente database.ChatUtenteDb) ChatUtente {
