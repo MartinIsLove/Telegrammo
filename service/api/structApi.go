@@ -38,6 +38,7 @@ type Mess struct {
 	Photo  []byte    `json:"photo"`
 	IdChat int       `json:"id_chat"`
 	Gruppo bool      `json:"gruppo"`
+	Emoji  []int     `json:"emoji"` // l'ordine e' tacchi, cuore, ditoSu, ok, manicure
 }
 
 type NomeChat struct {
@@ -62,6 +63,7 @@ func NewMess(Messaggio database.MessDb) Mess {
 		Photo:  Messaggio.Photo,
 		IdChat: Messaggio.IdChat,
 		Gruppo: Messaggio.Gruppo,
+		Emoji:  Messaggio.Emoji,
 	}
 }
 func NewChatUtente(chatUtente database.ChatUtenteDb) ChatUtente {

@@ -27,4 +27,5 @@ type MessDb struct {
 	Photo  []byte    `json:"photo"`
 	IdChat int       `json:"id_chat"`
 	Gruppo bool      `json:"grupo"`
+	Emoji  []int     `json:"emoji"` // l'ordine e' tacchi, cuore, ditoSu, ok, manicure
 }

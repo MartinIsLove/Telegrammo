@@ -190,6 +190,7 @@ func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, ps ht
 		messaggi[i] = NewMess(user)
 	}
 
+	fmt.Println(messaggi)
 	var nome NomeChat
 	nome.Gruppo = gp
 	nome.Nome = str

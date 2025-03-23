@@ -13,7 +13,7 @@ export default {
 			photo: null,
 			message: "",
 
-			emoji: ["👠", "💅", "👍🏻", "👌🏻"],
+			emoji: ["👠", "💅", "👍🏻", "👌🏻","❤️"],
 			
 		}
 	},
@@ -110,14 +110,9 @@ export default {
 	},
 	mounted() {
 		this.refresh()
-		this.intervalId = setInterval(() => {
-		this.fetchMessage();
-		}, 2000);
+		
 	},
-	beforeDestroy() {
-	// Interrompi l’intervallo quando il componente viene distrutto
-		clearInterval(this.intervalId);
-	},
+	
 }
 </script>
 
@@ -199,6 +194,16 @@ export default {
 						</div>
 						<span>{{ mes.testo }}</span>
 					</p>
+					<button @click="toggleEmoji(mes)" class="btn btn-secondary message-button mb-3">
+							emoji
+						</button>
+						<div v-if="mes.showEmoji" class="bottoneEmoji-container ">
+							<div v-for="emojiItem in emoji" :key="emojiItem" :value="emojiItem">
+								<button class="bottoneEmoji btn btn-secondary " @click="handleEmojiChange(mes, emojiItem )">
+									{{ emojiItem }}
+								</button>
+							</div>
+						</div>
 					<div class="message-time">
                         {{ formatTime(mes.data) }}
                     </div>

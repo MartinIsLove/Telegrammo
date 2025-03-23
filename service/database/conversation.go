@@ -238,6 +238,12 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 	var lastDate time.Time
 
 	for _, m := range mess {
+		var counts [5]int
+		err = db.c.QueryRow("SELECT SUM(CASE WHEN emoji = '👠' AND id_messaggio=$1 THEN 1 ELSE 0 END) AS tacchi, SUM(CASE WHEN emoji = '❤️' AND id_messaggio=$1 THEN 1 ELSE 0 END) AS cuore, SUM(CASE WHEN emoji = '👍🏻' AND id_messaggio=$1 THEN 1 ELSE 0 END) AS dito_in_su, SUM(CASE WHEN emoji = '👌🏻' AND id_messaggio=$1 THEN 1 ELSE 0 END) AS ok, SUM(CASE WHEN emoji = '💅' AND id_messaggio=$1 THEN 1 ELSE 0 END) AS manicure FROM emoticon;", m.IdMess).Scan(&counts[0], &counts[1], &counts[2], &counts[3], &counts[4])
+		if err != nil {
+			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying users: %w", err)
+		}
+
 		localTime := m.Data.Local().Add(+1 * time.Hour)
 		localMidnight := time.Date(localTime.Year(), localTime.Month(), localTime.Day(), 0, 0, 0, 0, localTime.Location())
 		if lastDate.IsZero() || !localMidnight.Equal(lastDate) {
@@ -248,6 +254,8 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 			result = append(result, dateMessage)
 			lastDate = localMidnight
 		}
+
+		m.Emoji = counts[:]
 		result = append(result, m)
 	}
 
