@@ -116,6 +116,15 @@ export default {
 			}
 
 		},
+		async handleCheckboxChangeUncomment(mes){
+			try{
+				await this.$axios.post(`/message/uncomment`, {id_chat:this.chatId, id_mes:mes.id_mess},{headers:{cs:this.id}});
+				this.fetchMessageNoBottom()
+			}
+			catch(e){
+				console.error(e);
+			}
+		},
 		
 	},
 	mounted() {
@@ -174,7 +183,7 @@ export default {
 						<div v-for="emojiItem in emoji" :key="emojiItem" :value="emojiItem" class="emoji-item"> 
 							
 							<div v-if="emojiItem === mes.myEmoji">
-								<input type="checkbox" class="btn-check" :id="'btn-check-' + mes.id_mess + '-' + emojiItem" autocomplete="off" @change="handleCheckboxChange(mes, emojiItem)">
+								<input type="checkbox" class="btn-check" :id="'btn-check-' + mes.id_mess + '-' + emojiItem" autocomplete="off" @change="handleCheckboxChangeUncomment(mes)">
 								<label class="btn btn-primary mb-2" :for="'btn-check-' + mes.id_mess + '-' + emojiItem">{{ emojiItem }} {{mes.emoji[getEmojiCount(emojiItem)]}}</label>	
 							</div>		
 							<div v-else>
@@ -213,7 +222,7 @@ export default {
 					<div v-for="emojiItem in emoji" :key="emojiItem" :value="emojiItem" class="emoji-item"> 
 						
 						<div v-if="emojiItem === mes.myEmoji">
-							<input type="checkbox" class="btn-check" :id="'btn-check-' + mes.id_mess + '-' + emojiItem" autocomplete="off" @change="handleCheckboxChange(mes, emojiItem)">
+							<input type="checkbox" class="btn-check" :id="'btn-check-' + mes.id_mess + '-' + emojiItem" autocomplete="off" @change="handleCheckboxChangeUncomment(mes)">
 							<label class="btn btn-primary mb-2" :for="'btn-check-' + mes.id_mess + '-' + emojiItem">{{ emojiItem }} {{mes.emoji[getEmojiCount(emojiItem)]}}</label>	
 						</div>		
 						<div v-else>

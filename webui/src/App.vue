@@ -6,9 +6,11 @@ export default {
 	data: function() {
 		return {}
 	},
-	methods:{
-		profileButtonHandler() {
-			this.$router.push("/profile");
+	methods:
+	{
+		ButtonHandler() {
+			sessionStorage.removeItem("cs");
+			this.$router.push("/");
 		}
 	}
 }
@@ -42,15 +44,15 @@ export default {
 							</RouterLink>
 						</li>
 						<li class="nav-item">
-							<RouterLink to="/link1" class="nav-link">
+							<RouterLink to="/profile" class="nav-link">
 								<svg class="feather"><use href="/feather-sprite-v4.29.0.svg#layout"/></svg>
-								Menu item 1
+								Profile
 							</RouterLink>
 						</li>
 						<li class="nav-item">
-							<RouterLink to="/link2" class="nav-link">
+							<RouterLink to="/link2" class="nav-link" @click="ButtonHandler">
 								<svg class="feather"><use href="/feather-sprite-v4.29.0.svg#key"/></svg>
-								Menu item 2
+								Logout
 							</RouterLink>
 						</li>
 					</ul>
@@ -74,11 +76,11 @@ export default {
 					</ul>
 				</div>
 				<div class="position-relative" >
-					<div class="position-absolute bottom-0 start-0">
+					<!-- <div class="position-absolute bottom-0 start-0">
 						<button class="btn btn-dark ms-2 mb-2" @click="profileButtonHandler">
 							profile
 						</button>
-					</div>
+					</div> -->
 				</div>
 			</nav>
 

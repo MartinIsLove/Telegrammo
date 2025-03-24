@@ -55,6 +55,7 @@ type AppDatabase interface {
 	SetGroupPhoto(int, int, []byte) error
 	AddToGroup(int, int, []int) error
 	CommentMessage(int, int, string, int) error
+	UncommentMessage(int, int, int) error
 	Ping() error
 }
 

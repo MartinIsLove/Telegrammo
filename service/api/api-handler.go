@@ -25,6 +25,7 @@ func (rt *_router) Handler() http.Handler {
 	rt.router.POST("/message", rt.sendMessage)
 	rt.router.GET("/conversation/:idChat", rt.getConversation)
 	rt.router.POST("/message/comment", rt.commentMessage)
+	rt.router.POST("/message/uncomment", rt.uncommentMessage)
 	// Special routes
 	rt.router.GET("/liveness", rt.liveness)
 

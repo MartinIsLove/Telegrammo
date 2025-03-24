@@ -248,7 +248,7 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 		}
 
 		var counts [5]int
-		err = db.c.QueryRow("SELECT SUM(CASE WHEN emoji = '👠' AND id_messaggio=$1 THEN 1 ELSE 0 END) AS tacchi, SUM(CASE WHEN emoji = '❤️' AND id_messaggio=$1 THEN 1 ELSE 0 END) AS cuore, SUM(CASE WHEN emoji = '👍🏻' AND id_messaggio=$1 THEN 1 ELSE 0 END) AS dito_in_su, SUM(CASE WHEN emoji = '👌🏻' AND id_messaggio=$1 THEN 1 ELSE 0 END) AS ok, SUM(CASE WHEN emoji = '💅' AND id_messaggio=$1 THEN 1 ELSE 0 END) AS manicure FROM emoticon;", m.IdMess).Scan(&counts[0], &counts[1], &counts[2], &counts[3], &counts[4])
+		err = db.c.QueryRow("SELECT COALESCE(SUM(CASE WHEN emoji = '👠' AND id_messaggio=$1 THEN 1 ELSE 0 END),0) AS tacchi, COALESCE(SUM(CASE WHEN emoji = '❤️' AND id_messaggio=$1 THEN 1 ELSE 0 END),0) AS cuore, COALESCE(SUM(CASE WHEN emoji = '👍🏻' AND id_messaggio=$1 THEN 1 ELSE 0 END),0) AS dito_in_su, COALESCE(SUM(CASE WHEN emoji = '👌🏻' AND id_messaggio=$1 THEN 1 ELSE 0 END),0) AS ok, COALESCE(SUM(CASE WHEN emoji = '💅' AND id_messaggio=$1 THEN 1 ELSE 0 END),0) AS manicure FROM emoticon;", m.IdMess).Scan(&counts[0], &counts[1], &counts[2], &counts[3], &counts[4])
 		if err != nil {
 			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying users: %w", err)
 		}

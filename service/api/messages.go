@@ -94,3 +94,24 @@ func (rt *_router) commentMessage(w http.ResponseWriter, r *http.Request, ps htt
 	}
 	w.WriteHeader(http.StatusOK)
 }
+func (rt *_router) uncommentMessage(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var emoji Comment
+
+	cs, err := rt.AuthenticationApi(r)
+	if err != nil {
+		http.Error(w, "error: authentication user sendMessage"+err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&emoji); err != nil {
+		http.Error(w, "uncommentMessage:"+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = rt.db.UncommentMessage(cs, emoji.Id_mes, emoji.Id_chat)
+	if err != nil {
+		http.Error(w, "uncommentMessage:"+err.Error(), http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}

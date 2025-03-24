@@ -43,18 +43,10 @@ func (db *appdbimpl) CommentMessage(cs int, id_mes int, emoji string, id_chat in
 	if num_righe == 0 {
 		return fmt.Errorf("CommentMessage: you don't are in the chat %w", err)
 	}
-	var tmp string
-	err = db.c.QueryRow("SELECT count(id_utente),COALESCE(emoji, '') FROM emoticon WHERE id_utente=$1 AND id_messaggio=$2", cs, id_mes).Scan(&num_righe, &tmp)
+	err = db.c.QueryRow("SELECT count(id_utente) FROM emoticon WHERE id_utente=$1 AND id_messaggio=$2", cs, id_mes).Scan(&num_righe)
 
 	if err != nil {
 		return fmt.Errorf("CommentMessage: query error: %w", err)
-	}
-	if num_righe == 1 && emoji == tmp {
-		_, err = db.c.Exec("DELETE FROM emoticon WHERE id_utente=$1 AND id_messaggio=$2", cs, id_mes)
-		if err != nil {
-			return fmt.Errorf("CommentMessage error: database UPDATE not successful: %w", err)
-		}
-		return nil
 	}
 	if num_righe == 1 {
 		_, err = db.c.Exec("UPDATE emoticon SET emoji=$1 WHERE id_messaggio=$2 AND id_utente=$3", emoji, id_mes, cs)
@@ -70,4 +62,37 @@ func (db *appdbimpl) CommentMessage(cs int, id_mes int, emoji string, id_chat in
 	}
 
 	return nil
+}
+func (db *appdbimpl) UncommentMessage(cs int, id_mes int, id_chat int) error {
+
+	_, err := db.Authentication(cs)
+	if err != nil {
+		return fmt.Errorf("error in authentication SendMessage: %w", err)
+	}
+
+	var num_righe int64
+
+	err = db.c.QueryRow("SELECT count(id_utenti) FROM membri WHERE id_utenti=$1 AND id_chat=$2", cs, id_chat).Scan(&num_righe)
+
+	if err != nil {
+		return fmt.Errorf("UncommentMessage: query error: %w", err)
+	}
+	if num_righe == 0 {
+		return fmt.Errorf("UncommentMessage: you don't are in the chat %w", err)
+	}
+	err = db.c.QueryRow("SELECT count(id_utente) FROM emoticon WHERE id_utente=$1 AND id_messaggio=$2", cs, id_mes).Scan(&num_righe)
+
+	if err != nil {
+		return fmt.Errorf("UncommentMessage: query error: %w", err)
+	}
+	if num_righe == 1 {
+		_, err = db.c.Exec("DELETE FROM emoticon WHERE id_utente=$1 AND id_messaggio=$2", cs, id_mes)
+		if err != nil {
+			return fmt.Errorf("UncommentMessage error: database DELETE not successful: %w", err)
+		}
+		return nil
+	}
+
+	return nil
+
 }
