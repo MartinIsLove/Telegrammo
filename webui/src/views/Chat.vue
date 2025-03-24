@@ -125,6 +125,10 @@ export default {
 				console.error(e);
 			}
 		},
+		async forwardMessage(id_mes){
+			this.$router.push("/chat/forward/"+ id_mes);
+
+		},
 		
 	},
 	mounted() {
@@ -140,6 +144,7 @@ export default {
 
 <template>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css">
+	
 	<div class="bg-dark" style="width: 100%; position: sticky; top: 0;  ">
 		<div class="d-flex justify-content-between align-items-center w-100">
 		<div v-if="messaggi.gruppo == true" class="d-flex justify-content-start align-items-center">
@@ -169,7 +174,13 @@ export default {
 							<div v-if="mes.photo !== null">
                                 <img :src="'data:image/png;base64,' + mes.photo" class="img-fluid" />
 							</div>
+							
 							{{ mes.testo }}
+							<div>
+								<button class="forward-button btn btn-secondary" @click="forwardMessage(mes.id_mess)">
+									<i class="bi bi-arrow-90deg-right"></i>
+								</button>
+							</div>
 						</p>
 						<p v-else class="message-content">
 							<div v-if="mes.photo !== null">
@@ -251,6 +262,11 @@ export default {
 </form>
 </template>
 <style>
+.forward-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
 .bottoneEmoji {
   display: block; 
   margin-bottom: 5px; 

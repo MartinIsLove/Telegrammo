@@ -97,6 +97,10 @@ func (db *appdbimpl) CheckNames(cs int, toFind string) ([]UtenteDb, error) {
 
 	return utenti, nil
 }
+func (db *appdbimpl) CheckChatNames(cs int, toFind string) ([]UtenteDb, error) {
+
+	return []UtenteDb{}, nil
+}
 func (db *appdbimpl) GetMyConversations(cs int) ([]ChatUtenteDb, error) {
 	var chat []ChatUtenteDb
 	_, err := db.Authentication(cs)

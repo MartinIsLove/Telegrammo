@@ -8,6 +8,8 @@ import CreateGroup from '../views/CreateGroup.vue'
 import Chat from '../views/Chat.vue'
 import Options from '../views/GroupOptions.vue'
 import AddPart from '../views/SetPartecipants.vue'
+import Forward from '../views/Forward.vue'
+
 
 const router = createRouter({
 	history: createWebHashHistory(import.meta.env.BASE_URL),
@@ -20,6 +22,8 @@ const router = createRouter({
 		{path: '/chat/:id', component: Chat},
 		{path: '/options/group/:id', component: Options},
 		{path: '/options/group/:id/partecipats/', component: AddPart},
+		{path: '/chat/forward/:idmes', component: Forward},
+
 	]
 })
 
