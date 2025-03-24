@@ -97,9 +97,61 @@ func (db *appdbimpl) CheckNames(cs int, toFind string) ([]UtenteDb, error) {
 
 	return utenti, nil
 }
-func (db *appdbimpl) CheckChatNames(cs int, toFind string) ([]UtenteDb, error) {
+func (db *appdbimpl) CheckChatNames(cs int, toFind string) ([]ChatUtenteDb, error) {
 
-	return []UtenteDb{}, nil
+	var chat []ChatUtenteDb
+	_, err := db.Authentication(cs)
+	if err != nil {
+		return []ChatUtenteDb{}, fmt.Errorf("error in authentication GetConversations: %w", err)
+	}
+	fmt.Println(cs, toFind)
+
+	// la query sotto ritorna gli id degli utenti con cui ha la chat l'utente connesso, che non siano gruppi e l'id della chat
+	rows, err1 := db.c.Query("SELECT u.username, u.propic, m.id_utenti, c.id FROM chat c JOIN membri m ON c.id=m.id_chat JOIN utenti u ON u.id = m.id_utenti WHERE (u.username LIKE $1 || '%') AND m.id_utenti!=$2 AND c.id IN(SELECT  c.id from chat c JOIN membri m ON c.id=m.id_chat WHERE m.id_utenti=$2 AND gruppo=0) AND gruppo=0;", toFind, cs)
+	if err1 != nil && !errors.Is(err1, sql.ErrNoRows) {
+		return []ChatUtenteDb{}, fmt.Errorf("GetConversations: error querying users: %w", err)
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var c ChatUtenteDb
+		if err := rows.Scan(&c.Nome, &c.Propic, &c.Id, &c.IdChat); err != nil {
+			return []ChatUtenteDb{}, fmt.Errorf(" Getconversations: error scanning user: %w", err)
+		}
+		fmt.Println(c, "dopca")
+		chat = append(chat, c)
+	}
+	fmt.Println(chat)
+	if err := rows.Err(); err != nil {
+		return []ChatUtenteDb{}, fmt.Errorf("GetConversations: error iterating over users: %w", err)
+	}
+
+	// questa query ritorna tutti i dati della join tra membri e chat dove l'utente appartiene al gruppo
+	rows2, err2 := db.c.Query("SELECT  c.id AS id, c.propic, c.nome, c.gruppo from chat c JOIN membri m ON c.id=m.id_chat JOIN utenti u ON u.id=m.id_utenti WHERE (c.nome LIKE $1 || '%') AND m.id_utenti=$2 AND gruppo=1;", toFind, cs)
+	if err2 != nil && !errors.Is(err2, sql.ErrNoRows) {
+		return []ChatUtenteDb{}, fmt.Errorf("GetConversations: error querying users: %w", err)
+	}
+
+	defer rows2.Close()
+
+	for rows2.Next() {
+		var c ChatUtenteDb
+		if err := rows2.Scan(&c.IdChat, &c.Propic, &c.Nome, &c.Gruppo); err != nil {
+			return []ChatUtenteDb{}, fmt.Errorf("GetConversations: error scanning user: %w", err)
+		}
+		chat = append(chat, c)
+	}
+	if err := rows2.Err(); err != nil {
+		return []ChatUtenteDb{}, fmt.Errorf("GetConversations: error iterating over users: %w", err)
+	}
+
+	if errors.Is(err1, sql.ErrNoRows) && errors.Is(err2, sql.ErrNoRows) {
+		return []ChatUtenteDb{}, fmt.Errorf("GetConversations: no chats or groups find: %w", err)
+
+	}
+
+	return chat, nil
 }
 func (db *appdbimpl) GetMyConversations(cs int) ([]ChatUtenteDb, error) {
 	var chat []ChatUtenteDb

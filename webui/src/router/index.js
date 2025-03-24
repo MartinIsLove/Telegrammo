@@ -22,7 +22,7 @@ const router = createRouter({
 		{path: '/chat/:id', component: Chat},
 		{path: '/options/group/:id', component: Options},
 		{path: '/options/group/:id/partecipats/', component: AddPart},
-		{path: '/chat/forward/:idmes', component: Forward},
+		{path: '/chat/:idChat/forward/:idmes', component: Forward},
 
 	]
 })

@@ -46,6 +46,7 @@ type AppDatabase interface {
 
 	CreateChat(int, int) (int, error)
 	CheckNames(int, string) ([]UtenteDb, error)
+	CheckChatNames(int, string) ([]ChatUtenteDb, error)
 	LeaveGroup(int, int) error
 	GetMyConversations(int) ([]ChatUtenteDb, error)
 	GetConversation(int, int) (bool, string, []MessDb, error)

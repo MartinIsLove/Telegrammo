@@ -126,7 +126,7 @@ export default {
 			}
 		},
 		async forwardMessage(id_mes){
-			this.$router.push("/chat/forward/"+ id_mes);
+			this.$router.push("/chat/"+this.chatId+"/forward/"+ id_mes);
 
 		},
 		
@@ -181,12 +181,17 @@ export default {
 									<i class="bi bi-arrow-90deg-right"></i>
 								</button>
 							</div>
-						</p>
+						</p> 
 						<p v-else class="message-content">
 							<div v-if="mes.photo !== null">
                                 <img :src="'data:image/png;base64,' + mes.photo" class="img-fluid" />
 							</div>
 							<span>{{ mes.testo }}</span>
+							<div>
+								<button class="forward-button btn btn-secondary" @click="forwardMessage(mes.id_mess)">
+									<i class="bi bi-arrow-90deg-right"></i>
+								</button>
+							</div>
 						</p>
 						
 					</div>
@@ -216,12 +221,22 @@ export default {
                                 <img :src="'data:image/png;base64,' + mes.photo" class="img-fluid" />
 						</div>
 						{{ mes.testo }}
+						<div>
+							<button class="forward-button btn btn-secondary" @click="forwardMessage(mes.id_mess)">
+								<i class="bi bi-arrow-90deg-right"></i>
+							</button>
+						</div>
 					</p>
 					<p v-else class="message-content">
 						<div v-if="mes.photo !== null">
                                 <img :src="'data:image/png;base64,' + mes.photo" class="img-fluid" />
 						</div>
 						<span>{{ mes.testo }}</span>
+						<div>
+							<button class="forward-button btn btn-secondary" @click="forwardMessage(mes.id_mess)">
+								<i class="bi bi-arrow-90deg-right"></i>
+							</button>
+						</div>
 					</p>
 					
 					<div class="message-time">
