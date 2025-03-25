@@ -26,19 +26,19 @@ func (db *appdbimpl) SendMessage(cs int, id_chat int, message string, photo []by
 
 	return nil
 }
-func (db *appdbimpl) ForwardMessage(cs int, id_chat []int, id_mes int) error {
+func (db *appdbimpl) ForwardMessage(cs int, id_chat []int, id_mes int, id_utente int) error {
 	_, err := db.Authentication(cs)
 	if err != nil {
 		return fmt.Errorf("error in authentication SendMessage: %w", err)
 	}
 	var tmp2 int
-	err = db.c.QueryRow("SELECT COUNT(m.id_utenti) FROM chat c JOIN messaggi_di_chat mdc ON c.id=mdc.id_chat JOIN membri m ON m.id_chat=c.id WHERE mdc.id_messaggio=$1 AND m.id_utenti=$2", cs, id_mes).Scan(&tmp2)
+	err = db.c.QueryRow("SELECT COUNT(m.id_utenti) FROM chat c JOIN messaggi_di_chat mdc ON c.id=mdc.id_chat JOIN membri m ON m.id_chat=c.id WHERE mdc.id_messaggio=$1 AND m.id_utenti=$2", id_mes, cs).Scan(&tmp2)
 
 	if err != nil {
 		return fmt.Errorf("CommentMessage: query error: %w", err)
 	}
 
-	if tmp2 != 1 {
+	if tmp2 == 0 {
 		return fmt.Errorf("non hai accesso al messaggio da forwardare")
 	}
 
@@ -58,7 +58,7 @@ func (db *appdbimpl) ForwardMessage(cs int, id_chat []int, id_mes int) error {
 	}
 
 	for _, c := range id_chat {
-		_, err = db.c.Exec("INSERT INTO messaggi_di_chat (id_chat, id_messaggio) VALUES ($1, $2);", c, id_mes)
+		_, err = db.c.Exec("INSERT INTO messaggi_di_chat (id_chat, id_messaggio, id_forward) VALUES ($1, $2, $3);", c, id_mes, id_utente)
 		if err != nil {
 			return fmt.Errorf("ForwardMessage: error insert chat in table chat: %w", err)
 		}

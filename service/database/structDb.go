@@ -29,4 +29,5 @@ type MessDb struct {
 	Gruppo  bool      `json:"grupo"`
 	Emoji   []int     `json:"emoji"` // l'ordine e' tacchi, cuore, ditoSu, ok, manicure
 	MyEmoji string    `json:"myemoji"`
+	Forward int       `json:"forward"`
 }

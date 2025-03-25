@@ -86,7 +86,7 @@ func (rt *_router) forwardMessage(w http.ResponseWriter, r *http.Request, ps htt
 		return
 	}
 
-	err = rt.db.ForwardMessage(cs, richiesta.IdChat, richiesta.IdMes)
+	err = rt.db.ForwardMessage(cs, richiesta.IdChat, richiesta.IdMes, richiesta.IdForward)
 	if err != nil {
 		http.Error(w, "error database ForwardMessage: "+err.Error(), http.StatusInternalServerError)
 		return

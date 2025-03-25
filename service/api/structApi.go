@@ -40,6 +40,7 @@ type Mess struct {
 	Gruppo  bool      `json:"gruppo"`
 	Emoji   []int     `json:"emoji"` // l'ordine e' tacchi, cuore, ditoSu, ok, manicure
 	MyEmoji string    `json:"myEmoji"`
+	Forward int       `json:"forward"`
 }
 
 type NomeChat struct {
@@ -54,8 +55,9 @@ type Comment struct {
 }
 
 type RequestData struct {
-	IdChat []int `json:"id_chat"`
-	IdMes  int   `json:"id_mes"`
+	IdChat    []int `json:"id_chat"`
+	IdMes     int   `json:"id_mes"`
+	IdForward int   `json:"id_for"`
 }
 
 func NewMess(Messaggio database.MessDb) Mess {
@@ -71,6 +73,7 @@ func NewMess(Messaggio database.MessDb) Mess {
 		Gruppo:  Messaggio.Gruppo,
 		Emoji:   Messaggio.Emoji,
 		MyEmoji: Messaggio.MyEmoji,
+		Forward: Messaggio.Forward,
 	}
 }
 func NewChatUtente(chatUtente database.ChatUtenteDb) ChatUtente {

@@ -14,7 +14,7 @@ export default {
 			message: "",
 
 			emoji: ["👠", "💅", "👍🏻", "👌🏻","❤️"],
-			
+			intervalId: null,
 		}
 	},
 	methods: {
@@ -125,20 +125,24 @@ export default {
 				console.error(e);
 			}
 		},
-		async forwardMessage(id_mes){
-			this.$router.push("/chat/"+this.chatId+"/forward/"+ id_mes);
+		async forwardMessage(id_mes, id_utente){
+			this.$router.push("/chat/"+this.chatId+"/forward/"+id_mes+"/"+id_utente );
 
 		},
 		
 	},
 	mounted() {
 		this.refresh()
-		setInterval(() => {
+		this.intervalId=setInterval(() => {
             this.fetchMessageNoBottom();
         }, 2000); 
+
     
 	},
-	
+	beforeRouteLeave(to, from, next) {
+        clearInterval(this.intervalId); 
+        next();
+    },
 }
 </script>
 
@@ -177,7 +181,7 @@ export default {
 							
 							{{ mes.testo }}
 							<div>
-								<button class="forward-button btn btn-secondary" @click="forwardMessage(mes.id_mess)">
+								<button class="forward-button btn btn-secondary" @click="forwardMessage(mes.id_mess, mes.id_mitt)">
 									<i class="bi bi-arrow-90deg-right"></i>
 								</button>
 							</div>
@@ -188,7 +192,7 @@ export default {
 							</div>
 							<span>{{ mes.testo }}</span>
 							<div>
-								<button class="forward-button btn btn-secondary" @click="forwardMessage(mes.id_mess)">
+								<button class="forward-button btn btn-secondary" @click="forwardMessage(mes.id_mess, mes.id_mitt)">
 									<i class="bi bi-arrow-90deg-right"></i>
 								</button>
 							</div>
@@ -222,7 +226,7 @@ export default {
 						</div>
 						{{ mes.testo }}
 						<div>
-							<button class="forward-button btn btn-secondary" @click="forwardMessage(mes.id_mess)">
+							<button class="forward-button btn btn-secondary" @click="forwardMessage(mes.id_mess, mes.id_mitt)">
 								<i class="bi bi-arrow-90deg-right"></i>
 							</button>
 						</div>
@@ -233,7 +237,7 @@ export default {
 						</div>
 						<span>{{ mes.testo }}</span>
 						<div>
-							<button class="forward-button btn btn-secondary" @click="forwardMessage(mes.id_mess)">
+							<button class="forward-button btn btn-secondary" @click="forwardMessage(mes.id_mess, mes.id_mitt)">
 								<i class="bi bi-arrow-90deg-right"></i>
 							</button>
 						</div>

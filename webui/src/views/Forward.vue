@@ -14,6 +14,9 @@
             group_name: '',
             group_photo: null,
             
+            id_chat:null,
+            id_utente:null,
+            id_mes: null,
             searchCompleted: false,
             if_selection: false,
             selectedChat: [], 
@@ -42,6 +45,9 @@
             this.loading = true;
             this.errormsg = null;
             this.id = sessionStorage.getItem("cs")
+            this.id_chat = parseInt(this.$route.params.idchat, 10);
+            this.id_mes = parseInt(this.$route.params.idmes, 10);
+            this.id_utente= parseInt(this.$route.params.idutente, 10);
             try {
                 let response = await this.$axios.get("/conversations", { headers: { cs: this.id } });
                 this.chats = response.data;
@@ -73,17 +79,15 @@
         },
         async handleSelectedChats() {
             try {
-                let formData = new FormData();
-                formData.append('propic', this.group_photo);
-                formData.append('nome_chat', this.group_name);
-                formData.append('membri', JSON.stringify(this.selectedUser.map(user => user.id)));
-
+                
                 this.id = sessionStorage.getItem("cs")
-                let response = await this.$axios.post(`/conversation/group`, formData, { headers: { 'Content-Type': 'multipart/form-data', cs: this.id } });
+                
+                const selectedChatIds = this.selectedChat.map(chat => chat.id_chat);
+                let response = await this.$axios.post(`/message/forward`,{id_mes:this.id_mes, id_chat:selectedChatIds, id_for:this.id_utente} , { headers: { cs: this.id } });
                 if (response.status === 200) {
                     this.message = 'chat created';
                     this.group_id = response.data
-                    this.$router.push('/chat/' + this.group_id.id_group)
+                    this.$router.push('/chat/'+this.id_chat)
                 }
             } catch (error) {
                 this.error = error
