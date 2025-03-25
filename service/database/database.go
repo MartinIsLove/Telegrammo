@@ -51,6 +51,7 @@ type AppDatabase interface {
 	GetMyConversations(int) ([]ChatUtenteDb, error)
 	GetConversation(int, int) (bool, string, []MessDb, error)
 	SendMessage(int, int, string, []byte) error
+	ForwardMessage(int, []int, int) error
 	CreateGroup(int, string, []byte, []int) (int, error)
 	SetGroupName(int, int, string) error
 	SetGroupPhoto(int, int, []byte) error

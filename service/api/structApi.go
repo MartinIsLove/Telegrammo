@@ -53,6 +53,11 @@ type Comment struct {
 	Id_chat int    `json:"id_chat"`
 }
 
+type RequestData struct {
+	IdChat []int `json:"id_chat"`
+	IdMes  int   `json:"id_mes"`
+}
+
 func NewMess(Messaggio database.MessDb) Mess {
 	return Mess{
 		IdMess:  Messaggio.IdMess,

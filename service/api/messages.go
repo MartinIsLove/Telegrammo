@@ -73,6 +73,27 @@ func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, ps httpro
 	}
 	w.WriteHeader(http.StatusOK)
 }
+func (rt *_router) forwardMessage(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var richiesta RequestData
+	cs, err := rt.AuthenticationApi(r)
+	if err != nil {
+		http.Error(w, "error: authentication user forwardMessage"+err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&richiesta); err != nil {
+		http.Error(w, "forwardMessage:"+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = rt.db.ForwardMessage(cs, richiesta.IdChat, richiesta.IdMes)
+	if err != nil {
+		http.Error(w, "error database ForwardMessage: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
 func (rt *_router) commentMessage(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var emoji Comment
 

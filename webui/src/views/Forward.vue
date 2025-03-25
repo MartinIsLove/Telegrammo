@@ -63,15 +63,15 @@
                     this.searchCompleted = true
                     this.chats = response.data
                     if (response.status === 200) {
-                        this.message = 'usernames find';
+                        this.message = 'chat find';
                     }
                 }
             } catch (error) {
                 this.error = error
-                console.error('Error fetching user data:', error);
+                console.error('Error fetching chat data:', error);
             }
         },
-        async handleSelectedUser() {
+        async handleSelectedChats() {
             try {
                 let formData = new FormData();
                 formData.append('propic', this.group_photo);
@@ -113,7 +113,7 @@
                 <label for="username" class="form-label">Search Chat</label>
                 <input type="text" class="form-control mb-2" id="username" placeholder="Insert Username" v-model="chChat" @input="getChats">
             </form>
-            <button class="btn btn-secondary ms-1 mt-5 ml-auto h-100">
+            <button class="btn btn-secondary ms-1 mt-5 ml-auto h-100" @click="handleSelectedChats">
                 Submit
             </button>
         </div>
