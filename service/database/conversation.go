@@ -284,6 +284,20 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 		if err := rows.Scan(&c.Gruppo, &c.Testo, &c.IdMitt, &c.Nome, &c.Data, &c.Photo, &c.IdMess); err != nil {
 			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error scanning user: %w", err)
 		}
+
+		var forwarderUsername string
+		var forwarderId int
+		err = db.c.QueryRow("SELECT u.username, u.id FROM utenti u JOIN messaggi_di_chat m ON m.id_forward = u.id WHERE m.id_messaggio = $1", c.IdMess).Scan(&forwarderUsername, &forwarderId)
+		if err == sql.ErrNoRows {
+			c.ForwardUsername = ""
+			c.ForwardId = -1
+		} else if err != nil {
+			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying forwarder: %w", err)
+		} else {
+			c.ForwardUsername = forwarderUsername
+			c.ForwardId = forwarderId
+		}
+
 		mess = append(mess, c)
 	}
 	if err := rows.Err(); err != nil {
