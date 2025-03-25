@@ -31,4 +31,5 @@ type MessDb struct {
 	MyEmoji         string    `json:"myemoji"`
 	ForwardUsername string    `json:"forward_username"`
 	ForwardId       int       `json:"forward_id"`
+	ForwardDate     time.Time `json:"forward_date"`
 }

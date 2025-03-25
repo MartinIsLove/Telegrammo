@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"time"
 )
 
@@ -269,7 +270,7 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 		}
 	}
 
-	rows, err := db.c.Query("SELECT c.gruppo, m.testo, m.mittente, u.username, m.data, m.image, m.id FROM messaggi m JOIN messaggi_di_chat d ON d.id_messaggio=m.id JOIN chat c ON c.id=d.id_chat JOIN utenti u ON u.id=m.mittente WHERE c.id=$1 ORDER BY m.data;", id_chat)
+	rows, err := db.c.Query("SELECT c.gruppo, m.testo, m.mittente, u.username, m.data, m.image, m.id, COALESCE(d.id_forward, -1) FROM messaggi m JOIN messaggi_di_chat d ON d.id_messaggio=m.id JOIN chat c ON c.id=d.id_chat JOIN utenti u ON u.id=m.mittente WHERE c.id=$1 ORDER BY m.data;", id_chat)
 	if errors.Is(err, sql.ErrNoRows) {
 		return false, "", []MessDb{}, fmt.Errorf("GetConversation: no messages found: %w", err)
 	}
@@ -281,28 +282,40 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 
 	for rows.Next() {
 		var c MessDb
-		if err := rows.Scan(&c.Gruppo, &c.Testo, &c.IdMitt, &c.Nome, &c.Data, &c.Photo, &c.IdMess); err != nil {
+		if err := rows.Scan(&c.Gruppo, &c.Testo, &c.IdMitt, &c.Nome, &c.Data, &c.Photo, &c.IdMess, &c.ForwardId); err != nil {
 			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error scanning user: %w", err)
 		}
 
 		var forwarderUsername string
 		var forwarderId int
-		err = db.c.QueryRow("SELECT u.username, u.id FROM utenti u JOIN messaggi_di_chat m ON m.id_forward = u.id WHERE m.id_messaggio = $1", c.IdMess).Scan(&forwarderUsername, &forwarderId)
-		if err == sql.ErrNoRows {
-			c.ForwardUsername = ""
-			c.ForwardId = -1
-		} else if err != nil {
-			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying forwarder: %w", err)
-		} else {
-			c.ForwardUsername = forwarderUsername
-			c.ForwardId = forwarderId
+		var forwardDate time.Time
+		if c.ForwardId != -1 {
+			err = db.c.QueryRow("SELECT u.username, u.id, m.forward_date FROM utenti u JOIN messaggi_di_chat m ON m.id_forward = u.id WHERE m.id_messaggio = $1 AND m.id_forward NOT NULL", c.IdMess).Scan(&forwarderUsername, &forwarderId, &forwardDate)
+			if err != nil {
+				return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying forwarder: %w", err)
+			} else {
+				c.ForwardUsername = forwarderUsername
+				c.ForwardId = forwarderId
+				c.ForwardDate = forwardDate
+			}
 		}
-
 		mess = append(mess, c)
 	}
 	if err := rows.Err(); err != nil {
 		return false, "", []MessDb{}, fmt.Errorf("GetConversation: error iterating over users: %w", err)
 	}
+
+	sort.SliceStable(mess, func(i, j int) bool {
+		if mess[i].ForwardId != -1 && mess[j].ForwardId != -1 {
+			return mess[i].ForwardDate.Before(mess[j].ForwardDate)
+		} else if mess[i].ForwardId != -1 {
+			return mess[i].ForwardDate.Before(mess[j].Data)
+		} else if mess[j].ForwardId != -1 {
+			return mess[i].Data.Before(mess[j].ForwardDate)
+		} else {
+			return mess[i].Data.Before(mess[j].Data)
+		}
+	})
 
 	var result []MessDb
 	var lastDate time.Time

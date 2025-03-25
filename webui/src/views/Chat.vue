@@ -212,6 +212,11 @@ export default {
 							</div>		
 						</div>
 					</div>
+					<div v-if="mes.forward_id !== -1">
+						<p>
+							forwarded by: {{ mes.forward_username }}
+						</p>
+					</div>
 					<div class="message-time text-end">
                         {{ formatTime(mes.data) }}
                     </div>

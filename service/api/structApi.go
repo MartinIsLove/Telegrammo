@@ -42,6 +42,7 @@ type Mess struct {
 	MyEmoji         string    `json:"myEmoji"`
 	ForwardUsername string    `json:"forward_username"`
 	ForwardId       int       `json:"forward_id"`
+	ForwardDate     time.Time `json:"forward_date"`
 }
 
 type NomeChat struct {
@@ -76,6 +77,7 @@ func NewMess(Messaggio database.MessDb) Mess {
 		MyEmoji:         Messaggio.MyEmoji,
 		ForwardUsername: Messaggio.ForwardUsername,
 		ForwardId:       Messaggio.ForwardId,
+		ForwardDate:     Messaggio.ForwardDate,
 	}
 }
 func NewChatUtente(chatUtente database.ChatUtenteDb) ChatUtente {
