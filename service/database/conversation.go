@@ -289,14 +289,19 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 		var forwarderUsername string
 		var forwarderId int
 		var forwardDate time.Time
+		var forwardIdMit int
+		var forwarderUsernameMit string
+
 		if c.ForwardId != -1 {
-			err = db.c.QueryRow("SELECT u.username, u.id, m.forward_date FROM utenti u JOIN messaggi_di_chat m ON m.id_forward = u.id WHERE m.id_messaggio = $1 AND m.id_forward NOT NULL", c.IdMess).Scan(&forwarderUsername, &forwarderId, &forwardDate)
+			err = db.c.QueryRow("SELECT u.username, u.id, m.forward_date, m.id_forw_mit, t.username FROM utenti u JOIN messaggi_di_chat m ON m.id_forward = u.id JOIN utenti t ON m.id_forw_mit=t.id WHERE m.id_messaggio = $1 AND m.id_forward NOT NULL", c.IdMess).Scan(&forwarderUsername, &forwarderId, &forwardDate, &forwardIdMit, &forwarderUsernameMit)
 			if err != nil {
 				return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying forwarder: %w", err)
 			} else {
 				c.ForwardUsername = forwarderUsername
 				c.ForwardId = forwarderId
 				c.ForwardDate = forwardDate
+				c.ForwardIdMit = forwardIdMit
+				c.ForwardUsernameMit = forwarderUsernameMit
 			}
 		}
 		mess = append(mess, c)

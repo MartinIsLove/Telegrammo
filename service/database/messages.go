@@ -58,7 +58,7 @@ func (db *appdbimpl) ForwardMessage(cs int, id_chat []int, id_mes int, id_utente
 	}
 
 	for _, c := range id_chat {
-		_, err = db.c.Exec("INSERT INTO messaggi_di_chat (id_chat, id_messaggio, id_forward) VALUES ($1, $2, $3);", c, id_mes, id_utente)
+		_, err = db.c.Exec("INSERT INTO messaggi_di_chat (id_chat, id_messaggio, id_forward, id_forw_mit) VALUES ($1, $2, $3, $4);", c, id_mes, id_utente, cs)
 		if err != nil {
 			return fmt.Errorf("ForwardMessage: error insert chat in table chat: %w", err)
 		}

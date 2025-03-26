@@ -1,18 +1,42 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
+
 </script>
 <script>
 export default {
 	data: function() {
-		return {}
+		return {
+
+			id:null,
+			user:null,
+			loading:false,
+			errormsg:null,
+		}
 	},
 	methods:
 	{
 		ButtonHandler() {
 			sessionStorage.removeItem("cs");
+			this.refresh()
 			this.$router.push("/");
-		}
-	}
+		},
+		async refresh() {
+            this.loading = true;
+            this.errormsg = null;
+            this.id = sessionStorage.getItem("cs")
+            
+            try {
+                let response = await this.$axios.get("/users/"+this.id, { headers: { cs: this.id } });
+                this.user = response.data;
+            } catch (e) {
+                this.errormsg = e.toString();
+            }
+            this.loading = false;
+        },
+	},
+	mounted() {
+        this.refresh()
+    }
 }
 </script>
 
@@ -29,8 +53,11 @@ export default {
 		
 		<div class="row">
 			<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse">
-				<div class="row bg-dark py-2 shadow ">
-					<h6 class="bold ">Example App</h6>
+				<div class="row bg-dark py-2 shadow " v-if="user">
+					<h6 class="bold ">{{user.username}}</h6>
+				</div>
+				<div class="row bg-dark py-2 shadow " v-else>
+					<h6 class="bold ">welcome</h6>
 				</div>
 				<div class="position-sticky pt-3 sidebar-sticky">
 					<h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted text-uppercase">

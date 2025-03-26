@@ -29,20 +29,22 @@ type ChatUtente struct {
 }
 
 type Mess struct {
-	IdMess          int       `json:"id_mess"`
-	Nome            string    `json:"nome"` // nome mittente
-	IdMitt          int       `json:"id_mitt"`
-	Testo           string    `json:"testo"`
-	Data            time.Time `json:"data"`
-	Visual          bool      `json:"visual"`
-	Photo           []byte    `json:"photo"`
-	IdChat          int       `json:"id_chat"`
-	Gruppo          bool      `json:"gruppo"`
-	Emoji           []int     `json:"emoji"` // l'ordine e' tacchi, cuore, ditoSu, ok, manicure
-	MyEmoji         string    `json:"myEmoji"`
-	ForwardUsername string    `json:"forward_username"`
-	ForwardId       int       `json:"forward_id"`
-	ForwardDate     time.Time `json:"forward_date"`
+	IdMess             int       `json:"id_mess"`
+	Nome               string    `json:"nome"` // nome mittente
+	IdMitt             int       `json:"id_mitt"`
+	Testo              string    `json:"testo"`
+	Data               time.Time `json:"data"`
+	Visual             bool      `json:"visual"`
+	Photo              []byte    `json:"photo"`
+	IdChat             int       `json:"id_chat"`
+	Gruppo             bool      `json:"gruppo"`
+	Emoji              []int     `json:"emoji"` // l'ordine e' tacchi, cuore, ditoSu, ok, manicure
+	MyEmoji            string    `json:"myEmoji"`
+	ForwardUsername    string    `json:"forward_username"`
+	ForwardId          int       `json:"forward_id"`
+	ForwardDate        time.Time `json:"forward_date"`
+	ForwardIdMit       int       `json:"forward_id_mit"`
+	ForwardUsernameMit string    `json:"forward_user_mit"`
 }
 
 type NomeChat struct {
@@ -64,20 +66,22 @@ type RequestData struct {
 
 func NewMess(Messaggio database.MessDb) Mess {
 	return Mess{
-		IdMess:          Messaggio.IdMess,
-		Nome:            Messaggio.Nome,
-		IdMitt:          Messaggio.IdMitt,
-		Testo:           Messaggio.Testo,
-		Data:            Messaggio.Data,
-		Visual:          Messaggio.Visual,
-		Photo:           Messaggio.Photo,
-		IdChat:          Messaggio.IdChat,
-		Gruppo:          Messaggio.Gruppo,
-		Emoji:           Messaggio.Emoji,
-		MyEmoji:         Messaggio.MyEmoji,
-		ForwardUsername: Messaggio.ForwardUsername,
-		ForwardId:       Messaggio.ForwardId,
-		ForwardDate:     Messaggio.ForwardDate,
+		IdMess:             Messaggio.IdMess,
+		Nome:               Messaggio.Nome,
+		IdMitt:             Messaggio.IdMitt,
+		Testo:              Messaggio.Testo,
+		Data:               Messaggio.Data,
+		Visual:             Messaggio.Visual,
+		Photo:              Messaggio.Photo,
+		IdChat:             Messaggio.IdChat,
+		Gruppo:             Messaggio.Gruppo,
+		Emoji:              Messaggio.Emoji,
+		MyEmoji:            Messaggio.MyEmoji,
+		ForwardUsername:    Messaggio.ForwardUsername,
+		ForwardId:          Messaggio.ForwardId,
+		ForwardDate:        Messaggio.ForwardDate,
+		ForwardIdMit:       Messaggio.ForwardIdMit,
+		ForwardUsernameMit: Messaggio.ForwardUsernameMit,
 	}
 }
 func NewChatUtente(chatUtente database.ChatUtenteDb) ChatUtente {

@@ -28,8 +28,9 @@
                     let response = await this.$axios.post("/user", {username: this.username});
                 
                     sessionStorage.setItem("cs", response.data)
-                    
                     this.$router.push("/home")
+                    
+                   
                 } catch (e) {
                     this.errormsg = e.toString();
                 }

@@ -170,7 +170,59 @@ export default {
 					</p>
 				</div>
 			</div>
-			<div v-else-if="id == mes.id_mitt" class="d-flex justify-content-end my-2 ">
+			<div v-else-if=" mes.forward_id_mit == id" class="d-flex justify-content-end my-2 ">
+				<div class=" message-container row g-0 border rounded p-2 position-relative ">
+					<div class="d-flex justify-content-between w-100">
+						<p v-if="mes.gruppo" class="text-wrap message-content">
+							<span class="text-capitalize fw-bold">{{ mes.forward_user_mit }}</span><br>
+							<div v-if="mes.photo !== null">
+                                <img :src="'data:image/png;base64,' + mes.photo" class="img-fluid" />
+							</div>
+							
+							{{ mes.testo }}
+							<div>
+								<button class="forward-button btn btn-secondary" @click="forwardMessage(mes.id_mess, mes.id_mitt)">
+									<i class="bi bi-arrow-90deg-right"></i>
+								</button>
+							</div>
+						</p> 
+						<p v-else class="message-content">
+							<div v-if="mes.photo !== null">
+                                <img :src="'data:image/png;base64,' + mes.photo" class="img-fluid" />
+							</div>
+							<span>{{ mes.testo }}</span>
+							<div>
+								<button class="forward-button btn btn-secondary" @click="forwardMessage(mes.id_mess, mes.id_mitt)">
+									<i class="bi bi-arrow-90deg-right"></i>
+								</button>
+							</div>
+						</p>
+						
+					</div>
+					<div class="emoji-checkbox-container " >
+						<div v-for="emojiItem in emoji" :key="emojiItem" :value="emojiItem" class="emoji-item"> 
+							
+							<div v-if="emojiItem === mes.myEmoji">
+								<input type="checkbox" class="btn-check" :id="'btn-check-' + mes.id_mess + '-' + emojiItem" autocomplete="off" @change="handleCheckboxChangeUncomment(mes)">
+								<label class="btn btn-primary mb-2" :for="'btn-check-' + mes.id_mess + '-' + emojiItem">{{ emojiItem }} {{mes.emoji[getEmojiCount(emojiItem)]}}</label>	
+							</div>		
+							<div v-else>
+								<input type="checkbox" class="btn-check" :id="'btn-check-' + mes.id_mess + '-' + emojiItem" autocomplete="off" @change="handleCheckboxChange(mes, emojiItem)">
+								<label class="btn btn-secondary mb-2" :for="'btn-check-' + mes.id_mess + '-' + emojiItem">{{ emojiItem }} {{mes.emoji[getEmojiCount(emojiItem)]}}</label>	
+							</div>		
+						</div>
+					</div>
+					<div v-if="mes.forward_id !== -1">
+						<p>
+							forwarded by: {{ mes.forward_username }}
+						</p>
+					</div>
+					<div class="message-time text-end">
+                        {{ formatTime(mes.data) }}
+                    </div>
+				</div>
+			</div>
+			<div v-else-if="id == mes.id_mitt " class="d-flex justify-content-end my-2 ">
 				<div class=" message-container row g-0 border rounded p-2 position-relative ">
 					<div class="d-flex justify-content-between w-100">
 						<p v-if="mes.gruppo" class="text-wrap message-content">
@@ -222,6 +274,57 @@ export default {
                     </div>
 				</div>
 			</div>
+			<div v-else-if="mes.forward_id !== -1" class="row g-0 border rounded my-2 p-2 message-container position-relative">
+				<div class="d-flex justify-content-between w-100">
+					<p v-if="mes.gruppo" class="text-wrap message-content">
+						<span class="text-capitalize fw-bold">{{ mes.forward_user_mit}}</span><br>
+						<div v-if="mes.photo !== null">
+                                <img :src="'data:image/png;base64,' + mes.photo" class="img-fluid" />
+						</div>
+						{{ mes.testo }}
+						<div>
+							<button class="forward-button btn btn-secondary" @click="forwardMessage(mes.id_mess, mes.id_mitt)">
+								<i class="bi bi-arrow-90deg-right"></i>
+							</button>
+						</div>
+					</p>
+					<p v-else class="message-content">
+						<div v-if="mes.photo !== null">
+                                <img :src="'data:image/png;base64,' + mes.photo" class="img-fluid" />
+						</div>
+						<span>{{ mes.testo }}</span>
+						<div>
+							<button class="forward-button btn btn-secondary" @click="forwardMessage(mes.id_mess, mes.id_mitt)">
+								<i class="bi bi-arrow-90deg-right"></i>
+							</button>
+						</div>
+					</p>
+					
+					<div class="message-time">
+                        {{ formatTime(mes.data) }}
+                    </div>
+					
+				</div>
+				<div class="emoji-checkbox-container " >
+					<div v-for="emojiItem in emoji" :key="emojiItem" :value="emojiItem" class="emoji-item"> 
+						
+						<div v-if="emojiItem === mes.myEmoji">
+							<input type="checkbox" class="btn-check" :id="'btn-check-' + mes.id_mess + '-' + emojiItem" autocomplete="off" @change="handleCheckboxChangeUncomment(mes)">
+							<label class="btn btn-primary mb-2" :for="'btn-check-' + mes.id_mess + '-' + emojiItem">{{ emojiItem }} {{mes.emoji[getEmojiCount(emojiItem)]}}</label>	
+						</div>		
+						<div v-else>
+							<input type="checkbox" class="btn-check" :id="'btn-check-' + mes.id_mess + '-' + emojiItem" autocomplete="off" @change="handleCheckboxChange(mes, emojiItem)">
+							<label class="btn btn-secondary mb-2" :for="'btn-check-' + mes.id_mess + '-' + emojiItem">{{ emojiItem }} {{mes.emoji[getEmojiCount(emojiItem)]}}</label>	
+						</div>		
+					</div>
+					
+				</div>
+				<div v-if="mes.forward_id !== -1">
+					<p>
+						forwarded by: {{ mes.forward_username }}
+					</p>
+				</div>
+			</div>
 			<div v-else class="row g-0 border rounded my-2 p-2 message-container position-relative">
 				<div class="d-flex justify-content-between w-100">
 					<p v-if="mes.gruppo" class="text-wrap message-content">
@@ -265,6 +368,12 @@ export default {
 							<label class="btn btn-secondary mb-2" :for="'btn-check-' + mes.id_mess + '-' + emojiItem">{{ emojiItem }} {{mes.emoji[getEmojiCount(emojiItem)]}}</label>	
 						</div>		
 					</div>
+					
+				</div>
+				<div v-if="mes.forward_id !== -1">
+					<p>
+						forwarded by: {{ mes.forward_username }}
+					</p>
 				</div>
 			</div>
 		</div>

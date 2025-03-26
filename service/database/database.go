@@ -106,7 +106,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 			return nil, fmt.Errorf("error creating database structure messaggi: %w", err)
 		}
 
-		sqlStmt = `CREATE TABLE if not exists messaggi_di_chat (id_chat INTEGER NOT NULL, id_messaggio INTEGER NOT NULL,id_forward INTEGER,forward_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ,FOREIGN KEY(id_forward) REFERENCES utenti(id) , FOREIGN KEY(id_chat) REFERENCES chat(id) ON DELETE CASCADE, FOREIGN KEY(id_messaggio) REFERENCES messaggi(id) ON DELETE CASCADE);`
+		sqlStmt = `CREATE TABLE if not exists messaggi_di_chat (id_chat INTEGER NOT NULL, id_messaggio INTEGER NOT NULL,id_forward INTEGER,id_forw_mit INTEGER, forward_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ,FOREIGN KEY(id_forward) REFERENCES utenti(id) , FOREIGN KEY(id_chat) REFERENCES chat(id) ON DELETE CASCADE, FOREIGN KEY(id_messaggio) REFERENCES messaggi(id) ON DELETE CASCADE);`
 		_, err = db.Exec(sqlStmt)
 		if err != nil {
 			return nil, fmt.Errorf("error creating database structure messaggi_di_chat: %w", err)
