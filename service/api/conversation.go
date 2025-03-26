@@ -261,7 +261,7 @@ func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, ps ht
 	_, _ = w.Write(json)
 
 	w.WriteHeader(http.StatusOK)
-
+	fmt.Println(messaggi)
 }
 func (rt *_router) createGroup(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 

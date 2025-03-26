@@ -269,8 +269,8 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying users: %w", err)
 		}
 	}
-
-	rows, err := db.c.Query("SELECT c.gruppo, m.testo, m.mittente, u.username, m.data, m.image, m.id, COALESCE(d.id_forward, -1) FROM messaggi m JOIN messaggi_di_chat d ON d.id_messaggio=m.id JOIN chat c ON c.id=d.id_chat JOIN utenti u ON u.id=m.mittente WHERE c.id=$1 ORDER BY m.data;", id_chat)
+	// prova a fare una unica query qua sopra che prende tutto qui
+	rows, err := db.c.Query("SELECT c.gruppo, m.testo, m.mittente, u.username, m.data, m.image, m.id,d.id FROM messaggi m JOIN messaggi_di_chat d ON d.id_messaggio=m.id JOIN chat c ON c.id=d.id_chat JOIN utenti u ON u.id=m.mittente WHERE c.id=$1 ORDER BY m.data;", id_chat)
 	if errors.Is(err, sql.ErrNoRows) {
 		return false, "", []MessDb{}, fmt.Errorf("GetConversation: no messages found: %w", err)
 	}
@@ -282,7 +282,8 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 
 	for rows.Next() {
 		var c MessDb
-		if err := rows.Scan(&c.Gruppo, &c.Testo, &c.IdMitt, &c.Nome, &c.Data, &c.Photo, &c.IdMess, &c.ForwardId); err != nil {
+		var i int
+		if err := rows.Scan(&c.Gruppo, &c.Testo, &c.IdMitt, &c.Nome, &c.Data, &c.Photo, &c.IdMess, &i); err != nil {
 			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error scanning user: %w", err)
 		}
 
@@ -291,20 +292,40 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 		var forwardDate time.Time
 		var forwardIdMit int
 		var forwarderUsernameMit string
+		var cont int = 0
 
-		if c.ForwardId != -1 {
-			err = db.c.QueryRow("SELECT u.username, u.id, m.forward_date, m.id_forw_mit, t.username FROM utenti u JOIN messaggi_di_chat m ON m.id_forward = u.id JOIN utenti t ON m.id_forw_mit=t.id WHERE m.id_messaggio = $1 AND m.id_forward NOT NULL", c.IdMess).Scan(&forwarderUsername, &forwarderId, &forwardDate, &forwardIdMit, &forwarderUsernameMit)
-			if err != nil {
-				return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying forwarder: %w", err)
-			} else {
-				c.ForwardUsername = forwarderUsername
-				c.ForwardId = forwarderId
-				c.ForwardDate = forwardDate
-				c.ForwardIdMit = forwardIdMit
-				c.ForwardUsernameMit = forwarderUsernameMit
-			}
+		row2, err := db.c.Query("SELECT u.username, u.id, m.forward_date, m.id_forw_mit, t.username FROM utenti u JOIN messaggi_di_chat m ON m.id_forward = u.id JOIN utenti t ON m.id_forw_mit=t.id WHERE m.id_messaggio = $1 AND m.id_forward NOT NULL AND m.id=$2", c.IdMess, i) //.Scan(&forwarderUsername, &forwarderId, &forwardDate, &forwardIdMit, &forwarderUsernameMit)
+		if errors.Is(err, sql.ErrNoRows) {
+			return false, "", []MessDb{}, fmt.Errorf("GetConversation: no messages found: %w", err)
 		}
-		mess = append(mess, c)
+		if err != nil {
+			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying users: %w", err)
+		}
+
+		defer row2.Close()
+
+		for row2.Next() {
+			if err := row2.Scan(&forwarderUsername, &forwarderId, &forwardDate, &forwardIdMit, &forwarderUsernameMit); err != nil {
+				return false, "", []MessDb{}, fmt.Errorf("GetConversation: error scanning user: %w", err)
+			}
+
+			c.ForwardUsername = forwarderUsername
+			c.ForwardId = forwarderId
+			c.ForwardDate = forwardDate
+			c.ForwardIdMit = forwardIdMit
+			c.ForwardUsernameMit = forwarderUsernameMit
+			mess = append(mess, c)
+			cont++
+		}
+
+		if cont == 0 {
+			c.ForwardUsername = forwarderUsername
+			c.ForwardId = -1
+			c.ForwardDate = forwardDate
+			c.ForwardIdMit = -1
+			c.ForwardUsernameMit = forwarderUsernameMit
+			mess = append(mess, c)
+		}
 	}
 	if err := rows.Err(); err != nil {
 		return false, "", []MessDb{}, fmt.Errorf("GetConversation: error iterating over users: %w", err)
