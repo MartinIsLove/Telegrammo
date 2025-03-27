@@ -28,6 +28,7 @@
                     let response = await this.$axios.post("/user", {username: this.username});
                 
                     sessionStorage.setItem("cs", response.data)
+                    this.$emit("login-success")
                     this.$router.push("/home")
                     
                    

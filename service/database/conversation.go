@@ -269,7 +269,6 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying users: %w", err)
 		}
 	}
-	// prova a fare una unica query qua sopra che prende tutto qui
 	rows, err := db.c.Query("SELECT c.gruppo, m.testo, m.mittente, u.username, m.data, m.image, m.id,d.id FROM messaggi m JOIN messaggi_di_chat d ON d.id_messaggio=m.id JOIN chat c ON c.id=d.id_chat JOIN utenti u ON u.id=m.mittente WHERE c.id=$1 ORDER BY m.data;", id_chat)
 	if errors.Is(err, sql.ErrNoRows) {
 		return false, "", []MessDb{}, fmt.Errorf("GetConversation: no messages found: %w", err)

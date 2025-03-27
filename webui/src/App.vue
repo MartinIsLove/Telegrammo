@@ -21,6 +21,7 @@ export default {
 			this.$router.push("/");
 		},
 		async refresh() {
+			this.user = null
             this.loading = true;
             this.errormsg = null;
             this.id = sessionStorage.getItem("cs")
@@ -112,7 +113,7 @@ export default {
 			</nav>
 
 			<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-				<RouterView />										<!-- non cancellare RouterView -->
+				<RouterView @login-success="refresh"/>										<!-- non cancellare RouterView -->
 			</main>
 		</div>
 	</div>
