@@ -143,15 +143,20 @@ func (db *appdbimpl) DeleteMessage(cs int, idMes int, idForw int, idChat int) er
 
 	var is_forw int
 
-	err = db.c.QueryRow("SELECT COUNT(id) FROM messaggi_di_chat WHERE id_chat=$1 AND id_messaggio=$2", idChat, idMes).Scan(&is_forw)
+	err = db.c.QueryRow("SELECT COUNT(id) FROM messaggi_di_chat WHERE id_messaggio=$2", idMes).Scan(&is_forw)
 	if err != nil {
 		return fmt.Errorf("DeleteMessage error: message not found: %w", err)
 	}
+	fmt.Println(is_forw)
 	if is_forw == 0 {
 		return fmt.Errorf("DeleteMessage error: database DELETE not successful message don't find")
 	}
 	if is_forw == 1 {
 		_, err = db.c.Exec("DELETE FROM messaggi WHERE id=$1", idMes)
+		if err != nil {
+			return fmt.Errorf("DeleteMessage error: database DELETE not successful: %w", err)
+		}
+		_, err = db.c.Exec("DELETE FROM messaggi_di_chat WHERE id=$1", idForw)
 		if err != nil {
 			return fmt.Errorf("DeleteMessage error: database DELETE not successful: %w", err)
 		}
