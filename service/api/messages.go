@@ -136,3 +136,30 @@ func (rt *_router) uncommentMessage(w http.ResponseWriter, r *http.Request, ps h
 	}
 	w.WriteHeader(http.StatusOK)
 }
+func (rt *_router) deleteMessage(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var messaggio Mess
+
+	cs, err := rt.AuthenticationApi(r)
+	if err != nil {
+		http.Error(w, "error: authentication user deleteMessage "+err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	id_mes_tmp := ps.ByName("idMes")
+	id_mes, err := strconv.Atoi(id_mes_tmp)
+	if err != nil {
+		http.Error(w, "error deleteMessage: conversion id_mes_tmp (string) to id_mes (int)", http.StatusBadRequest)
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&messaggio); err != nil {
+		http.Error(w, "uncommentMessage:"+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = rt.db.DeleteMessage(cs, id_mes, messaggio.IdForward, messaggio.IdChat)
+	if err != nil {
+		http.Error(w, "deleteMessage:"+err.Error(), http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}

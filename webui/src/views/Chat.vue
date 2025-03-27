@@ -129,6 +129,28 @@ export default {
 			this.$router.push("/chat/"+this.chatId+"/forward/"+id_mes+"/"+id_utente );
 
 		},
+		async deleteMessage(id_mes, id_forw){
+			
+			console.log(this.id)
+			try{
+				// await this.$axios.delete(`/message/delete/${id_mes}`, {id_forward:id_forw, id_chat:this.chatId},{headers:{cs:this.id}});
+				await this.$axios({
+					method: 'delete',
+					url: `/message/delete/${id_mes}`,
+					data: {
+						id_forward: id_forw,
+						id_chat: this.chatId,
+					},
+					headers: {
+						cs: this.id, 
+					},
+        		});
+				this.fetchMessageNoBottom()
+			}
+			catch(e){
+				console.error(e);
+			}
+		},
 		
 	},
 	mounted() {
@@ -180,24 +202,33 @@ export default {
 							<div v-if="mes.photo !== null">
                                 <img :src="'data:image/png;base64,' + mes.photo" class="img-fluid" />
 							</div>
-							
-							{{ mes.testo }}
-							<div>
+							<div class="button-container">
 								<button class="forward-button btn btn-secondary" @click="forwardMessage(mes.id_mess, mes.id_mitt)">
 									<i class="bi bi-arrow-90deg-right"></i>
 								</button>
+							
+								<button class="trash-button btn btn-secondary" @click="deleteMessage(mes.id_mess, mes.id_forward)">
+									<i class="bi bi-trash"></i>
+								</button>
 							</div>
+							{{ mes.testo }}
+							
 						</p> 
 						<p v-else class="message-content">
 							<div v-if="mes.photo !== null">
                                 <img :src="'data:image/png;base64,' + mes.photo" class="img-fluid" />
 							</div>
-							<span>{{ mes.testo }}</span>
-							<div>
+							<div class="button-container">
 								<button class="forward-button btn btn-secondary" @click="forwardMessage(mes.id_mess, mes.id_mitt)">
 									<i class="bi bi-arrow-90deg-right"></i>
 								</button>
+							
+								<button class="trash-button btn btn-secondary" @click="deleteMessage(mes.id_mess, mes.id_forward)">
+									<i class="bi bi-trash"></i>
+								</button>
 							</div>
+							<span>{{ mes.testo }}</span>
+							
 						</p>
 						
 					</div>
@@ -227,23 +258,33 @@ export default {
 						<div v-if="mes.photo !== null">
                                 <img :src="'data:image/png;base64,' + mes.photo" class="img-fluid" />
 						</div>
-						{{ mes.testo }}
-						<div>
+						<div class="button-container">
 							<button class="forward-button btn btn-secondary" @click="forwardMessage(mes.id_mess, mes.id_mitt)">
 								<i class="bi bi-arrow-90deg-right"></i>
 							</button>
+						
+							<button class="trash-button btn btn-secondary" @click="deleteMessage(mes.id_mess, mes.id_forward)">
+								<i class="bi bi-trash"></i>
+							</button>
 						</div>
+						{{ mes.testo }}
+						
 					</p>
 					<p v-else class="message-content">
 						<div v-if="mes.photo !== null">
                                 <img :src="'data:image/png;base64,' + mes.photo" class="img-fluid" />
 						</div>
-						<span>{{ mes.testo }}</span>
-						<div>
+						<div class="button-container">
 							<button class="forward-button btn btn-secondary" @click="forwardMessage(mes.id_mess, mes.id_mitt)">
 								<i class="bi bi-arrow-90deg-right"></i>
 							</button>
+						
+							<button class="trash-button btn btn-secondary" @click="deleteMessage(mes.id_mess, mes.id_forward)">
+								<i class="bi bi-trash"></i>
+							</button>
 						</div>
+						<span>{{ mes.testo }}</span>
+						
 					</p>
 					
 					<div class="message-time">
@@ -277,24 +318,33 @@ export default {
 							<div v-if="mes.photo !== null">
                                 <img :src="'data:image/png;base64,' + mes.photo" class="img-fluid" />
 							</div>
-							
-							{{ mes.testo }}
-							<div>
+							<div class="button-container">
 								<button class="forward-button btn btn-secondary" @click="forwardMessage(mes.id_mess, mes.id_mitt)">
 									<i class="bi bi-arrow-90deg-right"></i>
 								</button>
+							
+								<button class="trash-button btn btn-secondary" @click="deleteMessage(mes.id_mess, mes.id_forward)">
+									<i class="bi bi-trash"></i>
+								</button>
 							</div>
+							{{ mes.testo }}
+							
 						</p> 
 						<p v-else class="message-content">
 							<div v-if="mes.photo !== null">
                                 <img :src="'data:image/png;base64,' + mes.photo" class="img-fluid" />
 							</div>
-							<span>{{ mes.testo }}</span>
-							<div>
+							<div class="button-container">
 								<button class="forward-button btn btn-secondary" @click="forwardMessage(mes.id_mess, mes.id_mitt)">
 									<i class="bi bi-arrow-90deg-right"></i>
 								</button>
+							
+								<button class="trash-button btn btn-secondary" @click="deleteMessage(mes.id_mess, mes.id_forward)">
+									<i class="bi bi-trash"></i>
+								</button>
 							</div>
+							<span>{{ mes.testo }}</span>
+							
 						</p>
 						
 					</div>
@@ -330,24 +380,33 @@ export default {
 							<div v-if="mes.photo !== null">
                                 <img :src="'data:image/png;base64,' + mes.photo" class="img-fluid" />
 							</div>
-							
-							{{ mes.testo }}
-							<div>
+							<div class="button-container">
 								<button class="forward-button btn btn-secondary" @click="forwardMessage(mes.id_mess, mes.id_mitt)">
 									<i class="bi bi-arrow-90deg-right"></i>
 								</button>
+							
+								<button class="trash-button btn btn-secondary" @click="deleteMessage(mes.id_mess, mes.id_forward)">
+									<i class="bi bi-trash"></i>
+								</button>
 							</div>
+							{{ mes.testo }}
+							
 						</p> 
 						<p v-else class="message-content">
 							<div v-if="mes.photo !== null">
                                 <img :src="'data:image/png;base64,' + mes.photo" class="img-fluid" />
 							</div>
-							<span>{{ mes.testo }}</span>
-							<div>
+							<div class="button-container">
 								<button class="forward-button btn btn-secondary" @click="forwardMessage(mes.id_mess, mes.id_mitt)">
 									<i class="bi bi-arrow-90deg-right"></i>
 								</button>
+							
+								<button class="trash-button btn btn-secondary" @click="deleteMessage(mes.id_mess, mes.id_forward)">
+									<i class="bi bi-trash"></i>
+								</button>
 							</div>
+							<span>{{ mes.testo }}</span>
+							
 						</p>
 						
 					</div>
@@ -384,23 +443,33 @@ export default {
 						<div v-if="mes.photo !== null">
                                 <img :src="'data:image/png;base64,' + mes.photo" class="img-fluid" />
 						</div>
-						{{ mes.testo }}
-						<div>
+						<div class="button-container">
 							<button class="forward-button btn btn-secondary" @click="forwardMessage(mes.id_mess, mes.id_mitt)">
 								<i class="bi bi-arrow-90deg-right"></i>
 							</button>
+						
+							<button class="trash-button btn btn-secondary" @click="deleteMessage(mes.id_mess, mes.id_forward)">
+								<i class="bi bi-trash"></i>
+							</button>
 						</div>
+						{{ mes.testo }}
+						
 					</p>
 					<p v-else class="message-content">
 						<div v-if="mes.photo !== null">
                                 <img :src="'data:image/png;base64,' + mes.photo" class="img-fluid" />
 						</div>
-						<span>{{ mes.testo }}</span>
-						<div>
+						<div class="button-container">
 							<button class="forward-button btn btn-secondary" @click="forwardMessage(mes.id_mess, mes.id_mitt)">
 								<i class="bi bi-arrow-90deg-right"></i>
 							</button>
+						
+							<button class="trash-button btn btn-secondary" @click="deleteMessage(mes.id_mess, mes.id_forward)">
+								<i class="bi bi-trash"></i>
+							</button>
 						</div>
+						<span>{{ mes.testo }}</span>
+						
 					</p>
 					
 					<div class="message-time">
@@ -436,23 +505,33 @@ export default {
 						<div v-if="mes.photo !== null">
                                 <img :src="'data:image/png;base64,' + mes.photo" class="img-fluid" />
 						</div>
-						{{ mes.testo }}
-						<div>
+						<div class="button-container">
 							<button class="forward-button btn btn-secondary" @click="forwardMessage(mes.id_mess, mes.id_mitt)">
 								<i class="bi bi-arrow-90deg-right"></i>
 							</button>
+						
+							<button class="trash-button btn btn-secondary" @click="deleteMessage(mes.id_mess, mes.id_forward)">
+								<i class="bi bi-trash"></i>
+							</button>
 						</div>
+						{{ mes.testo }}
+						
 					</p>
 					<p v-else class="message-content">
 						<div v-if="mes.photo !== null">
                                 <img :src="'data:image/png;base64,' + mes.photo" class="img-fluid" />
 						</div>
-						<span>{{ mes.testo }}</span>
-						<div>
+						<div class="button-container">
 							<button class="forward-button btn btn-secondary" @click="forwardMessage(mes.id_mess, mes.id_mitt)">
 								<i class="bi bi-arrow-90deg-right"></i>
 							</button>
+						
+							<button class="trash-button btn btn-secondary" @click="deleteMessage(mes.id_mess, mes.id_forward)">
+								<i class="bi bi-trash"></i>
+							</button>
 						</div>
+						<span>{{ mes.testo }}</span>
+						
 					</p>
 					
 					<div class="message-time">
@@ -513,9 +592,10 @@ export default {
 </template>
 <style>
 .forward-button {
-    position: absolute;
+    /* position: absolute;
     top: 10px;
-    right: 10px;
+    right: 10px; */
+	flex-shrink: 0;
 }
 .bottoneEmoji {
   display: block; 
@@ -542,6 +622,13 @@ export default {
     margin: 0;
     cursor: pointer; 
     outline: none; 
+}
+.button-container {
+    display: flex; /* Disposizione orizzontale */
+    justify-content: flex-end; /* Allinea i pulsanti a destra */
+    gap: 10px; /* Spazio tra i pulsanti */
+    width: auto; /* Assicura che il contenitore si adatti ai pulsanti */
+    margin-left: auto; /* Sposta il contenitore dei pulsanti a destra */
 }
 .message-time {
     position: absolute; 
@@ -586,5 +673,9 @@ body, html {
 }
 .emoji-item {
     margin-right: 5px; 
+}
+.trash-button {
+    /* order: 2; */
+	flex-shrink: 0;
 }
 </style>

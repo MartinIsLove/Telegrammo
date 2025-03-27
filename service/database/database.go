@@ -51,6 +51,7 @@ type AppDatabase interface {
 	GetMyConversations(int) ([]ChatUtenteDb, error)
 	GetConversation(int, int) (bool, string, []MessDb, error)
 	SendMessage(int, int, string, []byte) error
+	DeleteMessage(int, int, int, int) error
 	ForwardMessage(int, []int, int, int) error
 	CreateGroup(int, string, []byte, []int) (int, error)
 	SetGroupName(int, int, string) error
@@ -106,13 +107,13 @@ func New(db *sql.DB) (AppDatabase, error) {
 			return nil, fmt.Errorf("error creating database structure messaggi: %w", err)
 		}
 
-		sqlStmt = `CREATE TABLE if not exists messaggi_di_chat (id INTEGER NOT NULL PRIMARY KEY, id_chat INTEGER NOT NULL, id_messaggio INTEGER NOT NULL,id_forward INTEGER,id_forw_mit INTEGER, forward_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ,FOREIGN KEY(id_forward) REFERENCES utenti(id) , FOREIGN KEY(id_chat) REFERENCES chat(id) ON DELETE CASCADE, FOREIGN KEY(id_messaggio) REFERENCES messaggi(id) ON DELETE CASCADE);`
+		sqlStmt = `CREATE TABLE if not exists messaggi_di_chat (id INTEGER NOT NULL PRIMARY KEY, id_chat INTEGER NOT NULL, id_messaggio INTEGER NOT NULL,id_forward INTEGER,id_forw_mit INTEGER, forward_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ,FOREIGN KEY(id_forward) REFERENCES utenti(id) , FOREIGN KEY(id_chat) REFERENCES chat(id), FOREIGN KEY(id_messaggio) REFERENCES messaggi(id));`
 		_, err = db.Exec(sqlStmt)
 		if err != nil {
 			return nil, fmt.Errorf("error creating database structure messaggi_di_chat: %w", err)
 		}
 
-		sqlStmt = `CREATE TABLE if not exists emoticon (id_utente INTEGER NOT NULL, id_messaggio INTEGER NOT NULL,emoji VARCHAR(3) NOT NULL, FOREIGN KEY(id_utente) REFERENCES utenti(id) ON DELETE CASCADE, FOREIGN KEY(id_messaggio) REFERENCES messaggi(id) ON DELETE CASCADE);`
+		sqlStmt = `CREATE TABLE if not exists emoticon (id_utente INTEGER NOT NULL, id_messaggio INTEGER NOT NULL,emoji VARCHAR(3) NOT NULL, FOREIGN KEY(id_utente) REFERENCES utenti(id), FOREIGN KEY(id_messaggio) REFERENCES messaggi(id) ON DELETE CASCADE);`
 		_, err = db.Exec(sqlStmt)
 		if err != nil {
 			return nil, fmt.Errorf("error creating database structure emoticon: %w", err)

@@ -281,8 +281,8 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 
 	for rows.Next() {
 		var c MessDb
-		var i int
-		if err := rows.Scan(&c.Gruppo, &c.Testo, &c.IdMitt, &c.Nome, &c.Data, &c.Photo, &c.IdMess, &i); err != nil {
+		// var i int
+		if err := rows.Scan(&c.Gruppo, &c.Testo, &c.IdMitt, &c.Nome, &c.Data, &c.Photo, &c.IdMess, &c.IdForward); err != nil {
 			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error scanning user: %w", err)
 		}
 
@@ -293,7 +293,7 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 		var forwarderUsernameMit string
 		var cont int = 0
 
-		row2, err := db.c.Query("SELECT u.username, u.id, m.forward_date, m.id_forw_mit, t.username FROM utenti u JOIN messaggi_di_chat m ON m.id_forward = u.id JOIN utenti t ON m.id_forw_mit=t.id WHERE m.id_messaggio = $1 AND m.id_forward NOT NULL AND m.id=$2", c.IdMess, i) //.Scan(&forwarderUsername, &forwarderId, &forwardDate, &forwardIdMit, &forwarderUsernameMit)
+		row2, err := db.c.Query("SELECT u.username, u.id, m.forward_date, m.id_forw_mit, t.username FROM utenti u JOIN messaggi_di_chat m ON m.id_forward = u.id JOIN utenti t ON m.id_forw_mit=t.id WHERE m.id_messaggio = $1 AND m.id_forward NOT NULL AND m.id=$2", c.IdMess, c.IdForward) //.Scan(&forwarderUsername, &forwarderId, &forwardDate, &forwardIdMit, &forwarderUsernameMit)
 		if errors.Is(err, sql.ErrNoRows) {
 			return false, "", []MessDb{}, fmt.Errorf("GetConversation: no messages found: %w", err)
 		}

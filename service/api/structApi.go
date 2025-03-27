@@ -40,11 +40,12 @@ type Mess struct {
 	Gruppo             bool      `json:"gruppo"`
 	Emoji              []int     `json:"emoji"` // l'ordine e' tacchi, cuore, ditoSu, ok, manicure
 	MyEmoji            string    `json:"myEmoji"`
-	ForwardUsername    string    `json:"forward_username"`
-	ForwardId          int       `json:"forward_id"`
-	ForwardDate        time.Time `json:"forward_date"`
-	ForwardIdMit       int       `json:"forward_id_mit"`
-	ForwardUsernameMit string    `json:"forward_user_mit"`
+	ForwardUsername    string    `json:"forward_username"` // username di colui che ha inviato il messaggio da forwardare
+	ForwardId          int       `json:"forward_id"`       // id di colui che ha inviato il messaggio da forwardare
+	ForwardDate        time.Time `json:"forward_date"`     // data forward
+	ForwardIdMit       int       `json:"forward_id_mit"`   // id di colui che ha fatto il forward
+	ForwardUsernameMit string    `json:"forward_user_mit"` // username di colui che ha fatto il forward
+	IdForward          int       `json:"id_forward"`       //id del forward
 }
 
 type NomeChat struct {
@@ -82,6 +83,7 @@ func NewMess(Messaggio database.MessDb) Mess {
 		ForwardDate:        Messaggio.ForwardDate,
 		ForwardIdMit:       Messaggio.ForwardIdMit,
 		ForwardUsernameMit: Messaggio.ForwardUsernameMit,
+		IdForward:          Messaggio.IdForward,
 	}
 }
 func NewChatUtente(chatUtente database.ChatUtenteDb) ChatUtente {
