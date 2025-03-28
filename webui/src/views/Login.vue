@@ -1,5 +1,6 @@
 <script>
     export default {
+        emits: ['login-success'],
         data: function() {
             return {
                 errormsg: null,
