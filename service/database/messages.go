@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func (db *appdbimpl) SendMessage(cs int, id_chat int, message string, photo []byte) error {
+func (db *appdbimpl) SendMessage(cs int, id_chat int, message string, photo []byte, id_forward int) error {
 	_, err := db.Authentication(cs)
 	if err != nil {
 		return fmt.Errorf("error in authentication SendMessage: %w", err)
@@ -19,7 +19,7 @@ func (db *appdbimpl) SendMessage(cs int, id_chat int, message string, photo []by
 		return fmt.Errorf("chat: error catch number of rows from query: %w", err)
 	}
 
-	_, err = db.c.Exec("INSERT INTO messaggi_di_chat (id_chat, id_messaggio) VALUES  ($1, $2)", id_chat, id_mess)
+	_, err = db.c.Exec("INSERT INTO messaggi_di_chat (id_chat, id_messaggio, id_reply) VALUES  ($1, $2, $3)", id_chat, id_mess, id_forward)
 	if err != nil {
 		return fmt.Errorf("chat: error insert messaggio in messagg_di_chat : %w", err)
 	}

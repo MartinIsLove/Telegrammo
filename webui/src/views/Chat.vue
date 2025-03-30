@@ -12,6 +12,8 @@ export default {
             chatId: null,
 			photo: null,
 			message: "",
+			reply: false,
+			messageReplied: -1,
 
 			emoji: ["👠", "💅", "👍🏻", "👌🏻","❤️"],
 			intervalId: null,
@@ -47,16 +49,24 @@ export default {
 			if (this.photo === null && this.message === ""){
 				return 
 			}	
+			
 			let formData = new FormData();
 			formData.append('photo', this.photo)
 			formData.append('id_chat', this.chatId)
 			formData.append('testo', this.message)
-			
-			
-			await this.$axios.post("/message", formData, {headers: {'Content-Type': 'multipart/form-data', cs: this.id}});
+			if (this.messageReplied === -1){
+				formData.append('id_forward', this.messageReplied)
+				await this.$axios.post("/message", formData, {headers: {'Content-Type': 'multipart/form-data', cs: this.id}});
+
+			}else{
+				formData.append('id_forward', this.messageReplied.id_forward)
+				await this.$axios.post("/message", formData, {headers: {'Content-Type': 'multipart/form-data', cs: this.id}});
+			}
 			this.message = ''
 			this.photo = null 
             this.$refs.photoInput.value = '' 
+			this.reply = false;
+			this.messageReplied = null;
             this.fetchMessage()
 		},
 		formatDate(date) {
@@ -139,7 +149,6 @@ export default {
 		},
 		async deleteMessage(id_mes, id_forw){
 			
-			console.log(this.id)
 			try{
 				// await this.$axios.delete(`/message/delete/${id_mes}`, {id_forward:id_forw, id_chat:this.chatId},{headers:{cs:this.id}});
 				await this.$axios({
@@ -158,6 +167,18 @@ export default {
 			catch(e){
 				console.error(e);
 			}
+		},
+		async replyMessage(mes){
+
+			console.log("dio")
+			this.reply=true
+			this.messageReplied=mes
+			
+
+			},
+		closeReply() {
+			this.reply = false;
+			this.messageReplied = null;
 		},
 		
 	},
@@ -210,7 +231,7 @@ export default {
 			<div v-else-if="(id==mes.id_mitt && !(mes.forward_id!=-1 && mes.forward_id_mit!=id)) || (mes.forward_id!=-1 && mes.forward_id_mit==id) " class="d-flex justify-content-end my-2">
 
 				<div class=" message-container row g-0 border rounded p-2 ">
-
+					
 					<div class="row pe-0 mb-2" style="width: 100%;">
 						<div v-if="mes.forward_id!=-1 " class="col-auto ps-0">
 							<span v-if="mes.gruppo" class="text-capitalize fw-bold d-flex justify-content-start">{{mes.forward_user_mit }}</span>
@@ -220,6 +241,10 @@ export default {
 						</div>
 
 						<div class="col-auto ms-auto pe-0">
+							<button class="forward-button btn btn-secondary " @click="replyMessage(mes)">
+								<i class="bi bi-arrow-90deg-left"></i>
+							</button>
+
 							<button class="forward-button btn btn-secondary mx-2" @click="forwardMessage(mes.id_mess, mes.id_mitt)">
 								<i class="bi bi-arrow-90deg-right"></i>
 							</button>
@@ -256,7 +281,7 @@ export default {
 							<small class="text-end"> {{ formatTime(mes.data) }} </small>
 						</div>
 						<div v-if="mes.forward_id !== -1">
-							<p>
+							<p class="forwarded-by">
 								forwarded by: {{ mes.forward_username }}
 							</p>
 						</div>
@@ -279,6 +304,10 @@ export default {
 						</div>
 
 						<div class="col-auto ms-auto pe-0">
+							<button class="forward-button btn btn-secondary " @click="replyMessage(mes)">
+								<i class="bi bi-arrow-90deg-left"></i>
+							</button>
+
 							<button class="forward-button btn btn-secondary mx-2" @click="forwardMessage(mes.id_mess, mes.id_mitt)">
 								<i class="bi bi-arrow-90deg-right"></i>
 							</button>
@@ -316,7 +345,7 @@ export default {
 							<small class="text-end"> {{ formatTime(mes.data) }} </small>
 						</div>
 						<div v-if="mes.forward_id !== -1">
-							<p>
+							<p class="forwarded-by">
 								forwarded by: {{ mes.forward_username }}
 							</p>
 						</div>
@@ -331,8 +360,33 @@ export default {
 
 	<div class="min-vh-100">
 	</div>
-	<form  @submit.prevent="send" class="sticky-bottom mb-2">
+	<form @submit.prevent="send" class="sticky-bottom mb-2">
 		<div>
+			<div v-if="reply" class="reply-container">
+				<button class="reply-close-button" @click="closeReply">
+					<i class="bi bi-x"></i>
+				</button>
+				<div class="row pe-0 mb-2">
+					<div v-if="messageReplied.forward_id!=-1" class="col-auto ps-0">
+						<span v-if="messageReplied.gruppo" class="text-capitalize fw-bold ms-2">{{messageReplied.forward_user_mit }}</span>
+					</div>
+					<div v-else class="col-auto ps-0">
+						<span v-if="messageReplied.gruppo" class="text-capitalize fw-bold ms-2">{{ messageReplied.nome }}</span>
+					</div>
+				</div>
+				
+				<div v-if="messageReplied.photo !== null" class="mb-2">
+					<img :src="'data:image/png;base64,' + messageReplied.photo" class="img-fluid rounded" style="max-height: 100px;" />
+				</div>
+
+				<p class="mb-0">{{ messageReplied.testo }}</p>
+				<div v-if="messageReplied.forward_id !== -1">
+							<p class="forwarded-by">
+								forwarded by: {{ messageReplied.forward_username }}
+							</p>
+				</div>
+			</div>
+			
 			<div class="input-group mb-3">
 				<input type="text" class="form-control rounded" placeholder="write message" aria-label="message" aria-describedby="basic-addon1" v-model="message">
 				<button class="btn btn-secondary mt-2 rounded ms-2"  >Send</button>
@@ -429,5 +483,38 @@ body, html {
 .trash-button {
     /* order: 2; */
 	flex-shrink: 0;
+}
+
+.reply-container {
+    background-color: #2b2b2b;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    padding: 10px;
+    position: relative;
+    border-left: 4px solid #0d6efd;
+}
+
+.reply-close-button {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+}
+
+.forwarded-by {
+    font-family: 'Segoe UI', 'Roboto', sans-serif;
+    font-style: italic;
+    color: #8ab4f8;
+    font-size: 0.9em;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    padding: 4px 8px;
+    background-color: rgba(138, 180, 248, 0.1);
+    border-radius: 4px;
+    display: inline-block;
+    margin-top: 5px;
 }
 </style>

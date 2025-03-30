@@ -50,7 +50,7 @@ type AppDatabase interface {
 	LeaveGroup(int, int) error
 	GetMyConversations(int) ([]ChatUtenteDb, error)
 	GetConversation(int, int) (bool, string, []MessDb, error)
-	SendMessage(int, int, string, []byte) error
+	SendMessage(int, int, string, []byte, int) error
 	DeleteMessage(int, int, int, int) error
 	ForwardMessage(int, []int, int, int) error
 	CreateGroup(int, string, []byte, []int) (int, error)
@@ -101,13 +101,13 @@ func New(db *sql.DB) (AppDatabase, error) {
 			return nil, fmt.Errorf("error creating database structure membri: %w", err)
 		}
 
-		sqlStmt = `CREATE TABLE if not exists messaggi (id INTEGER NOT NULL PRIMARY KEY, testo TEXT, image BLOB, data TIMESTAMP DEFAULT CURRENT_TIMESTAMP, mittente INTEGER NOT NULL, id_reply INTEGER, FOREIGN KEY(mittente) REFERENCES utenti(id), FOREIGN KEY (id_reply) REFERENCES messaggi(id));`
+		sqlStmt = `CREATE TABLE if not exists messaggi (id INTEGER NOT NULL PRIMARY KEY, testo TEXT, image BLOB, data TIMESTAMP DEFAULT CURRENT_TIMESTAMP, mittente INTEGER NOT NULL, FOREIGN KEY(mittente) REFERENCES utenti(id));`
 		_, err = db.Exec(sqlStmt)
 		if err != nil {
 			return nil, fmt.Errorf("error creating database structure messaggi: %w", err)
 		}
 
-		sqlStmt = `CREATE TABLE if not exists messaggi_di_chat (id INTEGER NOT NULL PRIMARY KEY, id_chat INTEGER NOT NULL, id_messaggio INTEGER NOT NULL,id_forward INTEGER,id_forw_mit INTEGER, forward_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ,FOREIGN KEY(id_forward) REFERENCES utenti(id) , FOREIGN KEY(id_chat) REFERENCES chat(id), FOREIGN KEY(id_messaggio) REFERENCES messaggi(id));`
+		sqlStmt = `CREATE TABLE if not exists messaggi_di_chat (id INTEGER NOT NULL PRIMARY KEY, id_chat INTEGER NOT NULL, id_messaggio INTEGER NOT NULL,id_forward INTEGER,id_forw_mit INTEGER, forward_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, id_reply INTEGER ,FOREIGN KEY(id_forward) REFERENCES utenti(id) , FOREIGN KEY(id_chat) REFERENCES chat(id), FOREIGN KEY(id_messaggio) REFERENCES messaggi(id), FOREIGN KEY (id_reply) REFERENCES messaggi_di_chat(id));`
 		_, err = db.Exec(sqlStmt)
 		if err != nil {
 			return nil, fmt.Errorf("error creating database structure messaggi_di_chat: %w", err)

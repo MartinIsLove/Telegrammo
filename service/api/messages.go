@@ -50,6 +50,13 @@ func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, ps httpro
 
 	id_chat_tmp := r.FormValue("id_chat")
 	testo := r.FormValue("testo")
+	id_forward_tmp := r.FormValue("id_forward")
+
+	id_forward, err := strconv.Atoi(id_forward_tmp)
+	if err != nil {
+		http.Error(w, "error: conversion id_forward_tmp (string) to id_forward (int): "+err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	id_chat, err := strconv.Atoi(id_chat_tmp)
 	if err != nil {
@@ -62,7 +69,7 @@ func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, ps httpro
 		return
 	}
 
-	erro := rt.db.SendMessage(cs, id_chat, testo, photo)
+	erro := rt.db.SendMessage(cs, id_chat, testo, photo, id_forward)
 	if erro != nil && strings.HasPrefix(erro.Error(), "error in authentication SendMessage:") {
 		http.Error(w, erro.Error(), http.StatusUnauthorized)
 		return
