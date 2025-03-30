@@ -36,4 +36,8 @@ type MessDb struct {
 	ForwardUsernameMit string    `json:"forward_user_mit"` // username di colui che ha fatto il forward
 	IdForward          int       `json:"id_forward"`       //id del forward
 	Idreply            int       `json:"id_reply"`
+	TestoReply         string    `json:"testo_reply"`
+	PhotoReply         []byte    `json:"photo_reply"`
+	IdMitReply         int       `json:"id_mit_reply"`
+	MitReply           string    `json:"mit_reply"`
 }

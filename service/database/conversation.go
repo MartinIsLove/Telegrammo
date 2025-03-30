@@ -348,6 +348,20 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 	for _, m := range mess {
 		var emoji string
 
+		err = db.c.QueryRow("SELECT id_reply FROM messaggi_di_chat WHERE id=$1", m.IdForward).Scan(&m.Idreply)
+
+		if err != nil {
+			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying users: %w", err)
+		}
+		if m.Idreply > 0 {
+
+			err = db.c.QueryRow("SELECT m.testo, m.image, m.mittente, u.username FROM messaggi m JOIN utenti u ON u.id=m.mittente JOIN messaggi_di_chat md ON md.id_messaggio=m.id WHERE md.id=$1", m.Idreply).Scan(&m.TestoReply, &m.PhotoReply, &m.IdMitReply, &m.MitReply)
+			if err != nil {
+				return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying users: %w", err)
+			}
+
+		}
+
 		err = db.c.QueryRow("SELECT emoji FROM emoticon WHERE id_utente=$1 AND id_messaggio=$2", cs, m.IdMess).Scan(&emoji)
 		if err == sql.ErrNoRows {
 			emoji = ""

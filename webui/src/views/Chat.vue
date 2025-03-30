@@ -66,7 +66,7 @@ export default {
 			this.photo = null 
             this.$refs.photoInput.value = '' 
 			this.reply = false;
-			this.messageReplied = null;
+			this.messageReplied = -1;
             this.fetchMessage()
 		},
 		formatDate(date) {
@@ -178,7 +178,7 @@ export default {
 			},
 		closeReply() {
 			this.reply = false;
-			this.messageReplied = null;
+			this.messageReplied = -1;
 		},
 		
 	},

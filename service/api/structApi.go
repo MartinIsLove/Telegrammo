@@ -47,6 +47,10 @@ type Mess struct {
 	ForwardUsernameMit string    `json:"forward_user_mit"` // username di colui che ha fatto il forward
 	IdForward          int       `json:"id_forward"`       //id del forward
 	Idreply            int       `json:"id_reply"`
+	TestoReply         string    `json:"testo_reply"`
+	IdMitReply         int       `json:"id_mit_reply"`
+	MitReply           string    `json:"mit_reply"`
+	PhotoReply         []byte    `json:"photo_reply"`
 }
 
 type NomeChat struct {
@@ -86,6 +90,10 @@ func NewMess(Messaggio database.MessDb) Mess {
 		ForwardUsernameMit: Messaggio.ForwardUsernameMit,
 		IdForward:          Messaggio.IdForward,
 		Idreply:            Messaggio.Idreply,
+		IdMitReply:         Messaggio.IdMitReply,
+		TestoReply:         Messaggio.TestoReply,
+		MitReply:           Messaggio.MitReply,
+		PhotoReply:         Messaggio.PhotoReply,
 	}
 }
 func NewChatUtente(chatUtente database.ChatUtenteDb) ChatUtente {
