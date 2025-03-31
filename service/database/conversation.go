@@ -250,6 +250,11 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 		return false, "", []MessDb{}, fmt.Errorf("error in authentication GetConversation: %w", err)
 	}
 
+	_, err = db.c.Exec("INSERT INTO accessi_chat (id_utente, id_chat, data) VALUES ($1, $2, CURRENT_TIMESTAMP) ON CONFLICT (id_utente, id_chat) DO UPDATE SET data = CURRENT_TIMESTAMP WHERE accessi_chat.id_utente = $1 AND accessi_chat.id_chat = $2", cs, id_chat)
+	if err != nil {
+		return false, "", []MessDb{}, fmt.Errorf("GetConversation: error update accessi_chat: %w", err)
+	}
+
 	var group bool
 
 	err = db.c.QueryRow("SELECT gruppo FROM chat WHERE id=$1 LIMIT 1;", id_chat).Scan(&group)
@@ -347,7 +352,47 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 
 	for _, m := range mess {
 		var emoji string
+		var idUtenti []int
 
+		row3, err := db.c.Query("SELECT id_utenti FROM membri WHERE id_utenti != $1 AND id_chat=$2", cs, id_chat) //.Scan(&forwarderUsername, &forwarderId, &forwardDate, &forwardIdMit, &forwarderUsernameMit)
+		if errors.Is(err, sql.ErrNoRows) {
+			return false, "", []MessDb{}, fmt.Errorf("GetConversation: no membri found: %w", err)
+		}
+		if err != nil {
+			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying users: %w", err)
+		}
+
+		defer row3.Close()
+
+		for row3.Next() {
+			var id int
+			if err := row3.Scan(&id); err != nil {
+				return false, "", []MessDb{}, fmt.Errorf("GetConversation: error scanning id_utenti: %w", err)
+			}
+			idUtenti = append(idUtenti, id)
+		}
+
+		var visualCount int
+		err = db.c.QueryRow(`
+			SELECT COUNT(DISTINCT ac.id_utente) 
+			FROM accessi_chat ac 
+			JOIN membri mb ON mb.id_utenti = ac.id_utente 
+			WHERE ac.id_chat = $1 
+			AND ac.id_utente != $2 
+			AND ac.data > $3 
+			AND mb.id_chat = ac.id_chat`,
+			id_chat, m.IdMitt, m.Data).Scan(&visualCount)
+
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error counting message views: %w", err)
+		}
+
+		if visualCount >= len(idUtenti) {
+			m.Visual = true
+		} else {
+			m.Visual = false
+		}
+		// -----------------------------------------------------
 		err = db.c.QueryRow("SELECT id_reply FROM messaggi_di_chat WHERE id=$1", m.IdForward).Scan(&m.Idreply)
 		if err != nil {
 			return false, "", []MessDb{}, fmt.Errorf("2 GetConversation: error querying users: %w", err)

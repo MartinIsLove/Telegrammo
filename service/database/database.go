@@ -119,7 +119,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 			return nil, fmt.Errorf("error creating database structure emoticon: %w", err)
 		}
 
-		sqlStmt = `CREATE TABLE if not exists accessi_chat (id_utente INTEGER NOT NULL, id_chat INTEGER NOT NULL, data TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(id_utente) REFERENCES utenti(id) ON DELETE CASCADE, FOREIGN KEY(id_chat) REFERENCES chat(id) ON DELETE CASCADE);`
+		sqlStmt = `CREATE TABLE if not exists accessi_chat (id_utente INTEGER NOT NULL, id_chat INTEGER NOT NULL, data TIMESTAMP DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (id_utente, id_chat), FOREIGN KEY(id_utente) REFERENCES utenti(id) ON DELETE CASCADE, FOREIGN KEY(id_chat) REFERENCES chat(id) ON DELETE CASCADE);`
 		_, err = db.Exec(sqlStmt)
 		if err != nil {
 			return nil, fmt.Errorf("error creating database structure accessi_chat: %w", err)
