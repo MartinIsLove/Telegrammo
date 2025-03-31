@@ -373,15 +373,7 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 		}
 
 		var visualCount int
-		err = db.c.QueryRow(`
-			SELECT COUNT(DISTINCT ac.id_utente) 
-			FROM accessi_chat ac 
-			JOIN membri mb ON mb.id_utenti = ac.id_utente 
-			WHERE ac.id_chat = $1 
-			AND ac.id_utente != $2 
-			AND ac.data > $3 
-			AND mb.id_chat = ac.id_chat`,
-			id_chat, m.IdMitt, m.Data).Scan(&visualCount)
+		err = db.c.QueryRow(`SELECT COUNT(DISTINCT ac.id_utente) FROM accessi_chat ac JOIN membri mb ON mb.id_utenti = ac.id_utente WHERE ac.id_chat = $1 AND ac.id_utente != $2 AND ac.data > $3 AND mb.id_chat = ac.id_chat`, id_chat, m.IdMitt, m.Data).Scan(&visualCount)
 
 		if err != nil && !errors.Is(err, sql.ErrNoRows) {
 			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error counting message views: %w", err)
