@@ -349,15 +349,23 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 		var emoji string
 
 		err = db.c.QueryRow("SELECT id_reply FROM messaggi_di_chat WHERE id=$1", m.IdForward).Scan(&m.Idreply)
-
 		if err != nil {
-			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying users: %w", err)
+			return false, "", []MessDb{}, fmt.Errorf("2 GetConversation: error querying users: %w", err)
 		}
 		if m.Idreply > 0 {
 
 			err = db.c.QueryRow("SELECT m.testo, m.image, m.mittente, u.username FROM messaggi m JOIN utenti u ON u.id=m.mittente JOIN messaggi_di_chat md ON md.id_messaggio=m.id WHERE md.id=$1", m.Idreply).Scan(&m.TestoReply, &m.PhotoReply, &m.IdMitReply, &m.MitReply)
-			if err != nil {
-				return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying users: %w", err)
+			if err == sql.ErrNoRows {
+				_, err := db.c.Exec("UPDATE messaggi_di_chat SET id_reply=$1 WHERE id=$2", -1, m.IdForward)
+				if err != nil {
+					return false, "", []MessDb{}, fmt.Errorf("GetConversation: error insert id_reply in table messaggi_di_chat: %w", err)
+				}
+				m.TestoReply = ""
+				m.PhotoReply = nil
+				m.IdMitReply = -1
+				m.MitReply = ""
+			} else if err != nil {
+				return false, "", []MessDb{}, fmt.Errorf("1 GetConversation: error querying users: %w", err)
 			}
 
 		}

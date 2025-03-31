@@ -253,6 +253,16 @@ export default {
 								<i class="bi bi-trash"></i>
 							</button>
 						</div>
+						<div v-if="mes.id_reply!==-1" class="reply-container mt-2">
+							
+							<span v-if="mes.gruppo" class="text-capitalize fw-bold d-flex justify-content-start ms-2">{{ mes.mit_reply }}</span>
+							<div class="mb-2 ms-2" v-if="mes.photo_reply !== null">
+								<img :src="'data:image/png;base64,' + mes.photo_reply" class="img-fluid rounded" />
+							</div >
+							<p class="ms-2">
+								{{ mes.testo_reply }}
+							</p>
+						</div>
 					
 					</div>
 
@@ -279,6 +289,13 @@ export default {
 						<div class="col-auto ms-auto pe-0 pt-3">
 
 							<small class="text-end"> {{ formatTime(mes.data) }} </small>
+							<span v-if="!mes.visual">
+								<i class="bi bi-check"></i>
+								
+							</span>
+							<span v-else>
+								<i class="bi bi-check-all"></i>
+							</span>
 						</div>
 						<div v-if="mes.forward_id !== -1">
 							<p class="forwarded-by">
@@ -316,6 +333,16 @@ export default {
 								<i class="bi bi-trash"></i>
 							</button>
 						</div>
+						<div v-if="mes.id_reply!==-1" class="reply-container mt-2">
+							
+							<span v-if="mes.gruppo" class="text-capitalize fw-bold d-flex justify-content-start ms-2">{{ mes.mit_reply }}</span>
+							<div class="mb-2 ms-2" v-if="mes.photo_reply !== null">
+								<img :src="'data:image/png;base64,' + mes.photo_reply" class="img-fluid rounded" />
+							</div >
+							<p class="ms-2">
+								{{ mes.testo_reply }}
+							</p>
+						</div>
 					
 					</div>
 
@@ -343,11 +370,19 @@ export default {
 						<div class="col-auto ms-auto pe-0 pt-3">
 
 							<small class="text-end"> {{ formatTime(mes.data) }} </small>
+							<span v-if="!mes.visual">
+								<i class="bi bi-check"></i>
+							</span>
+							<span v-else>
+								<i class="bi bi-check-all"></i>
+							</span>
 						</div>
 						<div v-if="mes.forward_id !== -1">
 							<p class="forwarded-by">
 								forwarded by: {{ mes.forward_username }}
 							</p>
+							
+							
 						</div>
 					</div>
 

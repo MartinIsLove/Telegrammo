@@ -46,11 +46,11 @@ type Mess struct {
 	ForwardIdMit       int       `json:"forward_id_mit"`   // id di colui che ha fatto il forward
 	ForwardUsernameMit string    `json:"forward_user_mit"` // username di colui che ha fatto il forward
 	IdForward          int       `json:"id_forward"`       //id del forward
-	Idreply            int       `json:"id_reply"`
-	TestoReply         string    `json:"testo_reply"`
-	IdMitReply         int       `json:"id_mit_reply"`
-	MitReply           string    `json:"mit_reply"`
-	PhotoReply         []byte    `json:"photo_reply"`
+	Idreply            int       `json:"id_reply"`         // l'id del messaggio di chat a cui fa riferimento il reply
+	TestoReply         string    `json:"testo_reply"`      // il testo del messaggio del reply se presente
+	IdMitReply         int       `json:"id_mit_reply"`     // l'id del mittente del reply
+	MitReply           string    `json:"mit_reply"`        // l'username del mittente del reply
+	PhotoReply         []byte    `json:"photo_reply"`      // la photo a cui potrebbe far riferimento il reply
 }
 
 type NomeChat struct {
