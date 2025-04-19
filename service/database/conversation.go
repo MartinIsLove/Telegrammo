@@ -474,6 +474,8 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 
 	return group, nomeChat, result, nil
 }
+
+// crea un gruppo
 func (db *appdbimpl) CreateGroup(cs int, nome string, propic []byte, membri []int) (int, error) {
 	_, err := db.Authentication(cs)
 	if err != nil {
@@ -482,28 +484,37 @@ func (db *appdbimpl) CreateGroup(cs int, nome string, propic []byte, membri []in
 	noPhotoPath := filepath.Join("/workspace/webui/src/assets/", "NoPhoto.png")
 	noPhotoBytes, err := os.ReadFile(noPhotoPath)
 	if err != nil {
-		return -1, fmt.Errorf("createGroup: error reading noPhoto.png: %w", err)
+		return -1, fmt.Errorf("CreateGroup: error reading noPhoto.png: %w", err)
 	}
 	if propic == nil {
 		propic = noPhotoBytes
 	}
 
+	// inserisco il gruppo nella tabella chat
 	str_group, err := db.c.Exec("INSERT INTO chat (nome, propic, gruppo) VALUES ($1, $2, TRUE)", nome, propic)
 	if err != nil {
-		return -1, fmt.Errorf("group: error insert group in table chat: %w", err)
+		return -1, fmt.Errorf("CreateGroup: error insert group in table chat: %w", err)
 	}
 
+	// recupero l'id del gruppo appena creato
 	id_group, err := str_group.LastInsertId()
 	if err != nil {
-		return -1, fmt.Errorf("chat: error catch number of rows from query: %w", err)
+		return -1, fmt.Errorf("CreateGroup: error catch number of rows from query: %w", err)
 	}
+
+	// inserisco l'utente loggato nel gruppo
 	_, err = db.c.Exec("INSERT INTO membri (id_utenti, id_chat) VALUES ($1, $2)", cs, id_group)
 	if err != nil {
-		return -1, fmt.Errorf("group: error insert group in table chat: %w", err)
+		return -1, fmt.Errorf("CreateGroup: error insert (user, chat) in table membri: %w", err)
 	}
 	for _, m := range membri {
+		// controllo che lo user che sto inserendo esista
 		value := db.UserExist(m)
+
+		//se esiste
 		if value {
+
+			// inserisco lo user(lo fa per ogni user in membri) nella tabella membri
 			_, err := db.c.Exec("INSERT INTO membri (id_utenti, id_chat) VALUES ($1, $2)", m, id_group)
 			if err != nil {
 				return -1, fmt.Errorf("group: error insert group in table chat: %w", err)
@@ -513,13 +524,16 @@ func (db *appdbimpl) CreateGroup(cs int, nome string, propic []byte, membri []in
 
 	return int(id_group), nil
 }
+
+// rimuove l'utente loggato da un gruppo
 func (db *appdbimpl) LeaveGroup(cs int, idChat int) error {
 
 	_, err := db.Authentication(cs)
 	if err != nil {
-		return fmt.Errorf("error in authentication CreateGroup: %w", err)
+		return fmt.Errorf("error in authentication LeaveGroup: %w", err)
 	}
 
+	// rimuovo l'utente dai membri di quella chat
 	_, err = db.c.Exec("DELETE FROM membri WHERE id_utenti=$1 AND id_chat=$2", cs, idChat)
 	if err != nil {
 		return fmt.Errorf("group: error leave user by a group in table membri: %w", err)
@@ -527,6 +541,8 @@ func (db *appdbimpl) LeaveGroup(cs int, idChat int) error {
 
 	return nil
 }
+
+// imposta il nome del gruppo
 func (db *appdbimpl) SetGroupName(cs int, idGroup int, nameGroup string) error {
 
 	var righe int64
@@ -535,14 +551,18 @@ func (db *appdbimpl) SetGroupName(cs int, idGroup int, nameGroup string) error {
 		return fmt.Errorf("SetGroupName: error in authentication: %w", err)
 	}
 
+	// vede se l'utente loggato e' presente nel gruppo
 	err = db.c.QueryRow("SELECT count(u.id) FROM chat c  JOIN membri m ON m.id_chat=c.id JOIN utenti u ON u.id=m.id_utenti WHERE u.id=$1 AND c.id=$2", cs, idGroup).Scan(&righe)
 	if err != nil {
 		return fmt.Errorf("SetGroupName: error querying database: %w", err)
 	}
+
+	// se non sono state trovate righe allora l'utente loggato non e' nel gruppo
 	if righe == 0 {
 		return fmt.Errorf("you can't change a name of a group that you don't partecipate: %w", err)
 	}
 
+	// se l'utente loggato e' nel gruppo allora cambia il nome a quello inserito
 	_, err = db.c.Exec("UPDATE chat SET nome=$1 WHERE id=$2", nameGroup, idGroup)
 	if err != nil {
 		return fmt.Errorf("SetGroupName error: database UPDATE not successful: %w", err)
@@ -550,6 +570,8 @@ func (db *appdbimpl) SetGroupName(cs int, idGroup int, nameGroup string) error {
 	return nil
 
 }
+
+// imposta la foto del gruppo
 func (db *appdbimpl) SetGroupPhoto(cs int, idGroup int, photoGroup []byte) error {
 	var righe int64
 
@@ -558,14 +580,18 @@ func (db *appdbimpl) SetGroupPhoto(cs int, idGroup int, photoGroup []byte) error
 		return fmt.Errorf("SetGroupPhoto: error in authentication: %w", err)
 	}
 
+	// vede se l'utente loggato e' presente nel gruppo
 	err = db.c.QueryRow("SELECT count(u.id) FROM chat c  JOIN membri m ON m.id_chat=c.id JOIN utenti u ON u.id=m.id_utenti WHERE u.id=$1 AND c.id=$2", cs, idGroup).Scan(&righe)
 	if err != nil {
 		return fmt.Errorf("SetGroupPhoto: error querying database: %w", err)
 	}
+
+	// se non sono state trovate righe allora l'utente loggato non e' nel gruppo
 	if righe == 0 {
 		return fmt.Errorf("you can't change a name of a group that you don't partecipate: %w", err)
 	}
 
+	// se l'utente loggato e' nel gruppo allora cambia la foto a quella inserita
 	_, err = db.c.Exec("UPDATE chat SET propic=$1 WHERE id=$2", photoGroup, idGroup)
 	if err != nil {
 		return fmt.Errorf("SetGroupPhoto error: database UPDATE not successful: %w", err)
@@ -573,6 +599,8 @@ func (db *appdbimpl) SetGroupPhoto(cs int, idGroup int, photoGroup []byte) error
 
 	return nil
 }
+
+// aggiunge uno o piu' utenti ad un gruppo
 func (db *appdbimpl) AddToGroup(cs int, idGroup int, membri []int) error {
 	var righe int64
 
@@ -581,14 +609,18 @@ func (db *appdbimpl) AddToGroup(cs int, idGroup int, membri []int) error {
 		return fmt.Errorf("AddToGroup: error in authentication: %w", err)
 	}
 
+	// vede se l'utente loggato e' presente nel gruppo
 	err = db.c.QueryRow("SELECT count(u.id) FROM chat c JOIN membri m ON m.id_chat=c.id JOIN utenti u ON u.id=m.id_utenti WHERE u.id=$1 AND c.id=$2", cs, idGroup).Scan(&righe)
 	if err != nil {
 		return fmt.Errorf("AddToGroup: error querying database: %w", err)
 	}
+
+	// se non sono state trovate righe allora l'utente loggato non e' nel gruppo
 	if righe == 0 {
 		return fmt.Errorf("you can't add user to a group that you don't partecipate: %w", err)
 	}
 
+	//altrimenti per ogni membro viene eseguita la query che aggiunge il membro se gia non e' presente nella chat
 	for _, c := range membri {
 
 		_, err := db.c.Exec("INSERT INTO membri (id_utenti, id_chat) SELECT $1, $2 WHERE NOT EXISTS (SELECT 1 FROM membri WHERE id_utenti = $1 AND id_chat = $2);", c, idGroup)
