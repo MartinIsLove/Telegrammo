@@ -10,23 +10,26 @@ import (
 	"time"
 )
 
+// ritorna 1 se una chat(non gruppo) gia esiste, 0 altrimenti
 func (db *appdbimpl) IsChatDuplicated(cs int, id int) (bool, error) {
 	var num_righe int64
-
+	// seleziona la chat(non gruppo) con partecipanti cs e id dati nei parametri della funzione
 	err := db.c.QueryRow("SELECT COUNT(chat.id) AS righe FROM chat JOIN membri ON chat.id=membri.id_chat WHERE chat.gruppo=FALSE AND membri.id_utenti IN ($1 , $2) GROUP BY chat.id HAVING COUNT (DISTINCT membri.id_utenti)=2", cs, id).Scan(&num_righe)
 	if err == sql.ErrNoRows {
 		return false, nil
 	}
 
 	if err != nil {
-		return true, fmt.Errorf("chat: error checking chat duplicated in database: %w", err)
+		return true, fmt.Errorf("IsChatDuplicated: error checking chat duplicated in database: %w", err)
 	}
 
 	if num_righe == 0 {
 		return false, nil
 	}
-	return true, fmt.Errorf("chat: error this chat already exist: %w", err)
+	return true, fmt.Errorf("IsChatDuplicated: error this chat already exist: %w", err)
 }
+
+// crea una chat(non gruppo)
 func (db *appdbimpl) CreateChat(cs int, id int) (int, error) {
 
 	_, err := db.Authentication(cs)
@@ -34,26 +37,31 @@ func (db *appdbimpl) CreateChat(cs int, id int) (int, error) {
 		return -1, fmt.Errorf("error in authentication CreateChat: %w", err)
 	}
 
+	// verifica se la chat e' duplicata
 	Isduplicated, err := db.IsChatDuplicated(cs, id)
 
 	if err != nil {
 		return -1, err
 	}
 
+	// se non lo e'
 	if !Isduplicated {
+		// imposta il valore gruppo come false (essendo una chat)
 		str_chat, err := db.c.Exec("INSERT INTO chat (gruppo) VALUES (FALSE)")
 		if err != nil {
-			return -1, fmt.Errorf("chat: error insert chat in table chat: %w", err)
+			return -1, fmt.Errorf("CreateChat: error insert chat in table chat: %w", err)
 		}
 
+		// prendo l'id della chat appena creata
 		id_chat, err := str_chat.LastInsertId()
 		if err != nil {
-			return -1, fmt.Errorf("chat: error catch number of rows from query: %w", err)
+			return -1, fmt.Errorf("CreateChat: error catch number of rows from query: %w", err)
 		}
 
+		// inserisco nell'id della chat appena creata nella tabella membri i due id degli utenti che ne fanno parte
 		_, err = db.c.Exec("INSERT INTO membri (id_chat, id_utenti) VALUES  ($1, $2), ($1, $3)", id_chat, cs, id)
 		if err != nil {
-			return -1, fmt.Errorf("chat: error insert chat users in membri : %w", err)
+			return -1, fmt.Errorf("CreateChat: error insert chat users in membri : %w", err)
 		}
 		return int(id_chat), nil
 	} else {
@@ -61,6 +69,8 @@ func (db *appdbimpl) CreateChat(cs int, id int) (int, error) {
 	}
 
 }
+
+// ritorna i match tra i caratteri inseriti e i primi caratteri dei nomi utente
 func (db *appdbimpl) CheckNames(cs int, toFind string) ([]UtenteDb, error) {
 	var utenti []UtenteDb
 	_, err := db.Authentication(cs)
@@ -68,8 +78,7 @@ func (db *appdbimpl) CheckNames(cs int, toFind string) ([]UtenteDb, error) {
 		return utenti, fmt.Errorf("error in authentication Checknames: %w", err)
 	}
 
-	// ----------------------------------
-
+	// seleziona tutto l'utente dove l'id e' diverso dall'id della persona loggata e che l'username matchi con i caratteri inseriti dall'utente
 	rows, err := db.c.Query("SELECT * FROM utenti WHERE (username LIKE $1 || '%') AND (id!=$2)", toFind, cs)
 	if err != nil {
 		return utenti, fmt.Errorf("checkNames: error querying users: %w", err)
@@ -79,9 +88,11 @@ func (db *appdbimpl) CheckNames(cs int, toFind string) ([]UtenteDb, error) {
 
 	defer rows.Close()
 
+	// itero sulle righe ricevute
 	for rows.Next() {
 		cont++
 		var utente UtenteDb
+		// salvo le informazioni nella struttura utente per poi appenderle nell'array utenti
 		if err := rows.Scan(&utente.Id, &utente.Username, &utente.Propic); err != nil {
 			return utenti, fmt.Errorf("checkNames: error scanning user: %w", err)
 		}
@@ -94,10 +105,10 @@ func (db *appdbimpl) CheckNames(cs int, toFind string) ([]UtenteDb, error) {
 		return utenti, fmt.Errorf("checkNames: error iterating over users: %w", err)
 	}
 
-	// ----------------------------------------------
-
 	return utenti, nil
 }
+
+// ritorna i match tra i caratteri inseriti e i primi caratteri dei nomi delle chat
 func (db *appdbimpl) CheckChatNames(cs int, toFind string) ([]ChatUtenteDb, error) {
 
 	var chat []ChatUtenteDb
@@ -154,6 +165,8 @@ func (db *appdbimpl) CheckChatNames(cs int, toFind string) ([]ChatUtenteDb, erro
 
 	return chat, nil
 }
+
+// ritorna tutte le conversazioni dell'utente loggato
 func (db *appdbimpl) GetMyConversations(cs int) ([]ChatUtenteDb, error) {
 	var chat []ChatUtenteDb
 	_, err := db.Authentication(cs)
@@ -163,7 +176,7 @@ func (db *appdbimpl) GetMyConversations(cs int) ([]ChatUtenteDb, error) {
 	// la query sotto ritorna gli id degli utenti con cui ha la chat l'utente connesso, che non siano gruppi e l'id della chat
 	rows, err1 := db.c.Query("SELECT u.username, u.propic, m.id_utenti, c.id FROM chat c JOIN membri m ON c.id=m.id_chat JOIN utenti u ON u.id = m.id_utenti WHERE m.id_utenti!=$1 AND c.id IN(SELECT  c.id from chat c JOIN membri m ON c.id=m.id_chat WHERE m.id_utenti=$1 AND gruppo=0) AND gruppo=0;", cs)
 	if err1 != nil && !errors.Is(err1, sql.ErrNoRows) {
-		return []ChatUtenteDb{}, fmt.Errorf("GetConversations: error querying users: %w", err)
+		return []ChatUtenteDb{}, fmt.Errorf("GetMyConversations: error querying chats: %w", err)
 	}
 
 	defer rows.Close()
@@ -171,18 +184,18 @@ func (db *appdbimpl) GetMyConversations(cs int) ([]ChatUtenteDb, error) {
 	for rows.Next() {
 		var c ChatUtenteDb
 		if err := rows.Scan(&c.Nome, &c.Propic, &c.Id, &c.IdChat); err != nil {
-			return []ChatUtenteDb{}, fmt.Errorf(" Getconversations: error scanning user: %w", err)
+			return []ChatUtenteDb{}, fmt.Errorf(" GetMyconversations: error scanning chats: %w", err)
 		}
 		chat = append(chat, c)
 	}
 	if err := rows.Err(); err != nil {
-		return []ChatUtenteDb{}, fmt.Errorf("GetConversations: error iterating over users: %w", err)
+		return []ChatUtenteDb{}, fmt.Errorf("GetMyConversations: error iterating over chats: %w", err)
 	}
 
 	// questa query ritorna tutti i dati della join tra membri e chat dove l'utente appartiene al gruppo
 	rows2, err2 := db.c.Query("SELECT  c.id AS id, c.propic, c.nome, c.gruppo from chat c JOIN membri m ON c.id=m.id_chat JOIN utenti u ON u.id=m.id_utenti WHERE m.id_utenti=$1 AND gruppo=1;", cs)
 	if err2 != nil && !errors.Is(err2, sql.ErrNoRows) {
-		return []ChatUtenteDb{}, fmt.Errorf("GetConversations: error querying users: %w", err)
+		return []ChatUtenteDb{}, fmt.Errorf("GetMyConversations: error querying chats: %w", err)
 	}
 
 	defer rows2.Close()
@@ -190,16 +203,16 @@ func (db *appdbimpl) GetMyConversations(cs int) ([]ChatUtenteDb, error) {
 	for rows2.Next() {
 		var c ChatUtenteDb
 		if err := rows2.Scan(&c.IdChat, &c.Propic, &c.Nome, &c.Gruppo); err != nil {
-			return []ChatUtenteDb{}, fmt.Errorf("GetConversations: error scanning user: %w", err)
+			return []ChatUtenteDb{}, fmt.Errorf("GetMyConversations: error scanning chats: %w", err)
 		}
 		chat = append(chat, c)
 	}
 	if err := rows2.Err(); err != nil {
-		return []ChatUtenteDb{}, fmt.Errorf("GetConversations: error iterating over users: %w", err)
+		return []ChatUtenteDb{}, fmt.Errorf("GetMyConversations: error iterating over chats: %w", err)
 	}
 
 	if errors.Is(err1, sql.ErrNoRows) && errors.Is(err2, sql.ErrNoRows) {
-		return []ChatUtenteDb{}, fmt.Errorf("GetConversations: no chats or groups find: %w", err)
+		return []ChatUtenteDb{}, fmt.Errorf("GetMyConversations: no chats or groups find: %w", err)
 
 	}
 
@@ -208,6 +221,7 @@ func (db *appdbimpl) GetMyConversations(cs int) ([]ChatUtenteDb, error) {
 		var id int
 		var tmp time.Time
 		c := &chat[i]
+		// prendo gli ultimi messaggi inviati a ogni chat presa precedentemente
 		rows3 := db.c.QueryRow("SELECT m.testo, m.mittente, m.data FROM chat c JOIN messaggi_di_chat mdc ON c.id=mdc.id_chat JOIN messaggi m ON mdc.id_messaggio=m.id JOIN membri me ON me.id_chat=c.id JOIN utenti u ON u.id=me.id_utenti WHERE c.id=$1 ORDER BY m.data DESC LIMIT 1;", c.IdChat)
 		err := rows3.Scan(&lastMsg, &id, &tmp)
 		if err == sql.ErrNoRows {
@@ -216,7 +230,7 @@ func (db *appdbimpl) GetMyConversations(cs int) ([]ChatUtenteDb, error) {
 			c.Data = time.Time{}
 
 		} else if err != nil {
-			return []ChatUtenteDb{}, fmt.Errorf("GetConversations: error querying users: %w", err)
+			return []ChatUtenteDb{}, fmt.Errorf("GetMyConversations: error querying chats: %w", err)
 
 		} else {
 			if len(lastMsg) > 100 {
@@ -227,22 +241,22 @@ func (db *appdbimpl) GetMyConversations(cs int) ([]ChatUtenteDb, error) {
 			c.Id = id
 			c.Data = tmp
 		}
+		// seleziono l'username di chi ha inviato l'ultimo messaggio alla chat
 		rows4 := db.c.QueryRow("SELECT username FROM utenti WHERE id=$1 LIMIT 1", id)
 		err = rows4.Scan(&username)
 		if err == sql.ErrNoRows {
 
 		} else if err != nil {
-			return []ChatUtenteDb{}, fmt.Errorf("GetConversations: error querying users: %w", err)
+			return []ChatUtenteDb{}, fmt.Errorf("GetMyConversations: error querying users: %w", err)
 
 		}
 		c.Username = username
 	}
-	// for _, c := range chat {
-	// 	fmt.Printf("il nome della chat e': %s Username di chi ha inviato l'ultimo messaggio: %s, Propic: %s, UserId di chi ha inviato l'ultimo messaggio: %d, ChatId: %d , lastmsg: %s, data: %s, e' un gruppo: %t \n", c.Nome, c.Username, c.Propic, c.Id, c.IdChat, c.LastMSg, c.Data.Format(time.RFC3339), c.Gruppo)
-	// }
 
 	return chat, nil
 }
+
+// ritorna le informazioni della chat id_chat
 func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessDb, error) {
 	var mess []MessDb
 	_, err := db.Authentication(cs)
@@ -250,6 +264,7 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 		return false, "", []MessDb{}, fmt.Errorf("error in authentication GetConversation: %w", err)
 	}
 
+	// inserisce nella tabella accessi_chat l'accesso avvenuto a quella chat e nel caso in cui gia esista l'accesso di quell'utente a quella chat lo sovrascrive
 	_, err = db.c.Exec("INSERT INTO accessi_chat (id_utente, id_chat, data) VALUES ($1, $2, CURRENT_TIMESTAMP) ON CONFLICT (id_utente, id_chat) DO UPDATE SET data = CURRENT_TIMESTAMP WHERE accessi_chat.id_utente = $1 AND accessi_chat.id_chat = $2", cs, id_chat)
 	if err != nil {
 		return false, "", []MessDb{}, fmt.Errorf("GetConversation: error update accessi_chat: %w", err)
@@ -257,38 +272,43 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 
 	var group bool
 
+	// verifico se la chat e' un gruppo oppure no
 	err = db.c.QueryRow("SELECT gruppo FROM chat WHERE id=$1 LIMIT 1;", id_chat).Scan(&group)
 
 	if err != nil {
-		return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying users: %w", err)
+		return false, "", []MessDb{}, fmt.Errorf("GetConversation: error selecting if group: %w", err)
 	}
 	var nomeChat string
+
+	// se lo e'
 	if group {
+		// prendo il nome del gruppo
 		err = db.c.QueryRow("SELECT nome FROM chat WHERE id=$1 LIMIT 1;", id_chat).Scan(&nomeChat)
 		if err != nil {
-			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying users: %w", err)
+			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error selecting group name: %w", err)
 		}
 	} else {
+		// prendo il nome della chat(il nome dell'altro utente che fa parte della chat)
 		err = db.c.QueryRow("SELECT utenti.username FROM chat c JOIN membri ON c.id = membri.id_chat JOIN utenti ON membri.id_utenti = utenti.id WHERE c.id=$1 AND utenti.id != $2 LIMIT 1;", id_chat, cs).Scan(&nomeChat)
 		if err != nil {
-			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying users: %w", err)
+			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error selecting group name: %w", err)
 		}
 	}
+	// seleziono tutto i messaggi della chat, compresi se fa parte di un gruppo, testo, id mittente, username mittente, data dell'invio, l'immagine(se presente), l'id del messaggio e l'id del messaggio di chat
 	rows, err := db.c.Query("SELECT c.gruppo, m.testo, m.mittente, u.username, m.data, m.image, m.id,d.id FROM messaggi m JOIN messaggi_di_chat d ON d.id_messaggio=m.id JOIN chat c ON c.id=d.id_chat JOIN utenti u ON u.id=m.mittente WHERE c.id=$1 ORDER BY m.data;", id_chat)
 	if errors.Is(err, sql.ErrNoRows) {
 		return false, "", []MessDb{}, fmt.Errorf("GetConversation: no messages found: %w", err)
 	}
 	if err != nil {
-		return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying users: %w", err)
+		return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying messages: %w", err)
 	}
 
 	defer rows.Close()
 
 	for rows.Next() {
 		var c MessDb
-		// var i int
 		if err := rows.Scan(&c.Gruppo, &c.Testo, &c.IdMitt, &c.Nome, &c.Data, &c.Photo, &c.IdMess, &c.IdForward); err != nil {
-			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error scanning user: %w", err)
+			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error scanning messages: %w", err)
 		}
 
 		var forwarderUsername string
@@ -298,19 +318,20 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 		var forwarderUsernameMit string
 		var cont int = 0
 
-		row2, err := db.c.Query("SELECT u.username, u.id, m.forward_date, m.id_forw_mit, t.username FROM utenti u JOIN messaggi_di_chat m ON m.id_forward = u.id JOIN utenti t ON m.id_forw_mit=t.id WHERE m.id_messaggio = $1 AND m.id_forward NOT NULL AND m.id=$2", c.IdMess, c.IdForward) //.Scan(&forwarderUsername, &forwarderId, &forwardDate, &forwardIdMit, &forwarderUsernameMit)
+		// seleziono i messaggi forwardati tra i messaggi presi prima abbiamo l'id del messaggio di chat uguale e l'id del messaggio uguale, prendendo in questo modo le informazioni del forward per quel dato messaggio
+		row2, err := db.c.Query("SELECT u.username, u.id, m.forward_date, m.id_forw_mit, t.username FROM utenti u JOIN messaggi_di_chat m ON m.id_forward = u.id JOIN utenti t ON m.id_forw_mit=t.id WHERE m.id_messaggio = $1 AND m.id_forward NOT NULL AND m.id=$2", c.IdMess, c.IdForward)
 		if errors.Is(err, sql.ErrNoRows) {
 			return false, "", []MessDb{}, fmt.Errorf("GetConversation: no messages found: %w", err)
 		}
 		if err != nil {
-			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying users: %w", err)
+			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying messages: %w", err)
 		}
 
 		defer row2.Close()
 
 		for row2.Next() {
 			if err := row2.Scan(&forwarderUsername, &forwarderId, &forwardDate, &forwardIdMit, &forwarderUsernameMit); err != nil {
-				return false, "", []MessDb{}, fmt.Errorf("GetConversation: error scanning user: %w", err)
+				return false, "", []MessDb{}, fmt.Errorf("GetConversation: error scanning messages: %w", err)
 			}
 
 			c.ForwardUsername = forwarderUsername
@@ -332,9 +353,9 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 		}
 	}
 	if err := rows.Err(); err != nil {
-		return false, "", []MessDb{}, fmt.Errorf("GetConversation: error iterating over users: %w", err)
+		return false, "", []MessDb{}, fmt.Errorf("GetConversation: error iterating over messages: %w", err)
 	}
-
+	// avendo aggiunto i messaggi forwardati ora vanno ordinati per data di forward rispetto alla data degli altri messaggi
 	sort.SliceStable(mess, func(i, j int) bool {
 		if mess[i].ForwardId != -1 && mess[j].ForwardId != -1 {
 			return mess[i].ForwardDate.Before(mess[j].ForwardDate)
@@ -350,11 +371,13 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 	var result []MessDb
 	var lastDate time.Time
 
+	// per ogni messaggio (serve per verificare la visualizzazione del messaggio da parte di tutti gli utenti)
 	for _, m := range mess {
 		var emoji string
 		var idUtenti []int
 
-		row3, err := db.c.Query("SELECT id_utenti FROM membri WHERE id_utenti != $1 AND id_chat=$2", cs, id_chat) //.Scan(&forwarderUsername, &forwarderId, &forwardDate, &forwardIdMit, &forwarderUsernameMit)
+		// seleziono tutti gli id utenti della chat e li metto in un array
+		row3, err := db.c.Query("SELECT id_utenti FROM membri WHERE id_utenti != $1 AND id_chat=$2", cs, id_chat)
 		if errors.Is(err, sql.ErrNoRows) {
 			return false, "", []MessDb{}, fmt.Errorf("GetConversation: no membri found: %w", err)
 		}
@@ -373,26 +396,35 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 		}
 
 		var visualCount int
+		// conto il numero di tutti gli id utenti diversi tra loro che fanno parte della chat, l'utente non e' il mittente e la data dell'accesso e' successiva all'invio del messaggio
 		err = db.c.QueryRow(`SELECT COUNT(DISTINCT ac.id_utente) FROM accessi_chat ac JOIN membri mb ON mb.id_utenti = ac.id_utente WHERE ac.id_chat = $1 AND ac.id_utente != $2 AND ac.data > $3 AND mb.id_chat = ac.id_chat`, id_chat, m.IdMitt, m.Data).Scan(&visualCount)
 
 		if err != nil && !errors.Is(err, sql.ErrNoRows) {
 			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error counting message views: %w", err)
 		}
 
+		// se le visualizzazioni sono maggiori o uguali agli utenti allora il messaggio e' visualizzato, altrimenti no
 		if visualCount >= len(idUtenti) {
 			m.Visual = true
 		} else {
 			m.Visual = false
 		}
 		// -----------------------------------------------------
+
+		// seleziono l'id del reply del messaggio in questione dalla tabella messaggi di chat, usando IdForward come id
 		err = db.c.QueryRow("SELECT id_reply FROM messaggi_di_chat WHERE id=$1", m.IdForward).Scan(&m.Idreply)
 		if err != nil {
-			return false, "", []MessDb{}, fmt.Errorf("2 GetConversation: error querying users: %w", err)
+			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying messages: %w", err)
 		}
 		if m.Idreply > 0 {
 
+			// prendo le informazioni del messaggio replyato
 			err = db.c.QueryRow("SELECT m.testo, m.image, m.mittente, u.username FROM messaggi m JOIN utenti u ON u.id=m.mittente JOIN messaggi_di_chat md ON md.id_messaggio=m.id WHERE md.id=$1", m.Idreply).Scan(&m.TestoReply, &m.PhotoReply, &m.IdMitReply, &m.MitReply)
+
+			// se non restituisce righe
 			if err == sql.ErrNoRows {
+
+				// allora cancella il reply
 				_, err := db.c.Exec("UPDATE messaggi_di_chat SET id_reply=$1 WHERE id=$2", -1, m.IdForward)
 				if err != nil {
 					return false, "", []MessDb{}, fmt.Errorf("GetConversation: error insert id_reply in table messaggi_di_chat: %w", err)
@@ -402,24 +434,28 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 				m.IdMitReply = -1
 				m.MitReply = ""
 			} else if err != nil {
-				return false, "", []MessDb{}, fmt.Errorf("1 GetConversation: error querying users: %w", err)
+				return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying messages: %w", err)
 			}
 
 		}
 
+		// seleziono l'emoji inviata da me a quel messaggio se esiste altrimenti la imposto vuota
 		err = db.c.QueryRow("SELECT emoji FROM emoticon WHERE id_utente=$1 AND id_messaggio=$2", cs, m.IdMess).Scan(&emoji)
 		if err == sql.ErrNoRows {
 			emoji = ""
 		} else if err != nil {
-			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying users: %w", err)
+			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying emojis: %w", err)
 		}
 
 		var counts [5]int
+
+		// conto per ogni tipo di emoji quante ne sono state lasciate per ciascun messaggio
 		err = db.c.QueryRow("SELECT COALESCE(SUM(CASE WHEN emoji = '👠' AND id_messaggio=$1 THEN 1 ELSE 0 END),0) AS tacchi, COALESCE(SUM(CASE WHEN emoji = '❤️' AND id_messaggio=$1 THEN 1 ELSE 0 END),0) AS cuore, COALESCE(SUM(CASE WHEN emoji = '👍🏻' AND id_messaggio=$1 THEN 1 ELSE 0 END),0) AS dito_in_su, COALESCE(SUM(CASE WHEN emoji = '👌🏻' AND id_messaggio=$1 THEN 1 ELSE 0 END),0) AS ok, COALESCE(SUM(CASE WHEN emoji = '💅' AND id_messaggio=$1 THEN 1 ELSE 0 END),0) AS manicure FROM emoticon;", m.IdMess).Scan(&counts[0], &counts[1], &counts[2], &counts[3], &counts[4])
 		if err != nil {
 			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying users: %w", err)
 		}
 
+		// aggiungo dei messaggi speciali, riconosciuti per la non presenza ne di testo ne di foto nei quali sono presenti solo le indicazioni di data, che servono per separare nella chat i diversi giorni
 		localTime := m.Data.Local().Add(+1 * time.Hour)
 		localMidnight := time.Date(localTime.Year(), localTime.Month(), localTime.Day(), 0, 0, 0, 0, localTime.Location())
 		if lastDate.IsZero() || !localMidnight.Equal(lastDate) {
