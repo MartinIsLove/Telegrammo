@@ -81,7 +81,7 @@ func (db *appdbimpl) CheckNames(cs int, toFind string) ([]UtenteDb, error) {
 	// seleziona tutto l'utente dove l'id e' diverso dall'id della persona loggata e che l'username matchi con i caratteri inseriti dall'utente
 	rows, err := db.c.Query("SELECT * FROM utenti WHERE (username LIKE $1 || '%') AND (id!=$2)", toFind, cs)
 	if err != nil {
-		return utenti, fmt.Errorf("checkNames: error querying users: %w", err)
+		return utenti, fmt.Errorf("CheckNames: error querying users: %w", err)
 	}
 
 	var cont int
@@ -94,15 +94,15 @@ func (db *appdbimpl) CheckNames(cs int, toFind string) ([]UtenteDb, error) {
 		var utente UtenteDb
 		// salvo le informazioni nella struttura utente per poi appenderle nell'array utenti
 		if err := rows.Scan(&utente.Id, &utente.Username, &utente.Propic); err != nil {
-			return utenti, fmt.Errorf("checkNames: error scanning user: %w", err)
+			return utenti, fmt.Errorf("CheckNames: error scanning user: %w", err)
 		}
 		utenti = append(utenti, utente)
 	}
 	if cont == 0 {
-		return utenti, fmt.Errorf("checkNames: no user found: %w", err)
+		return utenti, fmt.Errorf("CheckNames: no user found: %w", err)
 	}
 	if err := rows.Err(); err != nil {
-		return utenti, fmt.Errorf("checkNames: error iterating over users: %w", err)
+		return utenti, fmt.Errorf("CheckNames: error iterating over users: %w", err)
 	}
 
 	return utenti, nil
@@ -114,14 +114,13 @@ func (db *appdbimpl) CheckChatNames(cs int, toFind string) ([]ChatUtenteDb, erro
 	var chat []ChatUtenteDb
 	_, err := db.Authentication(cs)
 	if err != nil {
-		return []ChatUtenteDb{}, fmt.Errorf("error in authentication GetConversations: %w", err)
+		return []ChatUtenteDb{}, fmt.Errorf("error in authentication CheckChatNames: %w", err)
 	}
-	fmt.Println(cs, toFind)
 
 	// la query sotto ritorna gli id degli utenti con cui ha la chat l'utente connesso, che non siano gruppi e l'id della chat
 	rows, err1 := db.c.Query("SELECT u.username, u.propic, m.id_utenti, c.id FROM chat c JOIN membri m ON c.id=m.id_chat JOIN utenti u ON u.id = m.id_utenti WHERE (u.username LIKE $1 || '%') AND m.id_utenti!=$2 AND c.id IN(SELECT  c.id from chat c JOIN membri m ON c.id=m.id_chat WHERE m.id_utenti=$2 AND gruppo=0) AND gruppo=0;", toFind, cs)
 	if err1 != nil && !errors.Is(err1, sql.ErrNoRows) {
-		return []ChatUtenteDb{}, fmt.Errorf("GetConversations: error querying users: %w", err)
+		return []ChatUtenteDb{}, fmt.Errorf("CheckChatNames: error querying users: %w", err)
 	}
 
 	defer rows.Close()
@@ -129,20 +128,20 @@ func (db *appdbimpl) CheckChatNames(cs int, toFind string) ([]ChatUtenteDb, erro
 	for rows.Next() {
 		var c ChatUtenteDb
 		if err := rows.Scan(&c.Nome, &c.Propic, &c.Id, &c.IdChat); err != nil {
-			return []ChatUtenteDb{}, fmt.Errorf(" Getconversations: error scanning user: %w", err)
+			return []ChatUtenteDb{}, fmt.Errorf(" CheckChatNames: error scanning user: %w", err)
 		}
-		fmt.Println(c, "dopca")
+
 		chat = append(chat, c)
 	}
-	fmt.Println(chat)
+
 	if err := rows.Err(); err != nil {
-		return []ChatUtenteDb{}, fmt.Errorf("GetConversations: error iterating over users: %w", err)
+		return []ChatUtenteDb{}, fmt.Errorf("CheckChatNames: error iterating over users: %w", err)
 	}
 
 	// questa query ritorna tutti i dati della join tra membri e chat dove l'utente appartiene al gruppo
 	rows2, err2 := db.c.Query("SELECT  c.id AS id, c.propic, c.nome, c.gruppo from chat c JOIN membri m ON c.id=m.id_chat JOIN utenti u ON u.id=m.id_utenti WHERE (c.nome LIKE $1 || '%') AND m.id_utenti=$2 AND gruppo=1;", toFind, cs)
 	if err2 != nil && !errors.Is(err2, sql.ErrNoRows) {
-		return []ChatUtenteDb{}, fmt.Errorf("GetConversations: error querying users: %w", err)
+		return []ChatUtenteDb{}, fmt.Errorf("CheckChatNames: error querying users: %w", err)
 	}
 
 	defer rows2.Close()
@@ -150,16 +149,16 @@ func (db *appdbimpl) CheckChatNames(cs int, toFind string) ([]ChatUtenteDb, erro
 	for rows2.Next() {
 		var c ChatUtenteDb
 		if err := rows2.Scan(&c.IdChat, &c.Propic, &c.Nome, &c.Gruppo); err != nil {
-			return []ChatUtenteDb{}, fmt.Errorf("GetConversations: error scanning user: %w", err)
+			return []ChatUtenteDb{}, fmt.Errorf("CheckChatNames: error scanning user: %w", err)
 		}
 		chat = append(chat, c)
 	}
 	if err := rows2.Err(); err != nil {
-		return []ChatUtenteDb{}, fmt.Errorf("GetConversations: error iterating over users: %w", err)
+		return []ChatUtenteDb{}, fmt.Errorf("CheckChatNames: error iterating over users: %w", err)
 	}
 
 	if errors.Is(err1, sql.ErrNoRows) && errors.Is(err2, sql.ErrNoRows) {
-		return []ChatUtenteDb{}, fmt.Errorf("GetConversations: no chats or groups find: %w", err)
+		return []ChatUtenteDb{}, fmt.Errorf("CheckChatNames: no chats or groups find: %w", err)
 
 	}
 
@@ -452,7 +451,7 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 		// conto per ogni tipo di emoji quante ne sono state lasciate per ciascun messaggio
 		err = db.c.QueryRow("SELECT COALESCE(SUM(CASE WHEN emoji = '👠' AND id_messaggio=$1 THEN 1 ELSE 0 END),0) AS tacchi, COALESCE(SUM(CASE WHEN emoji = '❤️' AND id_messaggio=$1 THEN 1 ELSE 0 END),0) AS cuore, COALESCE(SUM(CASE WHEN emoji = '👍🏻' AND id_messaggio=$1 THEN 1 ELSE 0 END),0) AS dito_in_su, COALESCE(SUM(CASE WHEN emoji = '👌🏻' AND id_messaggio=$1 THEN 1 ELSE 0 END),0) AS ok, COALESCE(SUM(CASE WHEN emoji = '💅' AND id_messaggio=$1 THEN 1 ELSE 0 END),0) AS manicure FROM emoticon;", m.IdMess).Scan(&counts[0], &counts[1], &counts[2], &counts[3], &counts[4])
 		if err != nil {
-			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying users: %w", err)
+			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying emojis: %w", err)
 		}
 
 		// aggiungo dei messaggi speciali, riconosciuti per la non presenza ne di testo ne di foto nei quali sono presenti solo le indicazioni di data, che servono per separare nella chat i diversi giorni
@@ -517,7 +516,7 @@ func (db *appdbimpl) CreateGroup(cs int, nome string, propic []byte, membri []in
 			// inserisco lo user(lo fa per ogni user in membri) nella tabella membri
 			_, err := db.c.Exec("INSERT INTO membri (id_utenti, id_chat) VALUES ($1, $2)", m, id_group)
 			if err != nil {
-				return -1, fmt.Errorf("group: error insert group in table chat: %w", err)
+				return -1, fmt.Errorf("CreateGroup: error insert group in table chat: %w", err)
 			}
 		}
 	}
@@ -533,10 +532,33 @@ func (db *appdbimpl) LeaveGroup(cs int, idChat int) error {
 		return fmt.Errorf("error in authentication LeaveGroup: %w", err)
 	}
 
+	var if_group int
+	err = db.c.QueryRow("SELECT COUNT(id_utenti) FROM membri WHERE id_utenti=$1 AND id_CHAT=$2", cs, idChat).Scan(&if_group)
+	if err != nil {
+		return fmt.Errorf("LeaveGroup: error querying database: %w", err)
+	}
+	if if_group == 0 {
+		return fmt.Errorf("LeaveGroup: you don't belong to this group %w", err)
+	}
+
 	// rimuovo l'utente dai membri di quella chat
 	_, err = db.c.Exec("DELETE FROM membri WHERE id_utenti=$1 AND id_chat=$2", cs, idChat)
 	if err != nil {
-		return fmt.Errorf("group: error leave user by a group in table membri: %w", err)
+		return fmt.Errorf("LeaveGroup: error delete user  in table membri: %w", err)
+	}
+
+	// vedo se sono presenti altri membri nel gruppo, se cosi non fosse, lo elimino
+	err = db.c.QueryRow("SELECT COUNT(id_utenti) FROM membri WHERE id_CHAT=$2", idChat).Scan(&if_group)
+	if err != nil {
+		return fmt.Errorf("LeaveGroup: error querying database: %w", err)
+	}
+
+	// se non sono presenti altri partecipanti allora elimino il gruppo
+	if if_group == 0 {
+		_, err = db.c.Exec("DELETE FROM chat WHERE id=$2", idChat)
+		if err != nil {
+			return fmt.Errorf("LeaveGroup: error delete user in table chat: %w", err)
+		}
 	}
 
 	return nil
@@ -559,7 +581,7 @@ func (db *appdbimpl) SetGroupName(cs int, idGroup int, nameGroup string) error {
 
 	// se non sono state trovate righe allora l'utente loggato non e' nel gruppo
 	if righe == 0 {
-		return fmt.Errorf("you can't change a name of a group that you don't partecipate: %w", err)
+		return fmt.Errorf("SetGroupName: error you can't change a name of a group that you don't partecipate: %w", err)
 	}
 
 	// se l'utente loggato e' nel gruppo allora cambia il nome a quello inserito
@@ -588,7 +610,7 @@ func (db *appdbimpl) SetGroupPhoto(cs int, idGroup int, photoGroup []byte) error
 
 	// se non sono state trovate righe allora l'utente loggato non e' nel gruppo
 	if righe == 0 {
-		return fmt.Errorf("you can't change a name of a group that you don't partecipate: %w", err)
+		return fmt.Errorf("SetGroupPhoto: error you can't change a name of a group that you don't partecipate: %w", err)
 	}
 
 	// se l'utente loggato e' nel gruppo allora cambia la foto a quella inserita
@@ -617,7 +639,7 @@ func (db *appdbimpl) AddToGroup(cs int, idGroup int, membri []int) error {
 
 	// se non sono state trovate righe allora l'utente loggato non e' nel gruppo
 	if righe == 0 {
-		return fmt.Errorf("you can't add user to a group that you don't partecipate: %w", err)
+		return fmt.Errorf("AddToGroup: error you can't add user to a group that you don't partecipate: %w", err)
 	}
 
 	//altrimenti per ogni membro viene eseguita la query che aggiunge il membro se gia non e' presente nella chat

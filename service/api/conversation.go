@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -39,7 +38,7 @@ func (rt *_router) createChat(w http.ResponseWriter, r *http.Request, ps httprou
 		return
 	}
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "error in database: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -70,10 +69,7 @@ func (rt *_router) checknames(w http.ResponseWriter, r *http.Request, ps httprou
 		http.Error(w, "error: username too short", http.StatusBadRequest)
 		return
 	}
-	// if err := json.NewDecoder(r.Body).Decode(&str); err != nil {
-	// 	http.Error(w, err.Error(), http.StatusBadRequest)
-	// 	return
-	// }
+
 	if len(str) > 16 {
 		http.Error(w, "too long message", http.StatusBadRequest)
 		return
@@ -88,12 +84,12 @@ func (rt *_router) checknames(w http.ResponseWriter, r *http.Request, ps httprou
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
-	if err != nil && strings.HasPrefix(err.Error(), "checkNames: no user found:") {
+	if err != nil && strings.HasPrefix(err.Error(), "CheckNames: no user found:") {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 	if err != nil {
-		http.Error(w, "error in database"+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "error in database: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -119,7 +115,7 @@ func (rt *_router) checkChatNames(w http.ResponseWriter, r *http.Request, ps htt
 	cs, err := rt.AuthenticationApi(r)
 
 	if err != nil {
-		http.Error(w, "error: authentication user checkname "+err.Error(), http.StatusUnauthorized)
+		http.Error(w, "error: authentication user checknames "+err.Error(), http.StatusUnauthorized)
 		return
 	}
 	str = ps.ByName("nomeChat")
@@ -127,10 +123,7 @@ func (rt *_router) checkChatNames(w http.ResponseWriter, r *http.Request, ps htt
 		http.Error(w, "error: username too short", http.StatusBadRequest)
 		return
 	}
-	// if err := json.NewDecoder(r.Body).Decode(&str); err != nil {
-	// 	http.Error(w, err.Error(), http.StatusBadRequest)
-	// 	return
-	// }
+
 	if len(str) > 16 {
 		http.Error(w, "too long name", http.StatusBadRequest)
 		return
@@ -145,12 +138,12 @@ func (rt *_router) checkChatNames(w http.ResponseWriter, r *http.Request, ps htt
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
-	if err != nil && strings.HasPrefix(err.Error(), "checkNames: no user found:") {
+	if err != nil && strings.HasPrefix(err.Error(), "CheckChatNames: no chats or groups find:") {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 	if err != nil {
-		http.Error(w, "error in database"+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "error in database: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -183,8 +176,10 @@ func (rt *_router) getMyConversations(w http.ResponseWriter, r *http.Request, ps
 		return
 	}
 	if err != nil && strings.HasPrefix(err.Error(), "GetConversations: no chats or groups find:") {
-
-	} else if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -213,7 +208,6 @@ func (rt *_router) getMyConversations(w http.ResponseWriter, r *http.Request, ps
 	_, _ = w.Write(json)
 
 	w.WriteHeader(http.StatusOK)
-	// fmt.Println(err.Error())
 }
 func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
@@ -221,10 +215,10 @@ func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, ps ht
 	var messaggi []Mess
 
 	if err != nil {
-		http.Error(w, "error: authentication user getConversation"+err.Error(), http.StatusUnauthorized)
+		http.Error(w, "error: authentication user getConversation "+err.Error(), http.StatusUnauthorized)
 		return
 	}
-	// var id_chat_tmp string
+
 	id_chat_tmp := ps.ByName("idChat")
 	id_chat, err := strconv.Atoi(id_chat_tmp)
 	if err != nil {
@@ -236,9 +230,11 @@ func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, ps ht
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
-	if err != nil && strings.HasPrefix(err.Error(), "GetConversation: no messages found:") {
-
-	} else if err != nil {
+	if err != nil && (strings.HasPrefix(err.Error(), "GetConversation: no messages found:") || strings.HasPrefix(err.Error(), "GetConversation: no membri found:")) {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -268,7 +264,7 @@ func (rt *_router) createGroup(w http.ResponseWriter, r *http.Request, ps httpro
 	cs, err := rt.AuthenticationApi(r)
 
 	if err != nil {
-		http.Error(w, "error: authentication user createChat"+err.Error(), http.StatusUnauthorized)
+		http.Error(w, "error: authentication user createGroup "+err.Error(), http.StatusUnauthorized)
 		return
 	}
 	err = r.ParseMultipartForm(10 << 20) // 10 MB
@@ -307,19 +303,19 @@ func (rt *_router) createGroup(w http.ResponseWriter, r *http.Request, ps httpro
 		return
 	}
 
-	// if err := json.NewDecoder(r.Body).Decode(&richiesta); err != nil {
-	// 	http.Error(w, "error unmarshal "+err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
-
 	if len(groupName) == 0 {
-		http.Error(w, "createGroup error nome chat troppo corto, inserire almeno un carattere:", http.StatusBadRequest)
+		http.Error(w, "createGroup error chat name too short, at least one character:", http.StatusBadRequest)
 		return
 
 	}
 
 	id_group, err := rt.db.CreateGroup(cs, groupName, photo, membri)
 
+	// nel controllo degli errori non necessito di tornare un errore nel caso in cui l'utente scelto da aggiungere al gruppo non esista, poiche in automatico aggiunge solo quelli che esistono
+	if err != nil && strings.HasPrefix(err.Error(), "error in authentication CreateGroup:") {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -354,8 +350,16 @@ func (rt *_router) leaveGroup(w http.ResponseWriter, r *http.Request, ps httprou
 	}
 
 	err = rt.db.LeaveGroup(cs, id_chat)
+	if err != nil && strings.HasPrefix(err.Error(), "error in authentication LeaveGroup:") {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	if err != nil && strings.HasPrefix(err.Error(), "LeaveGroup: you don't belong to this group") {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 	if err != nil {
-		http.Error(w, "error leaveGroup: conversion id_chat_tmp (string) to id_chat (int)", http.StatusBadGateway)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
@@ -365,28 +369,36 @@ func (rt *_router) setGroupName(w http.ResponseWriter, r *http.Request, ps httpr
 	cs, err := rt.AuthenticationApi(r)
 
 	if err != nil {
-		http.Error(w, "error: authentication user createChat"+err.Error(), http.StatusUnauthorized)
+		http.Error(w, "error setGroupName: authentication user createChat "+err.Error(), http.StatusUnauthorized)
 		return
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&name); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "error setGroupName: body decode error"+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	if len(name.NomeChat) < 1 {
-		http.Error(w, "group name too short, at least 1 character", http.StatusBadRequest)
+		http.Error(w, "error setGroupName: group name too short, at least 1 character", http.StatusBadRequest)
 		return
 	}
 	if len(name.NomeChat) > 16 {
-		http.Error(w, "group name too long, up to 16 character", http.StatusBadRequest)
+		http.Error(w, "error setGroupName: group name too long, up to 16 character", http.StatusBadRequest)
 		return
 	}
 
 	err = rt.db.SetGroupName(cs, name.IdChat, name.NomeChat)
 
-	if err != nil {
+	if err != nil && strings.HasPrefix(err.Error(), "SetGroupName: error in authentication:") {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	if err != nil && strings.HasPrefix(err.Error(), "SetGroupName: error you can't change a name of a group that you don't partecipate:") {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
@@ -395,24 +407,24 @@ func (rt *_router) setGroupPhoto(w http.ResponseWriter, r *http.Request, ps http
 	cs, err := rt.AuthenticationApi(r)
 
 	if err != nil {
-		http.Error(w, "error: authentication user createChat"+err.Error(), http.StatusUnauthorized)
+		http.Error(w, "error setGroupPhoto: authentication user createChat"+err.Error(), http.StatusUnauthorized)
 		return
 	}
 
 	err = r.ParseMultipartForm(10 << 20) // 10 MB
 	if err != nil {
-		http.Error(w, "error parsing multipart form: "+err.Error(), http.StatusBadRequest)
+		http.Error(w, "error setGroupPhoto: parsing multipart form: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	photo_multipart, handler, err := r.FormFile("propic")
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "setGroupPhoto error: form file error: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	photo, err := validatePhoto(photo_multipart, handler, err)
 	if err != nil {
-		http.Error(w, "error: bad input"+err.Error(), http.StatusBadRequest)
+		http.Error(w, "error setGroupPhoto: bad input photo"+err.Error(), http.StatusBadRequest)
 		return
 	}
 	idChat_tmp := r.FormValue("id_chat")
@@ -421,10 +433,15 @@ func (rt *_router) setGroupPhoto(w http.ResponseWriter, r *http.Request, ps http
 		http.Error(w, "error setGroupPhoto: conversion idChat_tmp (string) to idChat (int)", http.StatusBadRequest)
 	}
 
-	fmt.Println(idChat)
-
 	err = rt.db.SetGroupPhoto(cs, idChat, photo)
-
+	if err != nil && strings.HasPrefix(err.Error(), "SetGroupPhoto: error in authentication:") {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	if err != nil && strings.HasPrefix(err.Error(), "SetGroupPhoto: error you can't change a name of a group that you don't partecipate:") {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -436,18 +453,26 @@ func (rt *_router) addToGroup(w http.ResponseWriter, r *http.Request, ps httprou
 	cs, err := rt.AuthenticationApi(r)
 
 	if err != nil {
-		http.Error(w, "error: authentication user createChat"+err.Error(), http.StatusUnauthorized)
+		http.Error(w, "error addToGroup: authentication user "+err.Error(), http.StatusUnauthorized)
 		return
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&gruppo); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "error addToGroup: decoding from body"+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	err = rt.db.AddToGroup(cs, gruppo.IdChat, gruppo.Membri)
-	if err != nil {
+	if err != nil && strings.HasPrefix(err.Error(), "AddToGroup: error in authentication:") {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	if err != nil && strings.HasPrefix(err.Error(), "AddToGroup: error you can't add user to a group that you don't partecipate:") {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
