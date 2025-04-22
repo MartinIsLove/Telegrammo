@@ -28,7 +28,7 @@ func (db *appdbimpl) DoLogin(username string) (int, error) {
 		response, err2 := db.c.Exec("INSERT INTO utenti (username, propic) VALUES ($1, $2)", username, noPhotoBytes)
 
 		if err2 != nil {
-			return 0, fmt.Errorf("login: error insert user: %w", err)
+			return 0, fmt.Errorf("login: query error insert user: %w", err)
 		}
 
 		// recupero l'id dell'utente appena inserito

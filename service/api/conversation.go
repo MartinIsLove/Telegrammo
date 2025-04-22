@@ -23,7 +23,7 @@ func (rt *_router) createChat(w http.ResponseWriter, r *http.Request, ps httprou
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&richiesta); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -223,6 +223,7 @@ func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, ps ht
 	id_chat, err := strconv.Atoi(id_chat_tmp)
 	if err != nil {
 		http.Error(w, "error getConversation: conversion id_chat_tmp (string) to id_chat (int)", http.StatusBadRequest)
+		return
 	}
 
 	gp, str, tmp, err := rt.db.GetConversation(cs, id_chat)
@@ -269,7 +270,7 @@ func (rt *_router) createGroup(w http.ResponseWriter, r *http.Request, ps httpro
 	}
 	err = r.ParseMultipartForm(10 << 20) // 10 MB
 	if err != nil {
-		http.Error(w, "error parsing multipart form: "+err.Error(), http.StatusBadRequest)
+		http.Error(w, "error parsing multipart form: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -413,7 +414,7 @@ func (rt *_router) setGroupPhoto(w http.ResponseWriter, r *http.Request, ps http
 
 	err = r.ParseMultipartForm(10 << 20) // 10 MB
 	if err != nil {
-		http.Error(w, "error setGroupPhoto: parsing multipart form: "+err.Error(), http.StatusBadRequest)
+		http.Error(w, "error setGroupPhoto: parsing multipart form: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -424,7 +425,7 @@ func (rt *_router) setGroupPhoto(w http.ResponseWriter, r *http.Request, ps http
 	}
 	photo, err := validatePhoto(photo_multipart, handler, err)
 	if err != nil {
-		http.Error(w, "error setGroupPhoto: bad input photo"+err.Error(), http.StatusBadRequest)
+		http.Error(w, "setGroupPhoto: error bad input photo(the photo must be 1024*1024)"+err.Error(), http.StatusBadRequest)
 		return
 	}
 	idChat_tmp := r.FormValue("id_chat")
@@ -458,7 +459,7 @@ func (rt *_router) addToGroup(w http.ResponseWriter, r *http.Request, ps httprou
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&gruppo); err != nil {
-		http.Error(w, "error addToGroup: decoding from body"+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "error addToGroup: decoding from body"+err.Error(), http.StatusBadRequest)
 		return
 	}
 

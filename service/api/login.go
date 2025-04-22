@@ -8,6 +8,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
+// verifica se il primo carattere di una stringa e' alfanumerico
 func isFirstCharAlphanumeric(s string) bool {
 	if len(s) == 0 {
 		return false
@@ -15,6 +16,8 @@ func isFirstCharAlphanumeric(s string) bool {
 	r := rune(s[0])
 	return unicode.IsLetter(r) || unicode.IsDigit(r)
 }
+
+// si occupa del login
 func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var richiestaLogin Utente
 
@@ -23,15 +26,14 @@ func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, ps httprouter
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	// fmt.Println(richiestaLogin)
 	var rispostaLogin Utente
 
 	if len(richiestaLogin.Username) < 1 || len(richiestaLogin.Username) > 16 {
-		http.Error(w, "username troppo corto", http.StatusBadRequest)
+		http.Error(w, "username too short or too long", http.StatusBadRequest)
 		return
 	}
 	if !isFirstCharAlphanumeric(richiestaLogin.Username) {
-		http.Error(w, "l'username deve iniziare per un carattere alfa-numerico", http.StatusBadRequest)
+		http.Error(w, "the first digit of the username must be an alfanumeric character", http.StatusBadRequest)
 		return
 	}
 
@@ -43,7 +45,6 @@ func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, ps httprouter
 
 	w.Header().Set("content-type", "application/json")
 	idJson, err := json.Marshal(rispostaLogin.Id)
-	// fmt.Println(idJson)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

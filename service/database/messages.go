@@ -48,7 +48,7 @@ func (db *appdbimpl) ForwardMessage(cs int, id_chat []int, id_mes int, id_utente
 
 	// se non esiste allora non hai accesso al messaggio
 	if tmp2 == 0 {
-		return fmt.Errorf("you don't have access to forward this message")
+		return fmt.Errorf("ForwardMessage: error you don't belong to the chat")
 	}
 
 	var num_righe int
@@ -67,7 +67,7 @@ func (db *appdbimpl) ForwardMessage(cs int, id_chat []int, id_mes int, id_utente
 	}
 
 	if tmp != len(id_chat) {
-		return fmt.Errorf("ForwardMessage: you don't belong in one or more chat")
+		return fmt.Errorf("ForwardMessage: you don't belong to the chat you want forward the message")
 	}
 
 	// per ogni chat in cui forwwardare
@@ -99,7 +99,7 @@ func (db *appdbimpl) CommentMessage(cs int, id_mes int, emoji string, id_chat in
 		return fmt.Errorf("CommentMessage: error select id_utenti form membri: %w", err)
 	}
 	if num_righe == 0 {
-		return fmt.Errorf("CommentMessage: you don't are in the chat %w", err)
+		return fmt.Errorf("CommentMessage: you don't belong to the chat %w", err)
 	}
 
 	// per verificare se ho gia inserito un commento per quel messaggio
@@ -144,7 +144,7 @@ func (db *appdbimpl) UncommentMessage(cs int, id_mes int, id_chat int) error {
 		return fmt.Errorf("UncommentMessage: error select id_utenti from membri: %w", err)
 	}
 	if num_righe == 0 {
-		return fmt.Errorf("UncommentMessage: you don't are in the chat %w", err)
+		return fmt.Errorf("UncommentMessage: you don't belong to the chat %w", err)
 	}
 
 	// conta nella tabella emoticon quanti id_utenti e id_messaggio ci sono uguali a quelli che ho inserito

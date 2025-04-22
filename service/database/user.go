@@ -20,7 +20,7 @@ func (db *appdbimpl) SetMyUserName(username string, cs int) error {
 
 	// se sono piu' di 0 gli username uguali a quello scelto
 	if righe > 0 {
-		return fmt.Errorf("username already used, choose another one: %w", err)
+		return fmt.Errorf("SetMyUserName: username already used, choose another one: %w", err)
 	}
 
 	// cambia l'username dell'utente loggato

@@ -20,17 +20,17 @@ func (rt *_router) setMyUserName(w http.ResponseWriter, r *http.Request, ps http
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&richiesta); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	err = rt.db.SetMyUserName(richiesta.Username, id)
 
-	if err != nil && strings.HasPrefix(err.Error(), "user: error in authentication:") {
+	if err != nil && strings.HasPrefix(err.Error(), "SetMyUserName: error in authentication:") {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
-	if err != nil && strings.HasPrefix(err.Error(), "l'username scelto e' gia stato utilizzato, sceglierne un altro:") {
+	if err != nil && strings.HasPrefix(err.Error(), "SetMyUserName: username already used, choose another one:") {
 		http.Error(w, err.Error(), http.StatusConflict)
 		return
 	}
@@ -52,7 +52,7 @@ func (rt *_router) setMyPhoto(w http.ResponseWriter, r *http.Request, ps httprou
 	if auth > 0 {
 		err = r.ParseMultipartForm(10 << 20) // 10 MB
 		if err != nil {
-			http.Error(w, "error parsing multipart form: "+err.Error(), http.StatusBadRequest)
+			http.Error(w, "error parsing multipart form: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -63,7 +63,7 @@ func (rt *_router) setMyPhoto(w http.ResponseWriter, r *http.Request, ps httprou
 		}
 		photo, err := validatePhoto(photo_multipart, handler, err)
 		if err != nil {
-			http.Error(w, "error: bad input"+err.Error(), http.StatusBadRequest)
+			http.Error(w, "setMyPhoto: error bad input(the photo must be 1024*1024)"+err.Error(), http.StatusBadRequest)
 			return
 		}
 
@@ -71,7 +71,7 @@ func (rt *_router) setMyPhoto(w http.ResponseWriter, r *http.Request, ps httprou
 		richiesta.Propic = photo
 		err = rt.db.SetMyPhoto(richiesta.Propic, richiesta.Id)
 
-		if err != nil && strings.HasPrefix(err.Error(), "error in authentication:") {
+		if err != nil && strings.HasPrefix(err.Error(), "SetMyPhoto: error in authentication:") {
 			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
@@ -103,13 +103,13 @@ func (rt *_router) getMyUser(w http.ResponseWriter, r *http.Request, ps httprout
 
 		richiesta.Username, richiesta.Propic, richiesta.Id, err = rt.db.GetMyUser(id)
 
-		if err != nil && strings.HasPrefix(err.Error(), "error in authentication:") {
+		if err != nil && strings.HasPrefix(err.Error(), "GetMyUser: error in authentication:") {
 			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		w.Header().Set("content-type", "application/json")
@@ -119,8 +119,8 @@ func (rt *_router) getMyUser(w http.ResponseWriter, r *http.Request, ps httprout
 			return
 		}
 
+		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write(json)
 
-		w.WriteHeader(http.StatusOK)
 	}
 }
