@@ -106,9 +106,9 @@ func (rt *_router) checkChatNames(w http.ResponseWriter, r *http.Request, ps htt
 		return
 	}
 
+	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write(json)
 
-	w.WriteHeader(http.StatusOK)
 }
 func (rt *_router) getMyConversations(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var richiesta []ChatUtente

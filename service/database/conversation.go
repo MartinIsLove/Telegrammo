@@ -70,44 +70,6 @@ func (db *appdbimpl) CreateChat(cs int, id int) (int, error) {
 
 }
 
-// ritorna i match tra i caratteri inseriti e i primi caratteri dei nomi utente
-func (db *appdbimpl) CheckNames(cs int, toFind string) ([]UtenteDb, error) {
-	var utenti []UtenteDb
-	_, err := db.Authentication(cs)
-	if err != nil {
-		return utenti, fmt.Errorf("error in authentication Checknames: %w", err)
-	}
-
-	// seleziona tutto l'utente dove l'id e' diverso dall'id della persona loggata e che l'username matchi con i caratteri inseriti dall'utente
-	rows, err := db.c.Query("SELECT * FROM utenti WHERE (username LIKE $1 || '%') AND (id!=$2)", toFind, cs)
-	if err != nil {
-		return utenti, fmt.Errorf("CheckNames: error querying users: %w", err)
-	}
-
-	var cont int
-
-	defer rows.Close()
-
-	// itero sulle righe ricevute
-	for rows.Next() {
-		cont++
-		var utente UtenteDb
-		// salvo le informazioni nella struttura utente per poi appenderle nell'array utenti
-		if err := rows.Scan(&utente.Id, &utente.Username, &utente.Propic); err != nil {
-			return utenti, fmt.Errorf("CheckNames: error scanning user: %w", err)
-		}
-		utenti = append(utenti, utente)
-	}
-	if cont == 0 {
-		return utenti, fmt.Errorf("CheckNames: no user found: %w", err)
-	}
-	if err := rows.Err(); err != nil {
-		return utenti, fmt.Errorf("CheckNames: error iterating over users: %w", err)
-	}
-
-	return utenti, nil
-}
-
 // ritorna i match tra i caratteri inseriti e i primi caratteri dei nomi delle chat
 func (db *appdbimpl) CheckChatNames(cs int, toFind string) ([]ChatUtenteDb, error) {
 

@@ -228,7 +228,7 @@ paths:
             type: string
             minLength: 1
             pattern: ^[a-zA-Z0-9]+$
-            maxLength: 10000
+            maxLength: 16
             example: "giorgio"
       responses:
         "200":
@@ -249,7 +249,41 @@ paths:
           $ref: "#/components/responses/500_ISE"
   /search/chat/{nomeChat}:
     get:
-      tags: ['']
+      tags: ['conversation']
+      security:
+        - bearerAuth: []
+      operationId: checkChatNames
+      summary: "take some chats"
+      description: "takes all the chat's parameters that username input is substring of chat"
+      parameters:
+        - name: nomeChat
+          in: path
+          required: true
+          description: "chat to find"
+          schema:
+            description: "chat to find"
+            type: string
+            minLength: 1
+            pattern: ^[a-zA-Z0-9]+$
+            maxLength: 16
+            example: "giorgio"
+      responses:
+        "200": 
+          description: "return found chats"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ChatUtente"
+        "400":
+          $ref: "#/components/responses/Bad_Input"
+        "401":
+          $ref: "#/components/responses/401_Unauthorized"
+        "404":
+          $ref: "#/components/responses/404_NotFound"
+        "500":
+          $ref: "#/components/responses/500_ISE"
   /conversations:
     get:
       tags: ["conversation"]
