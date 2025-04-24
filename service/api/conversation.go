@@ -51,63 +51,10 @@ func (rt *_router) createChat(w http.ResponseWriter, r *http.Request, ps httprou
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	_, _ = w.Write(json)
 
 	w.WriteHeader(http.StatusOK)
-}
-func (rt *_router) checknames(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var richiesta []Utente // cerca tutti gli utenti che iniziano per una data stringa
-	var str string
-	cs, err := rt.AuthenticationApi(r)
-
-	if err != nil {
-		http.Error(w, "error: authentication user checkname "+err.Error(), http.StatusUnauthorized)
-		return
-	}
-	str = ps.ByName("username")
-	if len(str) == 0 {
-		http.Error(w, "error: username too short", http.StatusBadRequest)
-		return
-	}
-
-	if len(str) > 16 {
-		http.Error(w, "too long message", http.StatusBadRequest)
-		return
-	}
-	if str == "$" {
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	tmp, err := rt.db.CheckNames(cs, str)
-
-	if err != nil && strings.HasPrefix(err.Error(), "error in authentication Checknames:") {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
-		return
-	}
-	if err != nil && strings.HasPrefix(err.Error(), "CheckNames: no user found:") {
-		http.Error(w, err.Error(), http.StatusNotFound)
-		return
-	}
-	if err != nil {
-		http.Error(w, "error in database: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	richiesta = make([]Utente, len(tmp))
-	for i, user := range tmp {
-		richiesta[i] = NewUser(user)
-	}
-
-	w.Header().Set("content-type", "application/json")
-	json, err := json.Marshal(richiesta)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
 	_, _ = w.Write(json)
 
-	w.WriteHeader(http.StatusOK)
 }
 func (rt *_router) checkChatNames(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var richiesta []ChatUtente // cerca tutte le chat che iniziano per una data stringa
@@ -205,9 +152,9 @@ func (rt *_router) getMyConversations(w http.ResponseWriter, r *http.Request, ps
 		return
 	}
 
+	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write(json)
 
-	w.WriteHeader(http.StatusOK)
 }
 func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 

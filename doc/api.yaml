@@ -29,22 +29,22 @@ paths:
                   example: "pippobaudo12"
       responses: 
         "200": 
-          description: "utente loggato"
+          description: "user logged in"
           content:
             application/json:
               schema:
-                description: "restituisce id"
+                description: "return id"
                 type: object
                 properties:
                   identifier: 
                     type: integer
                     minimum: 1
-                    maximum: 99999999
+                    maximum: 10000
                     example: 124
         "400":
-          $ref: "#/components/responses/bad_input"
+          $ref: "#/components/responses/Bad_Input"
         "500":
-          description: "internal server error"
+          $ref: "#/components/responses/500_ISE"
   /user/name:
     put:
       tags: ["user"]
@@ -73,27 +73,27 @@ paths:
         "200": 
           description: "username changed"
         "400":
-          $ref: "#/components/responses/bad_input"
+          $ref: "#/components/responses/Bad_Input"
         "401":
           $ref: "#/components/responses/401_Unauthorized"
         "409":
-          $ref: "#/components/responses/409_conflict"
+          $ref: "#/components/responses/409_Conflict"
         "500":
           $ref: "#/components/responses/500_ISE"
   /user/photo:
     put:
       tags: ["user"]
       security:
-        - bearAuth: []
+        - bearerAuth: []
       operationId: setMyPhoto
-      summary: "modifica photo"
-      description: "se l'utente non ha impostata una foto allora la imposta, altrimenti la cambia"
+      summary: "modify photo"
+      description: "if the user has not set a photo then set it, otherwise change it"
       requestBody:
-        description: "viene presa la foto"
+        description: "the photo is taken"
         content:
           multipart/form-data: 
             schema:
-              description: "foto profilo"
+              description: "profile photo"
               type: object
               properties:
                 propic: 
@@ -101,9 +101,9 @@ paths:
                   format: binary
       responses:
         "204": 
-          description: "foto cambiata"
+          $ref: "#/components/responses/204_NoContent"
         "400":
-          $ref: "#/components/responses/bad_input"
+          $ref: "#/components/responses/Bad_Input"
         "401":
           $ref: "#/components/responses/401_Unauthorized"
         "500":
@@ -114,7 +114,7 @@ paths:
       tags: ["user"]
       security:
         - bearerAuth: []
-      operationId: getUser
+      operationId: getMyUser
       summary: "takes all the user's parameters"
       description: "takes all the user's parameters(id, username, propic)"
       parameters:
@@ -126,7 +126,7 @@ paths:
             description: "user id"
             type: integer
             minimum: 1
-            maximum: 99999999
+            maximum: 10000
             example: 1
       responses:
         "200":
@@ -136,47 +136,45 @@ paths:
               schema:
                 $ref: "#/components/schemas/user"
         "400":
-          $ref: "#/components/responses/bad_input"
+          $ref: "#/components/responses/Bad_Input"
         "401":
           $ref: "#/components/responses/401_Unauthorized"
-        "404":
-          $ref: "#/components/responses/404_NotFound"
-        "400":
-          $ref: "#/components/responses/bad_input"
         "500":
           $ref: "#/components/responses/500_ISE"
 
   /conversation: 
     post:
       tags: ["conversation"]
+      security:
+        - bearerAuth: []
       operationId: createChat
-      summary: "crea una chat"
-      description: "se la chat gia' esiste non la crea, se non esiste la crea"
+      summary: "create a chat"
+      description: "if the chat already exists it does not create it, otherwise it creates it"
       requestBody:
-        description: "dati chat"
+        description: "chat data"
         content:
           multipart/form-data:
             schema:
-              description: "partecipanti"
+              description: "partecipants"
               type: object
               properties:
                 participants:
-                  description: "array di tutti i partecipanti alla chat"
+                  description: "array of all chat participants"
                   type: array
                   minItems: 1
-                  maxItems: 999999
+                  maxItems: 10000
                   default: []
                   items: 
                     type: object
                     properties:
                       iduser: 
-                        description: "id dello user"
+                        description: "user id"
                         type: integer
                         minimum: 1
-                        maximum: 999999
+                        maximum: 10000
                         example: 13
                 nome:
-                  description: "nome del gruppo"
+                  description: "group name"
                   type: string
                   minLength: 1
                   maxLength: 999999
@@ -186,7 +184,7 @@ paths:
                   type: boolean 
                   example: False
                 propic:
-                  description: "group propic"
+                  description: "group profile photo"
                   type: string
                   format: binary
       responses:
@@ -195,20 +193,20 @@ paths:
           content:
             application/json:
               schema:
-                description: "return id"
+                description: "return id chat"
                 type: object
                 properties:
                   identifier: 
                     type: integer
                     minimum: 1
-                    maximum: 99999999
+                    maximum: 10000
                     example: 124
+        "400":
+          $ref: "#/components/responses/Bad_Input"
         "401":
           $ref: "#/components/responses/401_Unauthorized"
-        "404":
-          $ref: "#/components/responses/404_NotFound"
         "409":
-          $ref: "#/components/responses/409_conflict"
+          $ref: "#/components/responses/409_Conflict"
         "500":
           $ref: "#/components/responses/500_ISE"
 
@@ -217,7 +215,7 @@ paths:
       tags: ["user"]
       security:
         - bearerAuth: []
-      operationId: getUser
+      operationId: checknames
       summary: "takes some users"
       description: "takes all the user's parameters(id, username, propic) that username input is substring of username"
       parameters:
@@ -228,9 +226,9 @@ paths:
           schema:
             description: "username to find"
             type: string
-            minlength: 1
+            minLength: 1
             pattern: ^[a-zA-Z0-9]+$
-            maxlength: 99999999
+            maxLength: 10000
             example: "giorgio"
       responses:
         "200":
@@ -242,14 +240,16 @@ paths:
                 items:
                   $ref: "#/components/schemas/user"
         "400":
-          $ref: "#/components/responses/bad_input"
+          $ref: "#/components/responses/Bad_Input"
         "401":
           $ref: "#/components/responses/401_Unauthorized"
         "404":
           $ref: "#/components/responses/404_NotFound"
         "500":
           $ref: "#/components/responses/500_ISE"
-
+  /search/chat/{nomeChat}:
+    get:
+      tags: ['']
   /conversations:
     get:
       tags: ["conversation"]
@@ -266,52 +266,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  properties:
-                    IdChat:
-                      description: "chat or group id"
-                      type: integer
-                      minimum: 1
-                      maximum: 99999999
-                      example: 124
-                    Nome:
-                      description: "chat or group name"
-                      type: string
-                      minLength: 1
-                      maxLength: 999999
-                      example: "carciofo"
-                    Gruppo:
-                      description: "True if is a group, False if is not a group"
-                      type: boolean
-                      example: False
-                    Username:
-                      description: "username of the other user"
-                      type: string
-                      minLength: 1
-                      maxLength: 16
-                      example: "pippobaudo12"
-                    Id:
-                      description: "id of the other user if is not a group"
-                      type: integer
-                      minimum: 1
-                      maximum: 99999999
-                      example: 124
-                    Propic:
-                      description: "propic of the other user or group"
-                      type: string
-                      format: binary
-                    LastMsg:
-                      description: "text of the last message of this chat"
-                      type: string
-                      minLength: 1
-                      maxLength: 999999
-                      example: "ciao"
-                    Data:
-                      description: "date of the last message of this chat"
-                      type: string
-                      format: date-time
-                      example: "2021-06-01T10:00:00Z"
-
+                  $ref: "#/components/schemas/ChatUtente"
         "401":
           $ref: "#/components/responses/401_Unauthorized"
         "500":
@@ -334,7 +289,7 @@ paths:
             description: "chat id"
             type: integer
             minimum: 1
-            maximum: 99999999
+            maximum: 10000
             example: 1
       responses:
         "200":
@@ -344,41 +299,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  properties:
-                    IdMess:
-                      description: "message id"
-                      type: integer
-                      minimum: 1
-                      maximum: 99999999
-                      example: 124
-                    Nome:
-                      description: "user id"
-                      type: integer
-                      minimum: 1
-                      maximum: 99999999
-                      example: 124
-                    Username:
-                      description: "username of the user"
-                      type: string
-                      minLength: 1
-                      maxLength: 16
-                      example: "pippobaudo12"
-                    Propic:
-                      description: "propic of the user"
-                      type: string
-                      format: binary
-                    Text:
-                      description: "text of the message"
-                      type: string
-                      minLength: 1
-                      maxLength: 999999
-                      example: "ciao"
-                    Data:
-                      description: "date of the message"
-                      type: string
-                      format: date-time
-                      example: "2021-06-01T10:00:00Z"
+                  $ref: "#/components/schemas/Mess"
         "401":
           $ref: "#/components/responses/401_Unauthorized"
         "404":
@@ -391,13 +312,13 @@ components:
       description: "user id"
       type: integer
       minimum: 1
-      maximum: 99999999
+      maximum: 10000
       example: 1
     username:
       description: "user username"
       type: string
-      minLenght: 1
-      maxLenght: 16
+      minLength: 1
+      maxLength: 16
       example: pippo
       pattern: ^[a-zA-Z0-9]+$
     propic:
@@ -414,8 +335,207 @@ components:
           $ref: "#/components/schemas/username"
         propic:
           $ref: "#/components/schemas/propic"
+    Group:
+      type: object
+      properties:
+        NomeChat:
+          description: "chat name"
+          type: string
+          maxLength: 16
+          minLength: 1
+          example: "pluto"
+        Propric:
+          description: "group propic"
+          type: string
+          format: byte
+        Membri:
+          description: "group members id"
+          type: array
+          items:
+            type: integer
+            minimum: 1
+            maximum: 10000
+            example: 1
+        IdChat:
+          description: "chat(group) id"
+          type: integer
+          minimum: 1
+          maximum: 10000
+          example: 1
+    ChatUtente:
+      type: object
+      properties:
+        IdChat:
+          description: "chat id"
+          type: integer
+          minimum: 1
+          maximum: 10000
+          example: 1
+        Nome:
+          description: "chat name"
+          type: string
+          maxLength: 16
+          minLength: 1
+          example: "pippo"
+        Gruppo:
+          description: "true if the chat is a group, otherwise false"
+          type: boolean
+          example: true
+        Username:
+          description: "user username who has send the last message to the chat"
+          type: string
+          maxLength: 16
+          minLength: 1
+          example: "paolino"
+        Id: 
+          description: "user id who has send the last message to the chat"
+          type: integer
+          minimum: 1
+          maximum: 10000
+          example: 1
+        Propic:
+          description: "chat profile picture"
+          type: string
+          format: byte
+        LastMsg:
+          description: "last message text"
+          type: string
+          maxLength: 100
+          minLength: 0
+          example: "ciao come ti chiami?$"
+        Data:
+          description: "last message date"
+          type: string
+          format: date-time
+          example: "2021-06-01T10:00:00Z"
+    Mess:
+      type: object
+      properties:
+        IdMess:
+          description: "message id"
+          type: integer
+          minimum: 1
+          maximum: 10000
+          example: 1
+        Nome:
+          description: "sender username"
+          type: string 
+          minLength: 1
+          maxLength: 16
+          example: "pippo"
+        IdMitt:
+          description: "sender id"
+          type: integer
+          minimum: 1
+          maximum: 10000
+          example: 1 
+        Testo:
+          description: "message text"
+          type: string
+          minLength: 0
+          maxLength: 10000
+          example: "ciao, sono pippo"
+        Data:
+          description: "date of message sent"
+          type: string
+          format: date-time
+          example: "2021-06-01T10:00:00Z"
+        Visual:
+          description: "if the message was viewed"
+          type: boolean 
+          example: true
+        Photo:
+          description: "photo in send message"
+          type: string
+          format: byte
+        IdChat:
+          description: "chat id"
+          type: integer
+          minimum: 1
+          maximum: 10000
+          example: 1
+        Gruppo:
+          description: "if the message belongs to a group"
+          type: boolean
+          example: true
+        Emoji:
+          description: "array of 5 elements, the number of each indicates how many emojis that message has for each type of emoji"
+          type: array
+          items:
+            type: integer
+        MyEmoji:
+          description: "indicates the emoji of the user logged in to that message"
+          type: string
+          minLength: 1
+          maxLength: 30
+          example: "❤️"
+        ForwardUsername:
+          description: "username of the user who created the message to be forwarded"
+          type: string
+          minLength: 1
+          maxLength: 16
+          example: "pippo"
+        ForwardId:
+          description: "id of the user who created the message to be forwarded"
+          type: integer
+          minimum: 1
+          maximum: 10000
+          example: 1
+        ForwardDate:
+          description: "forward date"
+          type: string
+          format: date-time
+          example: "2021-06-01T10:00:00Z"
+        ForwardIdMit: 
+          description: "id of the person who made the forward"
+          type: integer
+          minimum: 1
+          maximum: 10000
+          example: 1
+        ForwardUsernameMit:
+          description: "username of the person who made the forward"
+          type: string
+          minLength: 1
+          maxLength: 16
+          example: "pippo"
+        IdForward:
+          description: "id of forward"
+          type: integer
+          minimum: 1
+          maximum: 10000
+          example: 1
+        IdReply:
+          description: "id of reply"
+          type: integer
+          minimum: 1
+          maximum: 10000
+          example: 1
+        TestoReply:
+          description: "text of reply message"
+          type: string
+          minLength: 1
+          maxLength: 10000
+          example: "ciao amico mio, come stai?"
+        IdMitReply:
+          description: "id reply sender"
+          type: integer
+          minimum: 1
+          maximum: 1000
+          example: 1
+        MitReply:
+          description: "username reply sender"
+          type: string
+          minLength: 1
+          maxLength: 16
+          example: "pippo"
+        PhotoReply:
+          description: "photo in reply message"
+          type: string
+          format: byte
+
+      
   responses:
-    bad_input:
+    Bad_Input:
       description: "error in log in"
       content:
         application/json:
@@ -429,7 +549,7 @@ components:
                 maxLength: 1000
                 example: "error in data structure"
     204_NoContent:
-    description: No content, operation successful
+      description: No content, operation successful
 
     401_Unauthorized:
       description: Unauthorized
@@ -444,7 +564,7 @@ components:
                 type: string
                 example: "Unauthorized"
                 minLength: 0
-                maxLength: 999999999
+                maxLength: 10000
                 pattern: "^.*?$"
 
     403_Forbidden:
@@ -460,7 +580,7 @@ components:
                 type: string
                 example: "Forbidden"
                 minLength: 0
-                maxLength: 999999999
+                maxLength: 10000
                 pattern: "^.*?$"
 
     404_NotFound:
@@ -476,7 +596,7 @@ components:
                 type: string
                 example: "Not Found"
                 minLength: 0
-                maxLength: 999999999
+                maxLength: 10000
                 pattern: "^.*?$"
 
     409_Conflict:
@@ -492,7 +612,7 @@ components:
                 type: string
                 example: "Conflict"
                 minLength: 0
-                maxLength: 999999999
+                maxLength: 10000
                 pattern: "^.*?$" 
     500_ISE:
       description: internal server error
@@ -506,8 +626,8 @@ components:
                 description: internal server error
                 type: string
                 example: "internal server error"
-                minlength: 0
-                maxlength: 999999999
+                minLength: 0
+                maxLength: 10000
                 pattern: "^.*?$" 
   securitySchemes:
     bearerAuth: # arbitrary name for the security scheme
