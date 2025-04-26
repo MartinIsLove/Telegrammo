@@ -107,8 +107,7 @@ paths:
         "401":
           $ref: "#/components/responses/401_Unauthorized"
         "500":
-          $ref: "#/components/responses/500_ISE"
-        
+          $ref: "#/components/responses/500_ISE"    
   /users/{id}:
     get:
       tags: ["user"]
@@ -141,7 +140,6 @@ paths:
           $ref: "#/components/responses/401_Unauthorized"
         "500":
           $ref: "#/components/responses/500_ISE"
-
   /conversation: 
     post:
       tags: ["conversation"]
@@ -177,7 +175,7 @@ paths:
                   description: "group name"
                   type: string
                   minLength: 1
-                  maxLength: 999999
+                  maxLength: 16
                   example: "carciofo"
                 gruppo:
                   description: "False if is not a group, True if is a group"
@@ -209,7 +207,6 @@ paths:
           $ref: "#/components/responses/409_Conflict"
         "500":
           $ref: "#/components/responses/500_ISE"
-
   /search/users/{username}:
     get:  
       tags: ["user"]
@@ -305,7 +302,6 @@ paths:
           $ref: "#/components/responses/401_Unauthorized"
         "500":
           $ref: "#/components/responses/500_ISE"
-
   /conversation/{idChat}:
     get:
       tags: ["conversation"]
@@ -340,6 +336,153 @@ paths:
           $ref: "#/components/responses/404_NotFound"
         "500":
           $ref: "#/components/responses/500_ISE"
+  /conversation/group:
+    post: 
+      tags: ["conversation"]
+      security:
+        - bearerAuth: []
+      operationId: createGroup
+      summary: "create a group"
+      description: "create a group and insert the logged user and the other users"
+      requestBody:
+        description: "group data"
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                propic: 
+                  type: string
+                  format: byte
+                  description: "group propic"
+                nome_chat:
+                  type: string
+                  description: "group name"
+                  minLength: 1
+                  maxLength: 16
+                  example: "gruppo"
+                membri: 
+                  type: array
+                  minItems: 0
+                  maxItems: 10000
+                  items: 
+                    default: []
+                    type: integer
+                    minimum: 1
+                    maximum: 10000
+                    example: 1
+      responses:
+        "200":
+          description: "group create successfully"
+          content:
+            application/json:
+              schema:
+                description: "return id group"
+                type: object
+                properties:
+                  id_group: 
+                    type: integer
+                    minimum: 1
+                    maximum: 10000
+                    example: 124
+        "400":
+          $ref: "#/components/responses/Bad_Input"
+        "401":
+          $ref: "#/components/responses/401_Unauthorized"
+        "500":
+          $ref: "#/components/responses/500_ISE"
+  /conversation/leave/{idChat}:
+    delete:
+      tags: ["conversation"]
+      security:
+        - bearerAuth: []
+      summary: "Leave a group"
+      description: "Leave a group by logged user"
+      operationId: leaveGroup
+      parameters:
+        - name: idChat
+          in: path
+          required: true
+          description: "group identifier"
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 10000
+            example: 1
+      responses:
+        "204":
+          $ref: "#/components/responses/204_NoContent"
+        "400":
+          $ref: "#/components/responses/Bad_Input"
+        "401":
+          $ref: "#/components/responses/401_Unauthorized"
+        "500":
+          $ref: "#/components/responses/500_ISE"
+  /conversation/group/name:
+    put:
+      tags: ["conversation"]
+      security:
+        - bearerAuth: []
+      operationId: setGroupName
+      summary: "modify group name"
+      description: "if the user belong to the group modify the group name, otherwise return an error"
+      requestBody:
+        description: "take group id and chat name"
+        content:
+          application/json: 
+            schema:
+              $ref: "#/components/schemas/Group"
+      responses:
+        "204":
+          $ref: "#/components/responses/204_NoContent"
+        "400":
+          $ref: "#/components/responses/Bad_Input"
+        "401":
+          $ref: "#/components/responses/401_Unauthorized"
+        "500":
+          $ref: "#/components/responses/500_ISE"              
+  /conversation/group/photo:
+    put:
+      tags: ["conversation"]
+      security:
+        - bearerAuth: []
+      operationId: addToGroup
+      summary: "add user to group"
+      description: "if the user belong to the group add the user/s to the group, otherwise return an error"
+      requestBody:
+        description: "take the group id and chat memebers to add"
+        content:
+          application/json: 
+            schema:
+              description: "new group member/s and chat id"
+              type: object
+              properties:
+                Membri:
+                  description: "new group member/s(id)"
+                  type: array
+                  minItems: 1
+                  maxItems: 10000
+                  items:
+                    default: []
+                    type: integer
+                    minimum: 1
+                    maximum: 10000
+                    example: 1
+                idChat:
+                  type: integer
+                  description: "chat id to the group that is needed to add members"
+                  minimum: 1
+                  maximum: 10000
+                  example: 1   
+      responses:
+        "204":
+          $ref: "#/components/responses/204_NoContent"
+        "400":
+          $ref: "#/components/responses/Bad_Input"
+        "401":
+          $ref: "#/components/responses/401_Unauthorized"
+        "500":
+          $ref: "#/components/responses/500_ISE"            
 components:
   schemas:
     id: 
@@ -569,6 +712,7 @@ components:
 
       
   responses:
+
     Bad_Input:
       description: "error in log in"
       content:
