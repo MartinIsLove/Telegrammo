@@ -1,0 +1,33 @@
+FROM golang:1.24-alpine AS builder
+
+# Install gcc e musl-dev
+RUN apk add gcc musl-dev
+
+# Create a working directory
+WORKDIR /workspace
+
+# Copy necessary files
+COPY cmd/ cmd/
+COPY service/ service/
+COPY vendor/ vendor/
+COPY go.mod .
+COPY go.sum .
+
+# Build the project
+RUN CGO_ENABLED=1 go build -o /workspace/telegrammo ./cmd/webapi
+
+FROM alpine:latest
+
+# Create a working directory
+WORKDIR /usr/src/app
+
+# Copy built files
+COPY --from=builder /workspace/telegrammo ./
+
+RUN chmod +x /usr/src/app/telegrammo
+
+# Expose communication ports
+EXPOSE 3000
+
+# Start the application
+CMD ["./telegrammo"]
