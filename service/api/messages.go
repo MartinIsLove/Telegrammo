@@ -40,9 +40,9 @@ func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, ps httpro
 
 	id_chat_tmp := r.FormValue("id_chat")
 	testo := r.FormValue("testo")
-	id_forward_tmp := r.FormValue("id_forward")
+	id_reply_tmp := r.FormValue("id_reply")
 
-	id_forward, err := strconv.Atoi(id_forward_tmp)
+	id_reply, err := strconv.Atoi(id_reply_tmp)
 	if err != nil {
 		http.Error(w, "error: conversion id_forward_tmp (string) to id_forward (int): "+err.Error(), http.StatusBadRequest)
 		return
@@ -59,7 +59,7 @@ func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, ps httpro
 		return
 	}
 
-	erro := rt.db.SendMessage(cs, id_chat, testo, photo, id_forward)
+	erro := rt.db.SendMessage(cs, id_chat, testo, photo, id_reply)
 	if erro != nil && strings.HasPrefix(erro.Error(), "error in authentication SendMessage:") {
 		http.Error(w, erro.Error(), http.StatusUnauthorized)
 		return
@@ -68,7 +68,7 @@ func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, ps httpro
 		http.Error(w, erro.Error(), http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusNoContent)
 }
 func (rt *_router) forwardMessage(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var richiesta RequestData

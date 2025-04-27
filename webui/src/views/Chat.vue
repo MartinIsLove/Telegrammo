@@ -55,11 +55,11 @@ export default {
 			formData.append('id_chat', this.chatId)
 			formData.append('testo', this.message)
 			if (this.messageReplied === -1){
-				formData.append('id_forward', this.messageReplied)
+				formData.append('id_reply', this.messageReplied)
 				await this.$axios.post("/message", formData, {headers: {'Content-Type': 'multipart/form-data', cs: this.id}});
 
 			}else{
-				formData.append('id_forward', this.messageReplied.id_forward)
+				formData.append('id_reply', this.messageReplied.id_forward)
 				await this.$axios.post("/message", formData, {headers: {'Content-Type': 'multipart/form-data', cs: this.id}});
 			}
 			this.message = ''

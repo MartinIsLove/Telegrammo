@@ -483,6 +483,52 @@ paths:
           $ref: "#/components/responses/401_Unauthorized"
         "500":
           $ref: "#/components/responses/500_ISE"            
+  /message:
+    post: 
+      tags: ["messages"]
+      security:
+        - bearerAuth: []
+      operationId: sendMessages
+      summary: "send a message"
+      description: "send a message if the user belong to the chat, otherwise return an error"
+      requestBody:
+        description: "message data"
+        content:
+          multipart/form-data:  
+            schema:
+              type: object
+              properties:
+                photo:
+                  description: "photo of the message to be sent"
+                  type: string 
+                  format: byte
+                id_chat:
+                  description: "chat id where the message should be sent"
+                  type: integer
+                  minimum: 1
+                  maximum: 10000
+                  example: 1
+                testo: 
+                  description: "message text"
+                  type: string
+                  minLength: 0
+                  maxLength: 10000
+                  example: "ciao, sono alessio"
+                id_reply:
+                  description: "the id of the message we are replying to"
+                  type: integer
+                  minimum: 1
+                  maximum: 10000
+                  example: 1
+      responses:
+        "204":
+          $ref: "#/components/responses/204_NoContent"
+        "400":
+          $ref: "#/components/responses/Bad_Input"
+        "401":
+          $ref: "#/components/responses/401_Unauthorized"
+        "500":
+          $ref: "#/components/responses/500_ISE"
 components:
   schemas:
     id: 

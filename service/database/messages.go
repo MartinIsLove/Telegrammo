@@ -5,10 +5,22 @@ import (
 )
 
 // inserisce un messaggio nel database
-func (db *appdbimpl) SendMessage(cs int, id_chat int, message string, photo []byte, id_forward int) error {
+func (db *appdbimpl) SendMessage(cs int, id_chat int, message string, photo []byte, id_reply int) error {
 	_, err := db.Authentication(cs)
 	if err != nil {
 		return fmt.Errorf("error in authentication SendMessage: %w", err)
+	}
+
+	var righe int
+
+	// controlla se lo user che sta cercando di inviare il messaggio appartiene alla chat
+	err = db.c.QueryRow("select count(u.id) from utenti u join membri m on m.id_utenti where id_utenti = $1 and id_chat = $2", cs, id_chat).Scan(&righe)
+	if err != nil {
+		return fmt.Errorf("SendMessage: error querying database: %w", err)
+	}
+
+	if righe == 0 {
+		return fmt.Errorf("SendMessage: you don't belong to this chat")
 	}
 
 	// inserisce il messaggio nella tabella messaggi
@@ -23,7 +35,7 @@ func (db *appdbimpl) SendMessage(cs int, id_chat int, message string, photo []by
 	}
 
 	// inserisce il messaggio e la chat nella tabella messaggi_di_chat
-	_, err = db.c.Exec("INSERT INTO messaggi_di_chat (id_chat, id_messaggio, id_reply) VALUES  ($1, $2, $3)", id_chat, id_mess, id_forward)
+	_, err = db.c.Exec("INSERT INTO messaggi_di_chat (id_chat, id_messaggio, id_reply) VALUES  ($1, $2, $3)", id_chat, id_mess, id_reply)
 	if err != nil {
 		return fmt.Errorf("SendMessage: error insert messaggio in table messaggi_di_chat : %w", err)
 	}
