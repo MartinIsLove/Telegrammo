@@ -441,7 +441,7 @@ paths:
           $ref: "#/components/responses/401_Unauthorized"
         "500":
           $ref: "#/components/responses/500_ISE"              
-  /conversation/group/photo:
+  /conversation/group/user:
     put:
       tags: ["conversation"]
       security:
@@ -483,6 +483,41 @@ paths:
           $ref: "#/components/responses/401_Unauthorized"
         "500":
           $ref: "#/components/responses/500_ISE"            
+  /conversation/group/photo:
+    put:
+      tags: ["conversation"]
+      security:
+        - bearerAuth: []
+      operationId: setGroupPhoto
+      summary: "set group photo"
+      description: "if the user belong to the group set the group photo, otherwise return an error"
+      requestBody:
+        description: "take the group id and the photo"
+        content:
+          multipart/form-data:
+            schema:
+              description: "new photo and chat id"
+              type: object
+              properties:
+                propic:
+                  description: "the photo that will be set" 
+                  type: string
+                  format: byte
+                idChat:
+                  type: integer
+                  description: "chat id to the group that is needed to change photo"
+                  minimum: 1
+                  maximum: 10000
+                  example: 1   
+      responses:
+        "204":
+          $ref: "#/components/responses/204_NoContent"
+        "400":
+          $ref: "#/components/responses/Bad_Input"
+        "401":
+          $ref: "#/components/responses/401_Unauthorized"
+        "500":
+          $ref: "#/components/responses/500_ISE"        
   /message:
     post: 
       tags: ["messages"]
@@ -520,6 +555,178 @@ paths:
                   minimum: 1
                   maximum: 10000
                   example: 1
+      responses:
+        "204":
+          $ref: "#/components/responses/204_NoContent"
+        "400":
+          $ref: "#/components/responses/Bad_Input"
+        "401":
+          $ref: "#/components/responses/401_Unauthorized"
+        "500":
+          $ref: "#/components/responses/500_ISE"
+  /message/forward:
+    post: 
+      tags: ["messages"]
+      security:
+        - bearerAuth: []
+      operationId: forwardMessage
+      summary: "forward a message"
+      description: "forward the message if the logged in user has access to the message and the sending chat "
+      requestBody:
+        description: "information for forward the message"
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                idChat: 
+                  description: "chat id where the message will be sent"
+                  type: array
+                  minItems: 1
+                  maxItems: 10000
+                  items:
+                    type: integer
+                    minimum: 1
+                    maximum: 10000
+                    example: 1
+                IdMes:
+                  type: integer
+                  description: "message id"
+                  minimum: 1
+                  maximum: 10000
+                  example: 1
+                IdForward: 
+                  description: "forward id(the message it refers to)"
+                  type: integer
+                  minimum: 1
+                  maximum: 10000
+                  example: 1
+      responses:
+        "204":
+          $ref: "#/components/responses/204_NoContent"
+        "400":
+          $ref: "#/components/responses/Bad_Input"
+        "401":
+          $ref: "#/components/responses/401_Unauthorized"
+        "500":
+          $ref: "#/components/responses/500_ISE"
+  /message/comment:
+    post:
+      tags: ["messages"]
+      security:
+        - bearerAuth: []
+      operationId: commentMessage
+      summary: "comment a message"
+      description: "comment the message if the logged in user has access to the message, and if he has already entered the comment he changes it(if you click the comment already inserted it removes the comment)"
+      requestBody:
+        description: "information for comment the message"
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                id_chat: 
+                  description: "chat id where the message will be commented"
+                  type: integer
+                  minimum: 1
+                  maximum: 10000
+                  example: 1
+                Id_mes:
+                  type: integer
+                  description: "message id of the message that will be commented"
+                  minimum: 1
+                  maximum: 10000
+                  example: 1
+                Emoji: 
+                  description: "the effective comment to the message"
+                  type: string
+                  maxLength: 1
+                  minLength: 1
+                  pattern: ^(👠|❤️|👍🏻|👌🏻|💅)$
+                  example: "❤️"
+      responses:
+        "204":
+          $ref: "#/components/responses/204_NoContent"
+        "400":
+          $ref: "#/components/responses/Bad_Input"
+        "401":
+          $ref: "#/components/responses/401_Unauthorized"
+        "500":
+          $ref: "#/components/responses/500_ISE"      
+  /message/uncomment:
+    post:
+      tags: ["messages"]
+      security:
+        - bearerAuth: []
+      operationId: uncommentMessage
+      summary: "uncomment a message"
+      description: "uncomment the message if the logged in user has access to the message"
+      requestBody:
+        description: "information for comment the message"
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                id_chat: 
+                  description: "chat id where the message will be uncommented"
+                  type: integer
+                  minimum: 1
+                  maximum: 10000
+                  example: 1
+                Id_mes:
+                  type: integer
+                  description: "message id of the message that will be uncommented"
+                  minimum: 1
+                  maximum: 10000
+                  example: 1
+      responses:
+        "204":
+          $ref: "#/components/responses/204_NoContent"
+        "400":
+          $ref: "#/components/responses/Bad_Input"
+        "401":
+          $ref: "#/components/responses/401_Unauthorized"
+        "500":
+          $ref: "#/components/responses/500_ISE"
+  /message/delete/{idMes}:
+    delete:
+      tags: ["message"]
+      security:
+        - bearerAuth: []
+      summary: "delete a message"
+      description: "check the existence of the message and if it exists delete it(if it's forwarded delete only the chat instance)"
+      operationId: deleteMessage
+      parameters:
+        - name: idMes
+          in: path
+          required: true
+          description: "message id"
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 10000
+            example: 1
+      requestBody:
+        description: "information for delete the message"
+        content:
+          application/json: 
+            schema:
+              type: object
+              properties:
+                IdChat: 
+                  description: "chat id where the message will be deleted"
+                  type: integer
+                  minimum: 1
+                  maximum: 10000
+                  example: 1
+                IdForward:
+                  type: integer
+                  description: "id of the forward of the message"
+                  minimum: 1
+                  maximum: 10000
+                  example: 1
+      
       responses:
         "204":
           $ref: "#/components/responses/204_NoContent"
