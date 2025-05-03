@@ -16,7 +16,7 @@ func (db *appdbimpl) DoLogin(username string) (int, error) {
 	// seleziona l'utente con lo username inserito dalla tabella utenti e se esiste ritorna il suo id
 	err := db.c.QueryRow("SELECT username,id FROM utenti WHERE username= $1", username).Scan(&if_username, &if_id)
 
-	//se non esiste lo crea
+	// se non esiste lo crea
 	if errors.Is(err, sql.ErrNoRows) {
 		noPhotoPath := filepath.Join("/workspace/webui/src/assets/", "NoPhoto.png")
 		noPhotoBytes, err := os.ReadFile(noPhotoPath)

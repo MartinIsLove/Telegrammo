@@ -45,7 +45,7 @@ type Mess struct {
 	ForwardDate        time.Time `json:"forward_date"`     // data forward
 	ForwardIdMit       int       `json:"forward_id_mit"`   // id di colui che ha fatto il forward
 	ForwardUsernameMit string    `json:"forward_user_mit"` // username di colui che ha fatto il forward
-	IdForward          int       `json:"id_forward"`       //id del forward
+	IdForward          int       `json:"id_forward"`       // id del forward
 	Idreply            int       `json:"id_reply"`         // l'id del messaggio di chat a cui fa riferimento il reply
 	TestoReply         string    `json:"testo_reply"`      // il testo del messaggio del reply se presente
 	IdMitReply         int       `json:"id_mit_reply"`     // l'id del mittente del reply

@@ -96,7 +96,7 @@ paths:
               description: "profile photo"
               type: object
               properties:
-                propic: 
+                photo: 
                   type: string
                   format: binary
       responses:
@@ -114,8 +114,8 @@ paths:
       security:
         - bearerAuth: []
       operationId: getMyUser
-      summary: "takes all the user's parameters"
-      description: "takes all the user's parameters(id, username, propic)"
+      summary: "give all the user's parameters"
+      description: "give all the user's parameters(id, username, propic)"
       parameters:
         - name: id
           in: path
@@ -151,40 +151,17 @@ paths:
       requestBody:
         description: "chat data"
         content:
-          multipart/form-data:
+          application/json:
             schema:
-              description: "partecipants"
+              description: "participant"
               type: object
               properties:
-                participants:
-                  description: "array of all chat participants"
-                  type: array
-                  minItems: 1
-                  maxItems: 10000
-                  default: []
-                  items: 
-                    type: object
-                    properties:
-                      iduser: 
-                        description: "user id"
-                        type: integer
-                        minimum: 1
-                        maximum: 10000
-                        example: 13
-                nome:
-                  description: "group name"
-                  type: string
-                  minLength: 1
-                  maxLength: 16
-                  example: "carciofo"
-                gruppo:
-                  description: "False if is not a group, True if is a group"
-                  type: boolean 
-                  example: False
-                propic:
-                  description: "group profile photo"
-                  type: string
-                  format: binary
+                id: 
+                  description: "user id"
+                  type: integer
+                  minimum: 1
+                  maximum: 10000
+                  example: 13  
       responses:
         "200": 
           description: "chat create successfully"
@@ -214,7 +191,7 @@ paths:
         - bearerAuth: []
       operationId: checknames
       summary: "takes some users"
-      description: "takes all the user's parameters(id, username, propic) that username input is substring of username"
+      description: "gives all the user's parameters(id, username, propic) that username input is substring of username"
       parameters:
         - name: username
           in: path

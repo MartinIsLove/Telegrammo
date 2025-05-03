@@ -15,7 +15,7 @@ func (db *appdbimpl) IsChatDuplicated(cs int, id int) (bool, error) {
 	var num_righe int64
 	// seleziona la chat(non gruppo) con partecipanti cs e id dati nei parametri della funzione
 	err := db.c.QueryRow("SELECT COUNT(chat.id) AS righe FROM chat JOIN membri ON chat.id=membri.id_chat WHERE chat.gruppo=FALSE AND membri.id_utenti IN ($1 , $2) GROUP BY chat.id HAVING COUNT (DISTINCT membri.id_utenti)=2", cs, id).Scan(&num_righe)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return false, nil
 	}
 
@@ -185,7 +185,7 @@ func (db *appdbimpl) GetMyConversations(cs int) ([]ChatUtenteDb, error) {
 		// prendo gli ultimi messaggi inviati a ogni chat presa precedentemente
 		rows3 := db.c.QueryRow("SELECT m.testo, m.mittente, m.data FROM chat c JOIN messaggi_di_chat mdc ON c.id=mdc.id_chat JOIN messaggi m ON mdc.id_messaggio=m.id JOIN membri me ON me.id_chat=c.id JOIN utenti u ON u.id=me.id_utenti WHERE c.id=$1 ORDER BY m.data DESC LIMIT 1;", c.IdChat)
 		err := rows3.Scan(&lastMsg, &id, &tmp)
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 
 			c.LastMSg = ""
 			c.Data = time.Time{}
@@ -205,7 +205,7 @@ func (db *appdbimpl) GetMyConversations(cs int) ([]ChatUtenteDb, error) {
 		// seleziono l'username di chi ha inviato l'ultimo messaggio alla chat
 		rows4 := db.c.QueryRow("SELECT username FROM utenti WHERE id=$1 LIMIT 1", id)
 		err = rows4.Scan(&username)
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 
 		} else if err != nil {
 			return []ChatUtenteDb{}, fmt.Errorf("GetMyConversations: error querying users: %w", err)
@@ -304,6 +304,10 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 			cont++
 		}
 
+		if err := row2.Err(); err != nil {
+			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error iterating messages: %w", err)
+		}
+
 		if cont == 0 {
 			c.ForwardUsername = forwarderUsername
 			c.ForwardId = -1
@@ -356,6 +360,10 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 			idUtenti = append(idUtenti, id)
 		}
 
+		if err := row3.Err(); err != nil {
+			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error iterating over id_utenti: %w", err)
+		}
+
 		var visualCount int
 		// conto il numero di tutti gli id utenti diversi tra loro che fanno parte della chat, l'utente non e' il mittente e la data dell'accesso e' successiva all'invio del messaggio
 		err = db.c.QueryRow(`SELECT COUNT(DISTINCT ac.id_utente) FROM accessi_chat ac JOIN membri mb ON mb.id_utenti = ac.id_utente WHERE ac.id_chat = $1 AND ac.id_utente != $2 AND ac.data > $3 AND mb.id_chat = ac.id_chat`, id_chat, m.IdMitt, m.Data).Scan(&visualCount)
@@ -383,7 +391,7 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 			err = db.c.QueryRow("SELECT m.testo, m.image, m.mittente, u.username FROM messaggi m JOIN utenti u ON u.id=m.mittente JOIN messaggi_di_chat md ON md.id_messaggio=m.id WHERE md.id=$1", m.Idreply).Scan(&m.TestoReply, &m.PhotoReply, &m.IdMitReply, &m.MitReply)
 
 			// se non restituisce righe
-			if err == sql.ErrNoRows {
+			if errors.Is(err, sql.ErrNoRows) {
 
 				// allora cancella il reply
 				_, err := db.c.Exec("UPDATE messaggi_di_chat SET id_reply=$1 WHERE id=$2", -1, m.IdForward)
@@ -402,7 +410,7 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 
 		// seleziono l'emoji inviata da me a quel messaggio se esiste altrimenti la imposto vuota
 		err = db.c.QueryRow("SELECT emoji FROM emoticon WHERE id_utente=$1 AND id_messaggio=$2", cs, m.IdMess).Scan(&emoji)
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			emoji = ""
 		} else if err != nil {
 			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying emojis: %w", err)
@@ -472,7 +480,7 @@ func (db *appdbimpl) CreateGroup(cs int, nome string, propic []byte, membri []in
 		// controllo che lo user che sto inserendo esista
 		value := db.UserExist(m)
 
-		//se esiste
+		// se esiste
 		if value {
 
 			// inserisco lo user(lo fa per ogni user in membri) nella tabella membri
@@ -604,7 +612,7 @@ func (db *appdbimpl) AddToGroup(cs int, idGroup int, membri []int) error {
 		return fmt.Errorf("AddToGroup: error you can't add user to a group that you don't partecipate: %w", err)
 	}
 
-	//altrimenti per ogni membro viene eseguita la query che aggiunge il membro se gia non e' presente nella chat
+	// altrimenti per ogni membro viene eseguita la query che aggiunge il membro se gia non e' presente nella chat
 	for _, c := range membri {
 
 		_, err := db.c.Exec("INSERT INTO membri (id_utenti, id_chat) SELECT $1, $2 WHERE NOT EXISTS (SELECT 1 FROM membri WHERE id_utenti = $1 AND id_chat = $2);", c, idGroup)

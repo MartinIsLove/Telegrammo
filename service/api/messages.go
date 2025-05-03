@@ -31,7 +31,7 @@ func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, ps httpro
 	} else {
 		defer file.Close()
 		photo, err = validatePhoto(file, handler, err)
-		//photo, err = io.ReadAll(file)
+		// photo, err = io.ReadAll(file)
 		if err != nil {
 			http.Error(w, "error reading file(the photo must be 1024*1024): "+err.Error(), http.StatusBadRequest)
 			return

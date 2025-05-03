@@ -75,7 +75,7 @@ func (db *appdbimpl) ForwardMessage(cs int, id_chat []int, id_mes int, id_utente
 		if err != nil {
 			return fmt.Errorf("ForwardMessage: error select id_utenti from membri: %w", err)
 		}
-		tmp = tmp + num_righe
+		tmp += num_righe
 	}
 
 	if tmp != len(id_chat) {
@@ -200,7 +200,7 @@ func (db *appdbimpl) DeleteMessage(cs int, idMes int, idForw int, idChat int) er
 		return fmt.Errorf("DeleteMessage: error database DELETE not successful message don't find")
 	}
 
-	//se e' 1 allora puo' essere eliminato del tutto
+	// se e' 1 allora puo' essere eliminato del tutto
 	if is_forw == 1 {
 		_, err = db.c.Exec("DELETE FROM messaggi WHERE id=$1", idMes)
 		if err != nil {
