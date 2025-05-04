@@ -57,7 +57,7 @@ export default {
             try {
                 this.id = sessionStorage.getItem("cs")
                 const membriIds = this.selectedUser.map(user => user.id);
-                await this.$axios.post(`/conversation/group/user`, {
+                await this.$axios.put(`/conversation/group/user`, {
                     id_chat: this.chatId,
                     membri: membriIds
                 }, {
