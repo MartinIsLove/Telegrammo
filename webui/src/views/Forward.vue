@@ -84,7 +84,8 @@
                 
                 const selectedChatIds = this.selectedChat.map(chat => chat.id_chat);
                 let response = await this.$axios.post(`/message/forward`,{id_mes:this.id_mes, id_chat:selectedChatIds, id_for:this.id_utente} , { headers: { cs: this.id } });
-                if (response.status === 200) {
+                
+                if (response.status === 204) {
                     this.message = 'chat created';
                     this.group_id = response.data
                     this.$router.push('/chat/'+this.id_chat)

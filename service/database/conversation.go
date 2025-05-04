@@ -81,13 +81,16 @@ func (db *appdbimpl) CheckChatNames(cs int, toFind string) ([]ChatUtenteDb, erro
 
 	// la query sotto ritorna gli id degli utenti con cui ha la chat l'utente connesso, che non siano gruppi e l'id della chat
 	rows, err1 := db.c.Query("SELECT u.username, u.propic, m.id_utenti, c.id FROM chat c JOIN membri m ON c.id=m.id_chat JOIN utenti u ON u.id = m.id_utenti WHERE (u.username LIKE $1 || '%') AND m.id_utenti!=$2 AND c.id IN(SELECT  c.id from chat c JOIN membri m ON c.id=m.id_chat WHERE m.id_utenti=$2 AND gruppo=0) AND gruppo=0;", toFind, cs)
-	if err1 != nil && !errors.Is(err1, sql.ErrNoRows) {
+	if err1 != nil {
 		return []ChatUtenteDb{}, fmt.Errorf("CheckChatNames: error querying users: %w", err)
 	}
 
 	defer rows.Close()
 
+	hasRows := false
+
 	for rows.Next() {
+		hasRows = true
 		var c ChatUtenteDb
 		if err := rows.Scan(&c.Nome, &c.Propic, &c.Id, &c.IdChat); err != nil {
 			return []ChatUtenteDb{}, fmt.Errorf(" CheckChatNames: error scanning user: %w", err)
@@ -102,13 +105,17 @@ func (db *appdbimpl) CheckChatNames(cs int, toFind string) ([]ChatUtenteDb, erro
 
 	// questa query ritorna tutti i dati della join tra membri e chat dove l'utente appartiene al gruppo
 	rows2, err2 := db.c.Query("SELECT  c.id AS id, c.propic, c.nome, c.gruppo from chat c JOIN membri m ON c.id=m.id_chat JOIN utenti u ON u.id=m.id_utenti WHERE (c.nome LIKE $1 || '%') AND m.id_utenti=$2 AND gruppo=1;", toFind, cs)
-	if err2 != nil && !errors.Is(err2, sql.ErrNoRows) {
+	if err2 != nil {
 		return []ChatUtenteDb{}, fmt.Errorf("CheckChatNames: error querying users: %w", err)
 	}
 
 	defer rows2.Close()
 
+	hasRows2 := false
+
 	for rows2.Next() {
+		hasRows2 = true
+
 		var c ChatUtenteDb
 		if err := rows2.Scan(&c.IdChat, &c.Propic, &c.Nome, &c.Gruppo); err != nil {
 			return []ChatUtenteDb{}, fmt.Errorf("CheckChatNames: error scanning user: %w", err)
@@ -119,7 +126,7 @@ func (db *appdbimpl) CheckChatNames(cs int, toFind string) ([]ChatUtenteDb, erro
 		return []ChatUtenteDb{}, fmt.Errorf("CheckChatNames: error iterating over users: %w", err)
 	}
 
-	if errors.Is(err1, sql.ErrNoRows) && errors.Is(err2, sql.ErrNoRows) {
+	if !hasRows && !hasRows2 {
 		return []ChatUtenteDb{}, fmt.Errorf("CheckChatNames: no chats or groups find: %w", err)
 
 	}
@@ -223,6 +230,17 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 	_, err := db.Authentication(cs)
 	if err != nil {
 		return false, "", []MessDb{}, fmt.Errorf("error in authentication GetConversation: %w", err)
+	}
+
+	var belong int
+
+	// controllo l'appartenenza al gruppo
+	err = db.c.QueryRow("SELECT COUNT(id_utenti) FROM membri WHERE id_utenti=$1 AND id_CHAT=$2", cs, id_chat).Scan(&belong)
+	if err != nil {
+		return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying database: %w", err)
+	}
+	if belong == 0 {
+		return false, "", []MessDb{}, fmt.Errorf("GetConversation: you don't belong to this group %w", err)
 	}
 
 	// inserisce nella tabella accessi_chat l'accesso avvenuto a quella chat e nel caso in cui gia esista l'accesso di quell'utente a quella chat lo sovrascrive
@@ -503,6 +521,18 @@ func (db *appdbimpl) LeaveGroup(cs int, idChat int) error {
 	}
 
 	var if_group int
+
+	// verifico se la chat e' un gruppo
+	err = db.c.QueryRow("SELECT COUNT(id_utenti) FROM membri m JOIN chat c ON c.id=m.id_chat WHERE m.id_utenti=$1 AND m.id_CHAT=$2 AND c.gruppo=1", cs, idChat).Scan(&if_group)
+	if err != nil {
+		return fmt.Errorf("LeaveGroup: error querying database: %w", err)
+	}
+	if if_group == 0 {
+		return fmt.Errorf("LeaveGroup: this isn't a group: %w", err)
+	}
+
+	if_group = 0
+	// controllo l'appartenenza al gruppo
 	err = db.c.QueryRow("SELECT COUNT(id_utenti) FROM membri WHERE id_utenti=$1 AND id_CHAT=$2", cs, idChat).Scan(&if_group)
 	if err != nil {
 		return fmt.Errorf("LeaveGroup: error querying database: %w", err)

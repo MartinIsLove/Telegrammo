@@ -64,7 +64,9 @@ export default {
                 let formData = new FormData();
                 formData.append('propic', this.group_photo);
                 formData.append('nome_chat', this.group_name);
-                formData.append('membri', JSON.stringify(this.selectedUser.map(user => user.id)));
+                this.selectedUser.forEach(user => {
+                    formData.append('membri', user.id.toString());
+                });
 
                 this.id = sessionStorage.getItem("cs")
                 let response = await this.$axios.post(`/conversation/group`,formData ,{headers: {'Content-Type': 'multipart/form-data', cs:this.id}});

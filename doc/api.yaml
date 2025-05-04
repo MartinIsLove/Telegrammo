@@ -408,7 +408,21 @@ paths:
         content:
           application/json: 
             schema:
-              $ref: "#/components/schemas/Group"
+              description: "the new chat name and the group id of the chat"
+              type: object
+              properties:
+                id_chat:
+                  description: "the group id to modify"
+                  type: integer
+                  minimum: 0
+                  maximum: 10000
+                  example: 1
+                nome_chat:
+                  description: "the chat new name"
+                  type: string
+                  minLength: 1
+                  maxLength: 16
+                  example: "pippo"
       responses:
         "204":
           $ref: "#/components/responses/204_NoContent"
@@ -497,7 +511,7 @@ paths:
           $ref: "#/components/responses/500_ISE"        
   /message:
     post: 
-      tags: ["messages"]
+      tags: ["message"]
       security:
         - bearerAuth: []
       operationId: sendMessages
@@ -543,7 +557,7 @@ paths:
           $ref: "#/components/responses/500_ISE"
   /message/forward:
     post: 
-      tags: ["messages"]
+      tags: ["message"]
       security:
         - bearerAuth: []
       operationId: forwardMessage
@@ -589,7 +603,7 @@ paths:
           $ref: "#/components/responses/500_ISE"
   /message/comment:
     post:
-      tags: ["messages"]
+      tags: ["message"]
       security:
         - bearerAuth: []
       operationId: commentMessage
@@ -632,7 +646,7 @@ paths:
           $ref: "#/components/responses/500_ISE"      
   /message/uncomment:
     post:
-      tags: ["messages"]
+      tags: ["message"]
       security:
         - bearerAuth: []
       operationId: uncommentMessage

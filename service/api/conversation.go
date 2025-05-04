@@ -182,6 +182,11 @@ func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, ps ht
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
+
+	if err != nil && (strings.HasPrefix(err.Error(), "GetConversation: you don't belong to this group")) {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -242,13 +247,28 @@ func (rt *_router) createGroup(w http.ResponseWriter, r *http.Request, ps httpro
 	}
 
 	groupName := r.FormValue("nome_chat")
-	membriStr := r.FormValue("membri")
+	// membriStr := r.FormValue("membri")
 
-	var membri []int
-	err = json.Unmarshal([]byte(membriStr), &membri)
-	if err != nil {
-		http.Error(w, "error decoding membri: "+err.Error(), http.StatusBadRequest)
+	// var membri []int
+	// err = json.Unmarshal([]byte(membriStr), &membri)
+	// if err != nil {
+	// 	http.Error(w, "error decoding membri: "+err.Error(), http.StatusBadRequest)
+	// 	return
+	// }
+	membriValues := r.PostForm["membri"]
+	if len(membriValues) == 0 {
+		http.Error(w, "membri field is required", http.StatusBadRequest)
 		return
+	}
+
+	membri := make([]int, 0, len(membriValues))
+	for _, v := range membriValues {
+		id, err := strconv.Atoi(v)
+		if err != nil {
+			http.Error(w, "invalid member id: "+v, http.StatusBadRequest)
+			return
+		}
+		membri = append(membri, id)
 	}
 
 	if len(groupName) == 0 {
@@ -303,7 +323,7 @@ func (rt *_router) leaveGroup(w http.ResponseWriter, r *http.Request, ps httprou
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
-	if err != nil && strings.HasPrefix(err.Error(), "LeaveGroup: you don't belong to this group") {
+	if err != nil && (strings.HasPrefix(err.Error(), "LeaveGroup: you don't belong to this group") || strings.HasPrefix(err.Error(), "LeaveGroup: this isn't a group:")) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -314,7 +334,7 @@ func (rt *_router) leaveGroup(w http.ResponseWriter, r *http.Request, ps httprou
 	w.WriteHeader(http.StatusNoContent)
 }
 func (rt *_router) setGroupName(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var name Group
+
 	cs, err := rt.AuthenticationApi(r)
 
 	if err != nil {
@@ -322,21 +342,26 @@ func (rt *_router) setGroupName(w http.ResponseWriter, r *http.Request, ps httpr
 		return
 	}
 
-	if err := json.NewDecoder(r.Body).Decode(&name); err != nil {
+	var request struct {
+		IdChat   int    `json:"id_chat"`
+		NomeChat string `json:"nome_chat"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		http.Error(w, "error setGroupName: body decode error"+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	if len(name.NomeChat) < 1 {
+	if len(request.NomeChat) < 1 {
 		http.Error(w, "error setGroupName: group name too short, at least 1 character", http.StatusBadRequest)
 		return
 	}
-	if len(name.NomeChat) > 16 {
+	if len(request.NomeChat) > 16 {
 		http.Error(w, "error setGroupName: group name too long, up to 16 character", http.StatusBadRequest)
 		return
 	}
 
-	err = rt.db.SetGroupName(cs, name.IdChat, name.NomeChat)
+	err = rt.db.SetGroupName(cs, request.IdChat, request.NomeChat)
 
 	if err != nil && strings.HasPrefix(err.Error(), "SetGroupName: error in authentication:") {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
