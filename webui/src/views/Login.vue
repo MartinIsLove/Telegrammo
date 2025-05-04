@@ -52,6 +52,6 @@
             <input type="text" class="form-control" id="username" aria-describedby="inserisci username" v-model="username">
             <div id="emailHelp" class="form-text">We'll never share your username with anyone else.</div>
         </div>
-        <button type="submit" class="btn btn-primary">Submit</button>
+        <button type="submit" class="btn btn-primary">Login</button>
     </form>
 </template>

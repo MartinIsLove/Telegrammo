@@ -49,7 +49,7 @@ export default {
 
 	</div>
 	<div class="custom-scroll">
-		<div v-for="chat in chats" >
+		<div v-for="chat in chats" :key="chat.id_chat" >
 			<RouterLink :to="'/chat/' + chat.id_chat" class="nav-link">
 			<div class="row g-0 border rounded my-2 p-2">
 

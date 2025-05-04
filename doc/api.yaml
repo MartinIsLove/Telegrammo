@@ -3,7 +3,7 @@ servers:
   - url: "http://localhost:3000"
 info:
   title: Telegrammo
-  description: le API di Telegrammo
+  description: Telegrammo's API
   version: 1.0.0
 paths:
   /user:
@@ -70,8 +70,8 @@ paths:
                   pattern: ^[a-zA-Z0-9]+$
                   example: "pippobaudo12"
       responses: 
-        "200": 
-          description: "username changed"
+        "204": 
+          $ref: "#/components/responses/204_NoContent"
         "400":
           $ref: "#/components/responses/Bad_Input"
         "401":

@@ -114,7 +114,7 @@ export default {
     <div class="row">
         <div class="col-4"></div>
         <div class="col-2 mt-2">
-            <img :src="propic" class="bd-placeholder-img rounded-circle" width="140" height="140" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="var(--bs-secondary-color)"></rect>
+            <img :src="propic" class="bd-placeholder-img rounded-circle" width="140" height="140" role="img" aria-label="Placeholder" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="var(--bs-secondary-color)"></rect>
             <h2 class="fw-normal">{{username}}</h2>
             <form class="mt-5" @submit.prevent="changeUserDetails">
                 <label for="username" class="form-label ">New Username</label>
