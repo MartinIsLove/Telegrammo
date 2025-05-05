@@ -133,6 +133,7 @@ paths:
           content:
             application/json:
               schema:
+                description: "return a user object"
                 $ref: "#/components/schemas/user"
         "400":
           $ref: "#/components/responses/Bad_Input"
@@ -210,8 +211,11 @@ paths:
           content:
             application/json:
               schema:
+                description: "return a user array object"
                 type: array
-                items:
+                maxItems: 10000
+                minItems: 1
+                items: 
                   $ref: "#/components/schemas/user"
         "400":
           $ref: "#/components/responses/Bad_Input"
@@ -247,7 +251,10 @@ paths:
           content:
             application/json:
               schema:
+                description: "return a ChatUtente object"
                 type: array
+                maxItems: 10000
+                minItems: 1
                 items:
                   $ref: "#/components/schemas/ChatUtente"
         "400":
@@ -272,7 +279,10 @@ paths:
           content:
             application/json:
               schema:
+                description: "return a ChatUtente array object"
                 type: array
+                maxItems: 10000
+                minItems: 1
                 items:
                   $ref: "#/components/schemas/ChatUtente"
         "401":
@@ -304,7 +314,10 @@ paths:
           content:
             application/json:
               schema:
+                description: "return a Mess array object"
                 type: array
+                maxItems: 10000
+                minItems: 1
                 items:
                   $ref: "#/components/schemas/Mess"
         "401":
@@ -326,6 +339,7 @@ paths:
         content:
           multipart/form-data:
             schema:
+              description: "take the parameters for create the group"
               type: object
               properties:
                 propic: 
@@ -338,12 +352,13 @@ paths:
                   minLength: 1
                   maxLength: 16
                   example: "gruppo"
+                  pattern: ^[a-zA-Z0-9]+$
                 membri: 
                   type: array
+                  default: []
                   minItems: 0
                   maxItems: 10000
-                  items: 
-                    default: []
+                  items:                    
                     type: integer
                     minimum: 1
                     maximum: 10000
@@ -382,10 +397,10 @@ paths:
           required: true
           description: "group identifier"
           schema:
-            type: integer
-            minimum: 1
-            maximum: 10000
-            example: 1
+                type: integer
+                minimum: 1
+                maximum: 10000
+                example: 1
       responses:
         "204":
           $ref: "#/components/responses/204_NoContent"
@@ -420,6 +435,7 @@ paths:
                 nome_chat:
                   description: "the chat new name"
                   type: string
+                  pattern: ^[a-zA-Z0-9]+$
                   minLength: 1
                   maxLength: 16
                   example: "pippo"
@@ -451,10 +467,10 @@ paths:
                 membri:
                   description: "new group member/s(id)"
                   type: array
+                  default: []
                   minItems: 1
                   maxItems: 10000
-                  items:
-                    default: []
+                  items:                   
                     type: integer
                     minimum: 1
                     maximum: 10000
@@ -522,6 +538,7 @@ paths:
         content:
           multipart/form-data:  
             schema:
+              description: "message data"
               type: object
               properties:
                 photo:
@@ -537,6 +554,7 @@ paths:
                 testo: 
                   description: "message text"
                   type: string
+                  pattern: ^[a-zA-Z0-9]+$
                   minLength: 0
                   maxLength: 10000
                   example: "ciao, sono alessio"
@@ -568,6 +586,7 @@ paths:
         content:
           application/json:
             schema:
+              description: "forward data"
               type: object
               properties:
                 id_chat: 
@@ -614,6 +633,7 @@ paths:
         content:
           application/json:
             schema:
+              description: "message and comment data"
               type: object
               properties:
                 id_chat: 
@@ -657,6 +677,7 @@ paths:
         content:
           application/json:
             schema:
+              description: "message data"
               type: object
               properties:
                 id_chat: 
@@ -703,6 +724,7 @@ paths:
         content:
           application/json: 
             schema:
+              description: "message data"
               type: object
               properties:
                 id_chat: 
@@ -762,6 +784,7 @@ components:
         NomeChat:
           description: "chat name"
           type: string
+          pattern: ^[a-zA-Z0-9]+$
           maxLength: 16
           minLength: 1
           example: "pluto"
@@ -772,6 +795,8 @@ components:
         Membri:
           description: "group members id"
           type: array
+          minItems: 1
+          maxItems: 10000
           items:
             type: integer
             minimum: 1
@@ -805,6 +830,7 @@ components:
         Username:
           description: "user username who has send the last message to the chat"
           type: string
+          pattern: ^[a-zA-Z0-9]+$
           maxLength: 16
           minLength: 1
           example: "paolino"
@@ -821,6 +847,7 @@ components:
         LastMsg:
           description: "last message text"
           type: string
+          pattern: ^[a-zA-Z0-9]+$
           maxLength: 100
           minLength: 0
           example: "ciao come ti chiami?$"
@@ -828,6 +855,8 @@ components:
           description: "last message date"
           type: string
           format: date-time
+          minLength: 20
+          maxLength: 30
           example: "2021-06-01T10:00:00Z"
     Mess:
       type: object
@@ -841,6 +870,7 @@ components:
         Nome:
           description: "sender username"
           type: string 
+          pattern: ^[a-zA-Z0-9]+$
           minLength: 1
           maxLength: 16
           example: "pippo"
@@ -853,6 +883,7 @@ components:
         Testo:
           description: "message text"
           type: string
+          pattern: ^[a-zA-Z0-9]+$
           minLength: 0
           maxLength: 10000
           example: "ciao, sono pippo"
@@ -860,6 +891,8 @@ components:
           description: "date of message sent"
           type: string
           format: date-time
+          minLength: 20
+          maxLength: 30
           example: "2021-06-01T10:00:00Z"
         Visual:
           description: "if the message was viewed"
@@ -882,17 +915,21 @@ components:
         Emoji:
           description: "array of 5 elements, the number of each indicates how many emojis that message has for each type of emoji"
           type: array
+          minItems: 1
+          maxItems: 10000
           items:
             type: integer
         MyEmoji:
           description: "indicates the emoji of the user logged in to that message"
           type: string
+          pattern: ^(👠|❤️|👍🏻|👌🏻|💅)$
           minLength: 1
           maxLength: 30
           example: "❤️"
         ForwardUsername:
           description: "username of the user who created the message to be forwarded"
           type: string
+          pattern: ^[a-zA-Z0-9]+$
           minLength: 1
           maxLength: 16
           example: "pippo"
@@ -906,6 +943,8 @@ components:
           description: "forward date"
           type: string
           format: date-time
+          minLength: 20
+          maxLength: 30
           example: "2021-06-01T10:00:00Z"
         ForwardIdMit: 
           description: "id of the person who made the forward"
@@ -916,6 +955,7 @@ components:
         ForwardUsernameMit:
           description: "username of the person who made the forward"
           type: string
+          pattern: ^[a-zA-Z0-9]+$
           minLength: 1
           maxLength: 16
           example: "pippo"
@@ -934,6 +974,7 @@ components:
         TestoReply:
           description: "text of reply message"
           type: string
+          pattern: ^[a-zA-Z0-9]+$
           minLength: 1
           maxLength: 10000
           example: "ciao amico mio, come stai?"
@@ -946,6 +987,7 @@ components:
         MitReply:
           description: "username reply sender"
           type: string
+          pattern: ^[a-zA-Z0-9]+$
           minLength: 1
           maxLength: 16
           example: "pippo"
@@ -967,6 +1009,7 @@ components:
             properties:
               error: 
                 type: string
+                pattern: ^[a-zA-Z0-9]+$
                 minLength: 1
                 maxLength: 1000
                 example: "error in data structure"
@@ -988,23 +1031,6 @@ components:
                 minLength: 0
                 maxLength: 10000
                 pattern: "^.*?$"
-
-    403_Forbidden:
-      description: Forbidden
-      content:
-        application/json:
-          schema:
-            description: Forbidden response
-            type: object
-            properties:
-              message:
-                description: Forbidden message
-                type: string
-                example: "Forbidden"
-                minLength: 0
-                maxLength: 10000
-                pattern: "^.*?$"
-
     404_NotFound:
       description: Not Found
       content:
