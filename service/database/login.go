@@ -4,8 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"os"
-	"path/filepath"
 )
 
 // effettua il login dell'utente
@@ -18,14 +16,13 @@ func (db *appdbimpl) DoLogin(username string) (int, error) {
 
 	// se non esiste lo crea
 	if errors.Is(err, sql.ErrNoRows) {
-		noPhotoPath := filepath.Join("/workspace/webui/src/assets/", "NoPhoto.png")
-		noPhotoBytes, err := os.ReadFile(noPhotoPath)
+		imageBytes, err := defaultPhoto()
 		if err != nil {
-			return 0, fmt.Errorf("login: error reading noPhoto.svg: %w", err)
+			return 0, fmt.Errorf("login: unable to take default photo")
 		}
 
 		// inserisce l'utente nel database
-		response, err2 := db.c.Exec("INSERT INTO utenti (username, propic) VALUES ($1, $2)", username, noPhotoBytes)
+		response, err2 := db.c.Exec("INSERT INTO utenti (username, propic) VALUES ($1, $2)", username, imageBytes)
 
 		if err2 != nil {
 			return 0, fmt.Errorf("login: query error insert user: %w", err)

@@ -4,8 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"os"
-	"path/filepath"
 	"sort"
 	"time"
 )
@@ -467,14 +465,6 @@ func (db *appdbimpl) CreateGroup(cs int, nome string, propic []byte, membri []in
 	_, err := db.Authentication(cs)
 	if err != nil {
 		return -1, fmt.Errorf("error in authentication CreateGroup: %w", err)
-	}
-	noPhotoPath := filepath.Join("/workspace/webui/src/assets/", "NoPhoto.png")
-	noPhotoBytes, err := os.ReadFile(noPhotoPath)
-	if err != nil {
-		return -1, fmt.Errorf("CreateGroup: error reading noPhoto.png: %w", err)
-	}
-	if propic == nil {
-		propic = noPhotoBytes
 	}
 
 	// inserisco il gruppo nella tabella chat

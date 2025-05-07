@@ -3,8 +3,6 @@ package api
 import (
 	"encoding/json"
 	"net/http"
-	"os"
-	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -230,10 +228,9 @@ func (rt *_router) createGroup(w http.ResponseWriter, r *http.Request, ps httpro
 	var photo []byte
 	if err != nil {
 
-		noPhotoPath := filepath.Join("webui", "src", "assets", "NoPhoto.png")
-		photo, err = os.ReadFile(noPhotoPath)
+		photo, err = defaultPhoto()
 		if err != nil {
-			http.Error(w, "error reading default photo: "+err.Error(), http.StatusInternalServerError)
+			http.Error(w, "error: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 	} else {
