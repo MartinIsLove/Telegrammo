@@ -190,15 +190,13 @@ func (db *appdbimpl) GetMyConversations(cs int) ([]ChatUtenteDb, error) {
 		// prendo gli ultimi messaggi inviati a ogni chat presa precedentemente
 		rows3 := db.c.QueryRow("SELECT m.testo, m.mittente, m.data FROM chat c JOIN messaggi_di_chat mdc ON c.id=mdc.id_chat JOIN messaggi m ON mdc.id_messaggio=m.id JOIN membri me ON me.id_chat=c.id JOIN utenti u ON u.id=me.id_utenti WHERE c.id=$1 ORDER BY m.data DESC LIMIT 1;", c.IdChat)
 		err := rows3.Scan(&lastMsg, &id, &tmp)
-		if errors.Is(err, sql.ErrNoRows) {
-
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
 			c.LastMSg = ""
 			c.Data = time.Time{}
-
-		} else if err != nil {
+		case err != nil:
 			return []ChatUtenteDb{}, fmt.Errorf("GetMyConversations: error querying chats: %w", err)
-
-		} else {
+		default:
 			if len(lastMsg) > 100 {
 				c.LastMSg = lastMsg[:100] + "..."
 			} else {
@@ -207,6 +205,23 @@ func (db *appdbimpl) GetMyConversations(cs int) ([]ChatUtenteDb, error) {
 			c.Id = id
 			c.Data = tmp
 		}
+		// if errors.Is(err, sql.ErrNoRows) {
+
+		// 	c.LastMSg = ""
+		// 	c.Data = time.Time{}
+
+		// } else if err != nil {
+		// 	return []ChatUtenteDb{}, fmt.Errorf("GetMyConversations: error querying chats: %w", err)
+
+		// } else {
+		// 	if len(lastMsg) > 100 {
+		// 		c.LastMSg = lastMsg[:100] + "..."
+		// 	} else {
+		// 		c.LastMSg = lastMsg
+		// 	}
+		// 	c.Id = id
+		// 	c.Data = tmp
+		// }
 		// seleziono l'username di chi ha inviato l'ultimo messaggio alla chat
 		rows4 := db.c.QueryRow("SELECT username FROM utenti WHERE id=$1 LIMIT 1", id)
 		err = rows4.Scan(&username)
@@ -337,19 +352,33 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 		return false, "", []MessDb{}, fmt.Errorf("GetConversation: error iterating over messages: %w", err)
 	}
 	// avendo aggiunto i messaggi forwardati ora vanno ordinati per data di forward rispetto alla data degli altri messaggi
+
+	// sort.SliceStable(mess, func(i, j int) bool {
+	// 	if mess[i].ForwardId != -1 && mess[j].ForwardId != -1 {
+	// 		return mess[i].ForwardDate.Before(mess[j].ForwardDate)
+	// 	} else if mess[i].ForwardId != -1 {
+	// 		return mess[i].ForwardDate.Before(mess[j].Data)
+	// 	} else if mess[j].ForwardId != -1 {
+	// 		return mess[i].Data.Before(mess[j].ForwardDate)
+	// 	} else {
+	// 		return mess[i].Data.Before(mess[j].Data)
+	// 	}
+	// })
+
 	sort.SliceStable(mess, func(i, j int) bool {
-		if mess[i].ForwardId != -1 && mess[j].ForwardId != -1 {
+		switch {
+		case mess[i].ForwardId != -1 && mess[j].ForwardId != -1:
 			return mess[i].ForwardDate.Before(mess[j].ForwardDate)
-		} else if mess[i].ForwardId != -1 {
+		case mess[i].ForwardId != -1:
 			return mess[i].ForwardDate.Before(mess[j].Data)
-		} else if mess[j].ForwardId != -1 {
+		case mess[j].ForwardId != -1:
 			return mess[i].Data.Before(mess[j].ForwardDate)
-		} else {
+		default:
 			return mess[i].Data.Before(mess[j].Data)
 		}
 	})
 
-	var result []MessDb
+	result := make([]MessDb, 0, len(mess)+10)
 	var lastDate time.Time
 
 	// per ogni messaggio (serve per verificare la visualizzazione del messaggio da parte di tutti gli utenti)

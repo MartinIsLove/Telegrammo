@@ -287,8 +287,8 @@ export default {
 							</div>
 						</div>
 						<div class="col-auto ms-auto pe-0 pt-3">
-
-							<small class="text-end"> {{ formatTime(mes.data) }} </small>
+							<small v-if=" mes.forward_id === -1" class="text-end"> {{ formatTime(mes.data) }} </small>
+							<small v-else class="text-end"> {{ formatTime(mes.forward_date) }} </small>
 							<span v-if="!mes.visual">
 								<i class="bi bi-check"></i>
 								
@@ -369,7 +369,8 @@ export default {
 						</div>
 						<div class="col-auto ms-auto pe-0 pt-3">
 
-							<small class="text-end"> {{ formatTime(mes.data) }} </small>
+							<small v-if=" mes.forward_id === -1" class="text-end"> {{ formatTime(mes.data) }} </small>
+							<small v-else class="text-end"> {{ formatTime(mes.forward_date) }} </small>
 							<span v-if="!mes.visual">
 								<i class="bi bi-check"></i>
 							</span>

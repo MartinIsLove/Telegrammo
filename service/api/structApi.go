@@ -70,30 +70,30 @@ type RequestData struct {
 	IdForward int   `json:"id_for"`
 }
 
-func NewMess(Messaggio database.MessDb) Mess {
+func NewMess(messaggio database.MessDb) Mess {
 	return Mess{
-		IdMess:             Messaggio.IdMess,
-		Nome:               Messaggio.Nome,
-		IdMitt:             Messaggio.IdMitt,
-		Testo:              Messaggio.Testo,
-		Data:               Messaggio.Data,
-		Visual:             Messaggio.Visual,
-		Photo:              Messaggio.Photo,
-		IdChat:             Messaggio.IdChat,
-		Gruppo:             Messaggio.Gruppo,
-		Emoji:              Messaggio.Emoji,
-		MyEmoji:            Messaggio.MyEmoji,
-		ForwardUsername:    Messaggio.ForwardUsername,
-		ForwardId:          Messaggio.ForwardId,
-		ForwardDate:        Messaggio.ForwardDate,
-		ForwardIdMit:       Messaggio.ForwardIdMit,
-		ForwardUsernameMit: Messaggio.ForwardUsernameMit,
-		IdForward:          Messaggio.IdForward,
-		Idreply:            Messaggio.Idreply,
-		IdMitReply:         Messaggio.IdMitReply,
-		TestoReply:         Messaggio.TestoReply,
-		MitReply:           Messaggio.MitReply,
-		PhotoReply:         Messaggio.PhotoReply,
+		IdMess:             messaggio.IdMess,
+		Nome:               messaggio.Nome,
+		IdMitt:             messaggio.IdMitt,
+		Testo:              messaggio.Testo,
+		Data:               messaggio.Data,
+		Visual:             messaggio.Visual,
+		Photo:              messaggio.Photo,
+		IdChat:             messaggio.IdChat,
+		Gruppo:             messaggio.Gruppo,
+		Emoji:              messaggio.Emoji,
+		MyEmoji:            messaggio.MyEmoji,
+		ForwardUsername:    messaggio.ForwardUsername,
+		ForwardId:          messaggio.ForwardId,
+		ForwardDate:        messaggio.ForwardDate,
+		ForwardIdMit:       messaggio.ForwardIdMit,
+		ForwardUsernameMit: messaggio.ForwardUsernameMit,
+		IdForward:          messaggio.IdForward,
+		Idreply:            messaggio.Idreply,
+		IdMitReply:         messaggio.IdMitReply,
+		TestoReply:         messaggio.TestoReply,
+		MitReply:           messaggio.MitReply,
+		PhotoReply:         messaggio.PhotoReply,
 	}
 }
 func NewChatUtente(chatUtente database.ChatUtenteDb) ChatUtente {
