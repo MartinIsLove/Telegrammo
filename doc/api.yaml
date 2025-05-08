@@ -530,7 +530,7 @@ paths:
       tags: ["message"]
       security:
         - bearerAuth: []
-      operationId: sendMessages
+      operationId: sendMessage
       summary: "send a message"
       description: "send a message if the user belong to the chat, otherwise return an error"
       requestBody:
