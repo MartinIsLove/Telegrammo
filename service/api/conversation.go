@@ -27,7 +27,7 @@ func (rt *_router) createChat(w http.ResponseWriter, r *http.Request, ps httprou
 
 	id_chat, err := rt.db.CreateChat(cs, richiesta.Id)
 
-	if err != nil && strings.HasPrefix(err.Error(), "chat: error this chat already exist:") {
+	if err != nil && strings.HasPrefix(err.Error(), "CreateChat: error this chat already exist") {
 		http.Error(w, err.Error(), http.StatusConflict)
 		return
 	}
@@ -116,6 +116,7 @@ func (rt *_router) getMyConversations(w http.ResponseWriter, r *http.Request, ps
 		return
 	}
 	tmp, err := rt.db.GetMyConversations(cs)
+
 	if err != nil && strings.HasPrefix(err.Error(), "error in authentication GetConversations:") {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
@@ -447,4 +448,55 @@ func (rt *_router) addToGroup(w http.ResponseWriter, r *http.Request, ps httprou
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
+}
+func (rt *_router) getGroupUsers(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	cs, err := rt.AuthenticationApi(r)
+	var utenti []Utente
+
+	if err != nil {
+		http.Error(w, "error: authentication user getGroupUsers "+err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	id_group_tmp := ps.ByName("idChat")
+	id_group, err := strconv.Atoi(id_group_tmp)
+	if err != nil {
+		http.Error(w, "error getGroupUsers: conversion id_group_tmp (string) to id_group (int)", http.StatusBadRequest)
+		return
+	}
+
+	temp, err := rt.db.GetGroupUsers(cs, id_group)
+
+	if err != nil && strings.HasPrefix(err.Error(), "error in authentication GetGroupUsers:") {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	if err != nil && (strings.HasPrefix(err.Error(), "GetGroupUsers: no users found:")) {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	if err != nil && (strings.HasPrefix(err.Error(), "GetGroupUsers: error querying users:")) {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	utenti = make([]Utente, len(temp))
+	for i, user := range temp {
+		utenti[i] = NewUser(user)
+	}
+
+	w.Header().Set("content-type", "application/json")
+
+	json, err := json.Marshal(utenti)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(json)
 }

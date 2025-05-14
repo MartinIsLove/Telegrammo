@@ -11,17 +11,22 @@ export default {
             chatId: null,
 			group_name: "",
 			chPhoto: null,
+            users: [],
 		}
 	},
 	methods: {
 		async refresh() {
 			this.loading = true;
 			this.errormsg = null;
-            this.id = sessionStorage.getItem("cs")
+            this.id = sessionStorage.getItem("cs");
             this.chatId = parseInt(this.$route.params.id, 10);
-			
-			
+			this.loadusers();
 		},
+        async loadusers(){
+            let response = await this.$axios.get(`/conversation/${this.chatId}/group/users`, {headers:{cs:this.id}});
+			this.users = response.data;
+            console.log("diocane")
+        },
 		async leavegroup(){
 			await this.$axios.delete(`/conversation/leave/${this.chatId}`, {headers:{cs:this.id}});
 
@@ -133,6 +138,18 @@ export default {
                 </div>
                 <button type="submit" class="btn btn-primary">Submit</button>
         </form>
-
+        <h1>membri del gruppo:</h1>
+        <div class="custom-scroll mt-4">
+            <div v-for="user in users" :key="user.id" class="row g-0 border rounded my-2 p-2 align-items-center">
+                <div class="col-md-1 col-2">
+                    <img v-if="user.propic" :src="'data:image/png;base64,' + user.propic" class="rounded-circle me-2" width="70" height="70" role="img" focusable="false" style="object-fit: cover;">
+                </div>
+                <div class="col-md-11 col-10">
+                    <div class="card-body">
+                        <h5 class="fw-normal">{{ user.username }}</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
 	</div>
 </template>

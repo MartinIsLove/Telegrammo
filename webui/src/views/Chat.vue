@@ -95,8 +95,14 @@ export default {
 		optionsButtonHandler() {
 			this.$router.push("/options/group/"+ this.chatId);
 		},
-		handleFileUpload(event){
-			this.photo = event.target.files[0];
+		handleFileUpload(event) {
+			const file = event.target.files[0];
+			if (file) {
+				this.photo = file;
+			}
+		},
+		removefile(){
+			this.photo = null;
 		},
 		async handleCheckboxChange(mes, emojiItem, event) {
 			if (event) event.preventDefault(); // Prevent default behavior
@@ -371,12 +377,7 @@ export default {
 
 							<small v-if=" mes.forward_id === -1" class="text-end"> {{ formatTime(mes.data) }} </small>
 							<small v-else class="text-end"> {{ formatTime(mes.forward_date) }} </small>
-							<span v-if="!mes.visual">
-								<i class="bi bi-check"></i>
-							</span>
-							<span v-else>
-								<i class="bi bi-check-all"></i>
-							</span>
+							
 						</div>
 						<div v-if="mes.forward_id !== -1">
 							<p class="forwarded-by">
@@ -426,11 +427,21 @@ export default {
 			<div class="input-group mb-3">
 				<input type="text" class="form-control rounded" placeholder="write message" aria-label="message" aria-describedby="basic-addon1" v-model="message">
 				<button class="btn btn-secondary mt-2 rounded ms-2"  >Send</button>
-				<label for="photo" class="btn btn-secondary mt-2 rounded ms-2 btn-paperclip">
-					<i class="bi bi-paperclip"></i>
-					<input type="file" class="d-none" id="photo" @change="handleFileUpload" ref="photoInput">
-				</label>
-			<br>
+				<div v-if="!photo">
+					<label for="photo" class="btn btn-secondary mt-2 rounded ms-2 btn-paperclip">
+						<i v-if="!photo" class="bi bi-paperclip"></i>
+						<!-- <i v-else class="bi bi-image"></i> -->
+						
+						<input  type="file" class="d-none" id="photo" @change="handleFileUpload"  ref="photoInput" v-show="true">
+					
+					</label>
+					<br>
+				</div>
+				<div v-else>
+					<button @click="removefile" class="btn btn-secondary mt-2 rounded ms-2 btn-paperclip">
+						<i  class="bi bi-image"></i>
+					</button>
+				</div>
 			</div>
 		</div>
 	</form>

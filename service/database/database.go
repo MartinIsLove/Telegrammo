@@ -59,6 +59,7 @@ type AppDatabase interface {
 	AddToGroup(int, int, []int) error
 	CommentMessage(int, int, string, int) error
 	UncommentMessage(int, int, int) error
+	GetGroupUsers(int, int) ([]UtenteDb, error)
 	Ping() error
 }
 

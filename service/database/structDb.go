@@ -16,6 +16,7 @@ type ChatUtenteDb struct {
 	Propic   []byte    `json:"propic"`
 	LastMSg  string    `json:"lastmsg"`
 	Data     time.Time `json:"data"`
+	Lastimg  []byte    `json:"lastimg"`
 }
 type MessDb struct {
 	IdMess             int       `json:"id_mess"`

@@ -26,6 +26,7 @@ type ChatUtente struct {
 	Propic   []byte    `json:"propic"`
 	LastMSg  string    `json:"lastmsg"`
 	Data     time.Time `json:"data"`
+	Lastimg  []byte    `json:"lastimg"`
 }
 
 type Mess struct {
@@ -106,6 +107,7 @@ func NewChatUtente(chatUtente database.ChatUtenteDb) ChatUtente {
 		Propic:   chatUtente.Propic,
 		LastMSg:  chatUtente.LastMSg,
 		Data:     chatUtente.Data,
+		Lastimg:  chatUtente.Lastimg,
 	}
 }
 func NewUser(user database.UtenteDb) Utente {

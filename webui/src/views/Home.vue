@@ -66,11 +66,11 @@ export default {
 							
 							<div class="d-flex justify-content-between">
 								<p v-if="chat.gruppo && chat.lastmsg !== ''" class="text-wrap">
-									<span class="text-capitalize fw-bold">{{ chat.username }}</span>: {{ chat.lastmsg }}  
+									<span class="text-capitalize fw-bold">{{ chat.username }}</span>: <img v-if="chat.lastimg" :src="'data:image/png;base64,'+ chat.lastimg" class=" rounded-circle me-2" width="30" height="30"  role="img" focusable="false" style="object-fit: cover;"><span v-else>{{ chat.lastmsg }}</span>  
 								</p>
 								
 								<p v-else> 
-									<span>{{ chat.lastmsg  }}</span>
+									<img v-if="chat.lastimg" :src="'data:image/png;base64,'+ chat.lastimg" class="  me-2" width="30" height="30"  role="img" focusable="false" style="object-fit: cover;"> <span v-else>{{ chat.lastmsg }}</span>
 								</p>
 							</div>
 							

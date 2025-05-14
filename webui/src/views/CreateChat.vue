@@ -50,11 +50,14 @@ export default {
                         this.$router.push('/chat/'+ this.chat_id.id_chat)
                     }
                 
+                
             }
             catch(error){
                 this.error=error
+                
                 console.error('error create chat user data: ', error)
             }
+
         }
     },
     mounted() {
@@ -83,6 +86,9 @@ export default {
             <div>
                 <p v-if="message">
                     {{ message }}
+                </p>
+                <p v-if="error">
+                    {{ error.response.data }}
                 </p>
             </div>
         </div>

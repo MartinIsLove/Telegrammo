@@ -20,7 +20,6 @@ paths:
               description: "username"
               type: object
               properties:
-                
                 username:
                   type: string
                   minLength: 1

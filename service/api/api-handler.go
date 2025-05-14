@@ -6,8 +6,7 @@ import (
 
 // Handler returns an instance of httprouter.Router that handle APIs registered here
 func (rt *_router) Handler() http.Handler {
-	// Register routes
-
+	// --- rotte generiche e di ricerca ---
 	rt.router.GET("/context", rt.wrap(rt.getContextReply))
 
 	rt.router.POST("/user", rt.doLogin)
@@ -16,6 +15,8 @@ func (rt *_router) Handler() http.Handler {
 	rt.router.GET("/users/:id", rt.getMyUser)
 	rt.router.GET("/search/users/:username", rt.checknames)
 	rt.router.GET("/search/chat/:nomeChat", rt.checkChatNames)
+
+	// --- conversazioni e gruppi ---
 	rt.router.GET("/conversations", rt.getMyConversations)
 	rt.router.DELETE("/conversation/leave/:idChat", rt.leaveGroup)
 	rt.router.POST("/conversation", rt.createChat)
@@ -23,15 +24,17 @@ func (rt *_router) Handler() http.Handler {
 	rt.router.PUT("/conversation/group/name", rt.setGroupName)
 	rt.router.PUT("/conversation/group/photo", rt.setGroupPhoto)
 	rt.router.PUT("/conversation/group/user", rt.addToGroup)
+	rt.router.GET("/conversation/:idChat/group/users", rt.getGroupUsers)
+	rt.router.GET("/conversation/:idChat", rt.getConversation)
+
+	// --- messaggi ---
 	rt.router.POST("/message", rt.sendMessage)
 	rt.router.DELETE("/message/delete/:idMes", rt.deleteMessage)
-
 	rt.router.POST("/message/forward", rt.forwardMessage)
-
-	rt.router.GET("/conversation/:idChat", rt.getConversation)
 	rt.router.POST("/message/comment", rt.commentMessage)
 	rt.router.POST("/message/uncomment", rt.uncommentMessage)
-	// Special routes
+
+	// --- special routes ---
 	rt.router.GET("/liveness", rt.liveness)
 
 	return rt.router

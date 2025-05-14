@@ -24,7 +24,7 @@ func (db *appdbimpl) IsChatDuplicated(cs int, id int) (bool, error) {
 	if num_righe == 0 {
 		return false, nil
 	}
-	return true, fmt.Errorf("IsChatDuplicated: error this chat already exist: %w", err)
+	return true, fmt.Errorf("CreateChat: error this chat already exist")
 }
 
 // crea una chat(non gruppo)
@@ -186,16 +186,19 @@ func (db *appdbimpl) GetMyConversations(cs int) ([]ChatUtenteDb, error) {
 		var lastMsg, username string
 		var id int
 		var tmp time.Time
+		var image []byte
 		c := &chat[i]
 		// prendo gli ultimi messaggi inviati a ogni chat presa precedentemente
-		rows3 := db.c.QueryRow("SELECT m.testo, m.mittente, m.data FROM chat c JOIN messaggi_di_chat mdc ON c.id=mdc.id_chat JOIN messaggi m ON mdc.id_messaggio=m.id JOIN membri me ON me.id_chat=c.id JOIN utenti u ON u.id=me.id_utenti WHERE c.id=$1 ORDER BY m.data DESC LIMIT 1;", c.IdChat)
-		err := rows3.Scan(&lastMsg, &id, &tmp)
+		rows3 := db.c.QueryRow("SELECT m.testo, m.mittente, m.data, m.image FROM chat c JOIN messaggi_di_chat mdc ON c.id=mdc.id_chat JOIN messaggi m ON mdc.id_messaggio=m.id JOIN membri me ON me.id_chat=c.id JOIN utenti u ON u.id=me.id_utenti WHERE c.id=$1 ORDER BY m.data DESC LIMIT 1;", c.IdChat)
+		err := rows3.Scan(&lastMsg, &id, &tmp, &image)
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
 			c.LastMSg = ""
 			c.Data = time.Time{}
 		case err != nil:
 			return []ChatUtenteDb{}, fmt.Errorf("GetMyConversations: error querying chats: %w", err)
+		case lastMsg == "":
+			c.Lastimg = image
 		default:
 			if len(lastMsg) > 100 {
 				c.LastMSg = lastMsg[:100] + "..."
@@ -672,4 +675,35 @@ func (db *appdbimpl) AddToGroup(cs int, idGroup int, membri []int) error {
 	}
 
 	return nil
+}
+
+// prende tutti gli utenti che appartengono ad un gruppo
+func (db *appdbimpl) GetGroupUsers(cs int, idGroup int) ([]UtenteDb, error) {
+
+	var utenti []UtenteDb
+	_, err := db.Authentication(cs)
+	if err != nil {
+		return []UtenteDb{}, fmt.Errorf("error in authentication GetGroupUsers: %w", err)
+	}
+
+	rows, err := db.c.Query("SELECT u.id, u.username, u.propic FROM utenti u JOIN membri m ON m.id_utenti=u.id WHERE m.id_chat=$1", idGroup)
+	if errors.Is(err, sql.ErrNoRows) {
+		return []UtenteDb{}, fmt.Errorf("GetGroupUsers: no users found: %w", err)
+	}
+	if err != nil {
+		return []UtenteDb{}, fmt.Errorf("GetGroupUsers: error querying users: %w", err)
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+
+		var c UtenteDb
+		if err := rows.Scan(&c.Id, &c.Username, &c.Propic); err != nil {
+			return []UtenteDb{}, fmt.Errorf("GetGroupUsers: error scanning users: %w", err)
+		}
+
+		utenti = append(utenti, c)
+	}
+	return utenti, nil
 }
