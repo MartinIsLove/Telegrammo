@@ -186,11 +186,31 @@ func (db *appdbimpl) GetMyConversations(cs int) ([]ChatUtenteDb, error) {
 		var lastMsg, username string
 		var id int
 		var tmp time.Time
+		var tmp_string string
 		var image []byte
 		c := &chat[i]
 		// prendo gli ultimi messaggi inviati a ogni chat presa precedentemente
-		rows3 := db.c.QueryRow("SELECT m.testo, m.mittente, m.data, m.image FROM chat c JOIN messaggi_di_chat mdc ON c.id=mdc.id_chat JOIN messaggi m ON mdc.id_messaggio=m.id JOIN membri me ON me.id_chat=c.id JOIN utenti u ON u.id=me.id_utenti WHERE c.id=$1 ORDER BY m.data DESC LIMIT 1;", c.IdChat)
-		err := rows3.Scan(&lastMsg, &id, &tmp, &image)
+		rows3 := db.c.QueryRow(`SELECT m.testo, m.mittente, 
+			COALESCE(mdc.forward_date, m.data) AS data, 
+			m.image 
+			FROM chat c 
+			JOIN messaggi_di_chat mdc ON c.id = mdc.id_chat 
+			JOIN messaggi m ON mdc.id_messaggio = m.id 
+			JOIN membri me ON me.id_chat = c.id 
+			JOIN utenti u ON u.id = me.id_utenti 
+			WHERE c.id = $1 
+			ORDER BY data DESC 
+			LIMIT 1;`, c.IdChat)
+		err := rows3.Scan(&lastMsg, &id, &tmp_string, &image)
+		if tmp_string == "" {
+			tmp_string = "1001-01-01 00:00:00"
+		}
+		layout := "2006-01-02 15:04:05"
+		tmp, err_timeparse := time.Parse(layout, tmp_string)
+		if err_timeparse != nil {
+			return []ChatUtenteDb{}, fmt.Errorf("GetMyConversations: error parsing time: %w", err_timeparse)
+		}
+
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
 			c.LastMSg = ""
@@ -199,6 +219,16 @@ func (db *appdbimpl) GetMyConversations(cs int) ([]ChatUtenteDb, error) {
 			return []ChatUtenteDb{}, fmt.Errorf("GetMyConversations: error querying chats: %w", err)
 		case lastMsg == "":
 			c.Lastimg = image
+			c.Data = tmp
+		case lastMsg != "" && image != nil:
+			c.Lastimg = image
+			c.Data = tmp
+			if len(lastMsg) > 100 {
+				c.LastMSg = lastMsg[:100] + "..."
+			} else {
+				c.LastMSg = lastMsg
+			}
+			c.Id = id
 		default:
 			if len(lastMsg) > 100 {
 				c.LastMSg = lastMsg[:100] + "..."
@@ -251,7 +281,7 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 	var belong int
 
 	// controllo l'appartenenza al gruppo
-	err = db.c.QueryRow("SELECT COUNT(id_utenti) FROM membri WHERE id_utenti=$1 AND id_CHAT=$2", cs, id_chat).Scan(&belong)
+	err = db.c.QueryRow("SELECT COUNT(id_utenti) FROM membri WHERE id_utenti=$1 AND id_chat=$2", cs, id_chat).Scan(&belong)
 	if err != nil {
 		return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying database: %w", err)
 	}
@@ -661,7 +691,7 @@ func (db *appdbimpl) AddToGroup(cs int, idGroup int, membri []int) error {
 
 	// se non sono state trovate righe allora l'utente loggato non e' nel gruppo
 	if righe == 0 {
-		return fmt.Errorf("AddToGroup: error you can't add user to a group that you don't partecipate: %w", err)
+		return fmt.Errorf("AddToGroup: error you can't add user to a group that you don't partecipate")
 	}
 
 	// altrimenti per ogni membro viene eseguita la query che aggiunge il membro se gia non e' presente nella chat
@@ -684,6 +714,14 @@ func (db *appdbimpl) GetGroupUsers(cs int, idGroup int) ([]UtenteDb, error) {
 	_, err := db.Authentication(cs)
 	if err != nil {
 		return []UtenteDb{}, fmt.Errorf("error in authentication GetGroupUsers: %w", err)
+	}
+	var belong int
+	err = db.c.QueryRow("SELECT COUNT(id_utenti) FROM membri WHERE id_utenti=$1 AND id_chat=$2", cs, idGroup).Scan(&belong)
+	if err != nil {
+		return []UtenteDb{}, fmt.Errorf("GetGroupUsers: error querying database: %w", err)
+	}
+	if belong == 0 {
+		return []UtenteDb{}, fmt.Errorf("GetGroupUsers: you don't belong to this group %w", err)
 	}
 
 	rows, err := db.c.Query("SELECT u.id, u.username, u.propic FROM utenti u JOIN membri m ON m.id_utenti=u.id WHERE m.id_chat=$1", idGroup)

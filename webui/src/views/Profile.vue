@@ -124,7 +124,7 @@ export default {
                 <button class="btn btn-secondary mt-2"  >Change</button>
             </form>
             <p v-if=error>
-                {{ error }}
+                {{ error.response.data }}
             </p>
             <p v-if=message>
                 {{ message }}

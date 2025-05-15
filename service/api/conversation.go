@@ -467,7 +467,7 @@ func (rt *_router) getGroupUsers(w http.ResponseWriter, r *http.Request, ps http
 
 	temp, err := rt.db.GetGroupUsers(cs, id_group)
 
-	if err != nil && strings.HasPrefix(err.Error(), "error in authentication GetGroupUsers:") {
+	if err != nil && (strings.HasPrefix(err.Error(), "error in authentication GetGroupUsers:") || strings.HasPrefix(err.Error(), "GetGroupUsers: you don't belong to this group")) {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}

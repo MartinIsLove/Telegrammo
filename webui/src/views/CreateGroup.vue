@@ -120,7 +120,7 @@ export default {
                 </div>
                 <div>
                     <p v-if="error">
-                        {{ error }}
+                        {{ error.response.data }}
                     </p>
                     <p v-if="message">
                         {{ message }}

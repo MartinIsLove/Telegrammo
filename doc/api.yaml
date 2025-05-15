@@ -184,6 +184,45 @@ paths:
           $ref: "#/components/responses/409_Conflict"
         "500":
           $ref: "#/components/responses/500_ISE"
+  /conversation/{idChat}/group/users:
+    get:
+      tags: ["conversation"]
+      security:
+        - bearerAuth: []
+      operationId: getGroupUsers
+      summary: "take whole users that belong to a group"
+      description: "first of all authenticate the user, then if the user belong to the group take whole users"
+      parameters:
+        - name: idChat
+          in: path
+          required: true
+          description: "Members chat id to return"      
+          schema:
+            description: "Members chat id to return" 
+            type: integer
+            minimum: 1
+            maximum: 10000
+            example: 1
+      responses:
+        "200":
+          description: "return username, propic and id of all users who belong to the group"
+          content:
+            application/json:
+              schema:
+                description: "return a user array object"
+                type: array
+                maxItems: 10000
+                minItems: 1
+                items: 
+                  $ref: "#/components/schemas/user"
+        "400":
+          $ref: "#/components/responses/Bad_Input"
+        "401":
+          $ref: "#/components/responses/401_Unauthorized"
+        "404":
+          $ref: "#/components/responses/404_NotFound"
+        "500":
+          $ref: "#/components/responses/500_ISE"
   /search/users/{username}:
     get:  
       tags: ["user"]
@@ -857,6 +896,10 @@ components:
           minLength: 20
           maxLength: 30
           example: "2021-06-01T10:00:00Z"
+        Lastimg:
+          description: "last message image"
+          type: string
+          format: binary
     Mess:
       type: object
       properties:

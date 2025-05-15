@@ -20,7 +20,7 @@ func (db *appdbimpl) SetMyUserName(username string, cs int) error {
 
 	// se sono piu' di 0 gli username uguali a quello scelto
 	if righe > 0 {
-		return fmt.Errorf("SetMyUserName: username already used, choose another one: %w", err)
+		return fmt.Errorf("SetMyUserName: username already used, choose another one")
 	}
 
 	// cambia l'username dell'utente loggato
@@ -118,7 +118,7 @@ func (db *appdbimpl) CheckNames(cs int, toFind string) ([]UtenteDb, error) {
 		utenti = append(utenti, utente)
 	}
 	if cont == 0 {
-		return utenti, fmt.Errorf("CheckNames: no user found: %w", err)
+		return utenti, fmt.Errorf("CheckNames: no user found")
 	}
 	if err := rows.Err(); err != nil {
 		return utenti, fmt.Errorf("CheckNames: error iterating over users: %w", err)
