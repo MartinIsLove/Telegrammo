@@ -44,11 +44,12 @@ func (db *appdbimpl) SendMessage(cs int, id_chat int, message string, photo []by
 }
 
 // permette di fare il forward di un messaggio
-func (db *appdbimpl) ForwardMessage(cs int, id_chat []int, id_mes int, id_utente int) error {
+func (db *appdbimpl) ForwardMessage(cs int, id_chat []int, id_mes int, id_utente int, id_utenti []int) error {
 	_, err := db.Authentication(cs)
 	if err != nil {
 		return fmt.Errorf("error in authentication ForwardMessage: %w", err)
 	}
+
 	var tmp2 int
 
 	// seleziono quanti utenti hanno nella tabella membri joinata con messaggi di chat hanno l'id dell'utente loggato e l'id del messaggio da forwardare
@@ -79,7 +80,7 @@ func (db *appdbimpl) ForwardMessage(cs int, id_chat []int, id_mes int, id_utente
 	}
 
 	if tmp != len(id_chat) {
-		return fmt.Errorf("ForwardMessage: you don't belong to the chat you want forward the message")
+		return fmt.Errorf("ForwardMessage: you don't belong to the group you want forward the message")
 	}
 
 	// per ogni chat in cui forwwardare
@@ -91,6 +92,47 @@ func (db *appdbimpl) ForwardMessage(cs int, id_chat []int, id_mes int, id_utente
 			return fmt.Errorf("ForwardMessage: error insert message in table messaggi_di_chat: %w", err)
 		}
 	}
+
+	for _, c := range id_utenti {
+
+		err = db.c.QueryRow("SELECT count(id_utenti) FROM membri WHERE id_utenti=$1 AND id_chat=$2", cs, c).Scan(&num_righe)
+		if num_righe == 0 {
+			res, err := db.c.Exec("INSERT INTO chat (nome, propic , gruppo) VALUES (null, null, 0);")
+			if err != nil {
+				return fmt.Errorf("ForwardMessage: error insert chat in table chat: %w", err)
+			}
+			chatID, err := res.LastInsertId()
+			if err != nil {
+				return fmt.Errorf("ForwardMessage: error getting last insert id: %w", err)
+			}
+			_, err = db.c.Exec("INSERT INTO membri (id_utenti,id_chat) VALUES ($1,$2),($3,$2);", cs, chatID, c)
+			if err != nil {
+				return fmt.Errorf("ForwardMessage: error insert chat in table chat: %w", err)
+			}
+
+			_, err = db.c.Exec("INSERT INTO messaggi_di_chat (id_chat, id_messaggio, id_forward, id_forw_mit,id_reply) VALUES ($1, $2, $3, $4, $5);", chatID, id_mes, id_utente, cs, -1)
+			if err != nil {
+				return fmt.Errorf("ForwardMessage: error insert message in table messaggi_di_chat: %w", err)
+			}
+		} else {
+			err = db.c.QueryRow(`SELECT c.id
+			FROM chat c
+			JOIN membri m1 ON m1.id_chat = c.id AND m1.id_utenti = $1
+			JOIN membri m2 ON m2.id_chat = c.id AND m2.id_utenti = $2
+			WHERE c.gruppo = 0
+			LIMIT 1;`, cs, c).Scan(&num_righe)
+
+			if err != nil {
+				return fmt.Errorf("ForwardMessage: error select id_utenti from membri: %w", err)
+			}
+
+			_, err = db.c.Exec("INSERT INTO messaggi_di_chat (id_chat, id_messaggio, id_forward, id_forw_mit,id_reply) VALUES ($1, $2, $3, $4, $5);", num_righe, id_mes, id_utente, cs, -1)
+			if err != nil {
+				return fmt.Errorf("ForwardMessage: error insert message in table messaggi_di_chat: %w", err)
+			}
+		}
+	}
+
 	return nil
 }
 

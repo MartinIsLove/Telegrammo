@@ -745,3 +745,57 @@ func (db *appdbimpl) GetGroupUsers(cs int, idGroup int) ([]UtenteDb, error) {
 	}
 	return utenti, nil
 }
+
+func (db *appdbimpl) GetForwardChat(cs int) ([]ChatUtenteDb, error) {
+	var chat []ChatUtenteDb
+	_, err := db.Authentication(cs)
+	if err != nil {
+		return []ChatUtenteDb{}, fmt.Errorf("error in authentication GetForwardChat: %w", err)
+	}
+
+	rows, err1 := db.c.Query("SELECT c.id, c.nome, c.propic FROM chat c JOIN membri m on m.id_chat=c.id WHERE c.gruppo=1 AND m.id_utenti=$1;", cs)
+	if err1 != nil && !errors.Is(err1, sql.ErrNoRows) {
+		return []ChatUtenteDb{}, fmt.Errorf("GetForwardChat: error querying chats: %w", err)
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var c ChatUtenteDb
+		if err := rows.Scan(&c.IdChat, &c.Nome, &c.Propic); err != nil {
+			return []ChatUtenteDb{}, fmt.Errorf(" GetForwardChat: error scanning chats: %w", err)
+		}
+		chat = append(chat, c)
+	}
+
+	var count int
+	rows2 := db.c.QueryRow("SELECT COUNT(id) FROM utenti WHERE $1<>id", cs)
+	err = rows2.Scan(&count)
+	if errors.Is(err, sql.ErrNoRows) {
+
+	} else if err != nil {
+		return []ChatUtenteDb{}, fmt.Errorf("GetForwardChat: error querying users: %w", err)
+
+	}
+	if count == 0 && errors.Is(err1, sql.ErrNoRows) {
+		return []ChatUtenteDb{}, fmt.Errorf("GetForwardChat: no users or groups find for forward the message")
+	}
+
+	rows, err2 := db.c.Query("SELECT * FROM utenti WHERE $1<>id ", cs)
+	if err2 != nil && !errors.Is(err2, sql.ErrNoRows) {
+		return []ChatUtenteDb{}, fmt.Errorf("GetForwardChat: error querying users: %w", err)
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var c ChatUtenteDb
+		if err := rows.Scan(&c.Id, &c.Username, &c.Propic); err != nil {
+			return []ChatUtenteDb{}, fmt.Errorf(" GetForwardChat: error scanning users: %w", err)
+		}
+		chat = append(chat, c)
+	}
+
+	return chat, nil
+
+}

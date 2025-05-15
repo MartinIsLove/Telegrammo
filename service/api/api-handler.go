@@ -17,6 +17,7 @@ func (rt *_router) Handler() http.Handler {
 	rt.router.GET("/search/chat/:nomeChat", rt.checkChatNames)
 
 	// --- conversazioni e gruppi ---
+	rt.router.GET("/conversations/forward", rt.getForwardChat)
 	rt.router.GET("/conversations", rt.getMyConversations)
 	rt.router.DELETE("/conversation/leave/:idChat", rt.leaveGroup)
 	rt.router.POST("/conversation", rt.createChat)
@@ -24,6 +25,7 @@ func (rt *_router) Handler() http.Handler {
 	rt.router.PUT("/conversation/group/name", rt.setGroupName)
 	rt.router.PUT("/conversation/group/photo", rt.setGroupPhoto)
 	rt.router.PUT("/conversation/group/user", rt.addToGroup)
+
 	rt.router.GET("/conversation/:idChat/group/users", rt.getGroupUsers)
 	rt.router.GET("/conversation/:idChat", rt.getConversation)
 

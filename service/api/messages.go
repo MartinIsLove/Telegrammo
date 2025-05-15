@@ -83,7 +83,7 @@ func (rt *_router) forwardMessage(w http.ResponseWriter, r *http.Request, ps htt
 		return
 	}
 
-	err = rt.db.ForwardMessage(cs, richiesta.IdChat, richiesta.IdMes, richiesta.IdForward)
+	err = rt.db.ForwardMessage(cs, richiesta.IdChat, richiesta.IdMes, richiesta.IdForward, richiesta.IdUtenti)
 	if err != nil && (strings.HasPrefix(err.Error(), "error in authentication ForwardMessage:") || strings.HasPrefix(err.Error(), "ForwardMessage: error you don't belong to the chat")) {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return

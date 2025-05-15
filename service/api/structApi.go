@@ -69,6 +69,7 @@ type RequestData struct {
 	IdChat    []int `json:"id_chat"`
 	IdMes     int   `json:"id_mes"`
 	IdForward int   `json:"id_for"`
+	IdUtenti  []int `json:"id_utenti"`
 }
 
 func NewMess(messaggio database.MessDb) Mess {

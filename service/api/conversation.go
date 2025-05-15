@@ -500,3 +500,39 @@ func (rt *_router) getGroupUsers(w http.ResponseWriter, r *http.Request, ps http
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write(json)
 }
+func (rt *_router) getForwardChat(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var richiesta []ChatUtente
+	cs, err := rt.AuthenticationApi(r)
+	if err != nil {
+		http.Error(w, "error: authentication user getForwardChat"+err.Error(), http.StatusUnauthorized)
+		return
+	}
+	tmp, err := rt.db.GetForwardChat(cs)
+
+	if err != nil && strings.HasPrefix(err.Error(), "error in authentication getForwardChat:") {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	if err != nil && strings.HasPrefix(err.Error(), "GetForwardChat: no users or groups find for forward the message") {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	richiesta = make([]ChatUtente, len(tmp))
+	for i, user := range tmp {
+		richiesta[i] = NewChatUtente(user)
+	}
+
+	w.Header().Set("content-type", "application/json")
+	json, err := json.Marshal(richiesta)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(json)
+}
