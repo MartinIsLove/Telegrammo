@@ -10,6 +10,17 @@ export default {
 			chats: [],
 		}
 	},
+	mounted() {
+		this.id = sessionStorage.getItem("cs")
+		if (this.id == null){
+			this.$router.push("/");
+		}
+		
+		this.refresh()
+		this.intervalId=setInterval(() => {
+            this.fetchMessageNoBottom();
+        }, 2000); 
+	},
 	methods: {
 		async refresh() {
 			this.loading = true;
@@ -28,11 +39,17 @@ export default {
 		},
 		createGroupButtonHandler(){
 			this.$router.push("/creategroup");
-		}
+		},
+		async fetchMessageNoBottom(){
+            let response = await this.$axios.get(`/conversations`, {headers:{cs:this.id}});
+			this.chats = response.data;
+        },
 	},
-	mounted() {
-		this.refresh()
-	}
+	beforeRouteLeave(to, from, next) {
+        clearInterval(this.intervalId); 
+        next();
+    },
+	
 }
 </script>
 <template>

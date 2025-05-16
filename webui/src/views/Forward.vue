@@ -43,9 +43,16 @@
                 this.searchCompleted = false;
                 this.refresh(); 
             } else {
-                this.getChats(); 
+                this.searchCompleted = true;
             }
         }
+    },
+    mounted() {
+        this.id = sessionStorage.getItem("cs")
+		if (this.id == null){
+			this.$router.push("/");
+		}
+        this.refresh()
     },
     methods: {
         async refresh() {
@@ -63,27 +70,8 @@
             }
             this.loading = false;
         },
-        async getChats() {
-            try {
-                this.message = ''
-                this.error = ''
-                this.users = []
-                this.id = sessionStorage.getItem("cs")
-                if (this.chChat === "") {
-                    this.searchCompleted = false
-                } else {
-                    let response = await this.$axios.get(`/search/chat/${this.chChat}`, { headers: { cs: this.id } });
-                    this.searchCompleted = true
-                    this.chats = response.data
-                    if (response.status === 200) {
-                        this.message = 'chat find';
-                    }
-                }
-            } catch (error) {
-                this.error = error
-                console.error('Error fetching chat data:', error);
-            }
-        },
+        
+
         async handleSelectedChats() {
             try {
                 
@@ -128,9 +116,7 @@
             }
         },
     },
-    mounted() {
-        this.refresh()
-    }
+    
 }
 </script>
 
@@ -139,7 +125,7 @@
         <div class="d-flex">
             <form class="mt-3 flex-grow-1" @submit.prevent="getChats">
                 <label for="username" class="form-label">Search Chat</label>
-                <input type="text" class="form-control mb-2" id="username" placeholder="Insert Username" v-model="chChat" @input="getChats">
+                <input type="text" class="form-control mb-2" id="username" placeholder="Insert Username" v-model="chChat" >
             </form>
             <button class="btn btn-secondary ms-1 mt-5 ml-auto h-100" @click="handleSelectedChats">
                 Submit

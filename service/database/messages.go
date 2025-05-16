@@ -74,7 +74,7 @@ func (db *appdbimpl) ForwardMessage(cs int, id_chat []int, id_mes int, id_utente
 		err = db.c.QueryRow("SELECT count(id_utenti) FROM membri WHERE id_utenti=$1 AND id_chat=$2", cs, c).Scan(&num_righe)
 
 		if err != nil {
-			return fmt.Errorf("ForwardMessage: error select id_utenti from membri: %w", err)
+			return fmt.Errorf("ForwardMessage:2 error select id_utenti from membri: %w", err)
 		}
 		tmp += num_righe
 	}
@@ -95,7 +95,13 @@ func (db *appdbimpl) ForwardMessage(cs int, id_chat []int, id_mes int, id_utente
 
 	for _, c := range id_utenti {
 
-		err = db.c.QueryRow("SELECT count(id_utenti) FROM membri WHERE id_utenti=$1 AND id_chat=$2", cs, c).Scan(&num_righe)
+		err = db.c.QueryRow(`
+			SELECT COUNT(c.id)
+			FROM chat c
+			JOIN membri m1 ON m1.id_chat = c.id AND m1.id_utenti = $1
+			JOIN membri m2 ON m2.id_chat = c.id AND m2.id_utenti = $2
+			WHERE c.gruppo = 0
+		`, cs, c).Scan(&num_righe)
 		if num_righe == 0 {
 			res, err := db.c.Exec("INSERT INTO chat (nome, propic , gruppo) VALUES (null, null, 0);")
 			if err != nil {
@@ -123,7 +129,7 @@ func (db *appdbimpl) ForwardMessage(cs int, id_chat []int, id_mes int, id_utente
 			LIMIT 1;`, cs, c).Scan(&num_righe)
 
 			if err != nil {
-				return fmt.Errorf("ForwardMessage: error select id_utenti from membri: %w", err)
+				return fmt.Errorf("ForwardMessage:1 error select id_utenti from membri: %w", err)
 			}
 
 			_, err = db.c.Exec("INSERT INTO messaggi_di_chat (id_chat, id_messaggio, id_forward, id_forw_mit,id_reply) VALUES ($1, $2, $3, $4, $5);", num_righe, id_mes, id_utente, cs, -1)

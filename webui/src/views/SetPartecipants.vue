@@ -24,6 +24,13 @@ export default {
             this.if_selection = newVal.length > 0;
         }
     },
+    mounted() {
+        this.id = sessionStorage.getItem("cs")
+		if (this.id == null){
+			this.$router.push("/");
+		}
+        this.refresh()
+    },
     methods: {
         async refresh() {
             this.loading = true;
@@ -71,9 +78,7 @@ export default {
             }
         },
     },
-    mounted() {
-        this.refresh()
-    }
+    
 }
 </script>
 

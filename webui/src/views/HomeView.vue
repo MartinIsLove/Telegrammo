@@ -7,6 +7,13 @@ export default {
 			some_data: null,
 		}
 	},
+	mounted() {
+		this.id = sessionStorage.getItem("cs")
+		if (this.id == null){
+			this.$router.push("/");
+		}
+		this.refresh()
+	},
 	methods: {
 		async refresh() {
 			this.loading = true;
@@ -20,9 +27,7 @@ export default {
 			this.loading = false;
 		},
 	},
-	mounted() {
-		this.refresh()
-	}
+	
 }
 </script>
 

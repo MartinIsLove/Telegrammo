@@ -132,7 +132,6 @@ paths:
           content:
             application/json:
               schema:
-                description: "return a user object"
                 $ref: "#/components/schemas/user"
         "400":
           $ref: "#/components/responses/Bad_Input"
@@ -785,6 +784,32 @@ paths:
           $ref: "#/components/responses/Bad_Input"
         "401":
           $ref: "#/components/responses/401_Unauthorized"
+        "500":
+          $ref: "#/components/responses/500_ISE"
+  /conversation/forward:
+    get:
+      tags: ["conversations"]
+      security:
+        - bearerAuth: []
+      operationId: getForwardChat
+      summary: "get the chats and groups where the user can forward the message"
+      description: "get, after authentication, the chats and groups where the user can forward the message"
+      responses:
+        "200":
+          description: "return all chat and groups where the user can forward the message"
+          content:
+            application/json:
+              schema:
+                description: "return a ChatUtente array"
+                type: array
+                maxItems: 10000
+                minItems: 1
+                items:
+                  $ref: "#/components/schemas/ChatUtente"
+        "401":
+          $ref: "#/components/responses/401_Unauthorized"
+        "404":
+          $ref: "#/components/responses/404_NotFound"
         "500":
           $ref: "#/components/responses/500_ISE"
 components:

@@ -13,6 +13,13 @@ export default {
             chPhoto: null
         }
 	},
+    async mounted() {
+        this.id = sessionStorage.getItem("cs")
+		if (this.id == null){
+			this.$router.push("/");
+		}
+        this.fetchUserData();
+    },
 	methods:{
 		profileButtonHandler() {
 			this.$router.push("/profile");
@@ -105,9 +112,7 @@ export default {
             this.fetchUserData()
         }
 	},
-    async mounted() {
-        this.fetchUserData();
-    }
+    
 }
 </script>
 <template>

@@ -17,13 +17,18 @@ export default {
             message: '',
         }
     },
+    mounted() {
+        this.cs = sessionStorage.getItem("cs")
+		if (this.cs == null){
+			this.$router.push("/");
+		}
+    },
     methods: {
         async getUsers() {
             try{
                 this.message=''
                 this.error=''
                 this.users=[]
-                this.cs = sessionStorage.getItem("cs")
                 let response = await this.$axios.get(`/search/users/${this.chUsername}`, {headers: {cs:this.cs}});
                 if (response.status === 200){
                         this.message = 'usernames find';
@@ -60,9 +65,7 @@ export default {
 
         }
     },
-    mounted() {
-        
-    }
+    
 }
 </script>
 

@@ -19,11 +19,23 @@ export default {
 			intervalId: null,
 		}
 	},
+	mounted() {
+		this.id = sessionStorage.getItem("cs")
+		if (this.id == null){
+			this.$router.push("/");
+		}
+		this.refresh()
+		this.intervalId=setInterval(() => {
+            this.fetchMessageNoBottom();
+        }, 2000); 
+
+    
+	},
 	methods: {
 		async refresh() {
 			this.loading = true;
 			this.errormsg = null;
-            this.id = sessionStorage.getItem("cs")
+            
             this.chatId = parseInt(this.$route.params.id, 10);
 			this.fetchMessage()
 
@@ -188,14 +200,7 @@ export default {
 		},
 		
 	},
-	mounted() {
-		this.refresh()
-		this.intervalId=setInterval(() => {
-            this.fetchMessageNoBottom();
-        }, 2000); 
-
-    
-	},
+	
 	beforeRouteLeave(to, from, next) {
         clearInterval(this.intervalId); 
         next();
@@ -305,7 +310,7 @@ export default {
 						</div>
 						<div v-if="mes.forward_id !== -1">
 							<p class="forwarded-by">
-								forwarded by: {{ mes.forward_username }}
+								forwarded from: {{ mes.forward_username }}
 							</p>
 						</div>
 
@@ -374,29 +379,20 @@ export default {
 							</div>
 						</div>
 						<div class="col-auto ms-auto pe-0 pt-3">
-
 							<small v-if=" mes.forward_id === -1" class="text-end"> {{ formatTime(mes.data) }} </small>
 							<small v-else class="text-end"> {{ formatTime(mes.forward_date) }} </small>
-							
 						</div>
 						<div v-if="mes.forward_id !== -1">
 							<p class="forwarded-by">
-								forwarded by: {{ mes.forward_username }}
+								forwarded from: {{ mes.forward_username }}
 							</p>
-							
-							
 						</div>
 					</div>
-
 				</div>
 			</div>
 		</div>
 	</div> 
-
-
-
-	<div class="min-vh-100">
-	</div>
+	<div class="min-vh-100"></div>
 	<form @submit.prevent="send" class="sticky-bottom mb-2">
 		<div>
 			<div v-if="reply" class="reply-container">
