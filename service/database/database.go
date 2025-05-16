@@ -46,13 +46,12 @@ type AppDatabase interface {
 
 	CreateChat(int, int) (int, error)
 	CheckNames(int, string) ([]UtenteDb, error)
-	CheckChatNames(int, string) ([]ChatUtenteDb, error)
 	LeaveGroup(int, int) error
 	GetMyConversations(int) ([]ChatUtenteDb, error)
 	GetConversation(int, int) (bool, string, []MessDb, error)
 	SendMessage(int, int, string, []byte, int) error
 	DeleteMessage(int, int, int, int) error
-	ForwardMessage(int, []int, int, int,[]int) error
+	ForwardMessage(int, []int, int, int, []int) error
 	CreateGroup(int, string, []byte, []int) (int, error)
 	SetGroupName(int, int, string) error
 	GetForwardChat(int) ([]ChatUtenteDb, error)
