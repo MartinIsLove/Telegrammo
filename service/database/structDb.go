@@ -19,26 +19,26 @@ type ChatUtenteDb struct {
 	Lastimg  []byte    `json:"lastimg"`
 }
 type MessDb struct {
-	IdMess             int       `json:"id_mess"`
-	Nome               string    `json:"nome"`
-	IdMitt             int       `json:"id_mitt"`
-	Testo              string    `json:"testo"`
-	Data               time.Time `json:"data"`
-	Visual             bool      `json:"visual"`
-	Photo              []byte    `json:"photo"`
-	IdChat             int       `json:"id_chat"`
-	Gruppo             bool      `json:"grupo"`
-	Emoji              []int     `json:"emoji"` // l'ordine e' tacchi, cuore, ditoSu, ok, manicure
-	MyEmoji            string    `json:"myemoji"`
-	ForwardUsername    string    `json:"forward_username"` // username di colui che ha inviato il messaggio da forwardare
-	ForwardId          int       `json:"forward_id"`       // id di colui che ha inviato il messaggio da forwardare
-	ForwardDate        time.Time `json:"forward_date"`     // data forward
-	ForwardIdMit       int       `json:"forward_id_mit"`   // id di colui che ha fatto il forward
-	ForwardUsernameMit string    `json:"forward_user_mit"` // username di colui che ha fatto il forward
-	IdForward          int       `json:"id_forward"`       // id del forward
-	Idreply            int       `json:"id_reply"`
-	TestoReply         string    `json:"testo_reply"`
-	PhotoReply         []byte    `json:"photo_reply"`
-	IdMitReply         int       `json:"id_mit_reply"`
-	MitReply           string    `json:"mit_reply"`
+	IdMess             int        `json:"id_mess"`
+	Nome               string     `json:"nome"`
+	IdMitt             int        `json:"id_mitt"`
+	Testo              string     `json:"testo"`
+	Data               time.Time  `json:"data"`
+	Visual             bool       `json:"visual"`
+	Photo              []byte     `json:"photo"`
+	IdChat             int        `json:"id_chat"`
+	Gruppo             bool       `json:"grupo"`
+	Emoji              [][]string `json:"emoji"` // l'ordine e' tacchi, cuore, ditoSu, ok, manicure
+	MyEmoji            string     `json:"myemoji"`
+	ForwardUsername    string     `json:"forward_username"` // username di colui che ha inviato il messaggio da forwardare
+	ForwardId          int        `json:"forward_id"`       // id di colui che ha inviato il messaggio da forwardare
+	ForwardDate        time.Time  `json:"forward_date"`     // data forward
+	ForwardIdMit       int        `json:"forward_id_mit"`   // id di colui che ha fatto il forward
+	ForwardUsernameMit string     `json:"forward_user_mit"` // username di colui che ha fatto il forward
+	IdForward          int        `json:"id_forward"`       // id del forward
+	Idreply            int        `json:"id_reply"`
+	TestoReply         string     `json:"testo_reply"`
+	PhotoReply         []byte     `json:"photo_reply"`
+	IdMitReply         int        `json:"id_mit_reply"`
+	MitReply           string     `json:"mit_reply"`
 }

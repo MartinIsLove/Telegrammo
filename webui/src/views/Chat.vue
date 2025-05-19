@@ -17,6 +17,9 @@ export default {
 
 			emoji: ["👠", "💅", "👍🏻", "👌🏻","❤️"],
 			intervalId: null,
+			tooltipVisible: false,
+            tooltipEmoji: null,
+            tooltipMessageId: null,
 		}
 	},
 	mounted() {
@@ -133,17 +136,17 @@ export default {
 				console.error(e);
 			}
 		},
-		getEmojiCount(emojiItem){
+		getEmojiCount(emojiItem,mes){
 			if (emojiItem === "👠"){
-				return 0
+				return mes.emoji[0].length;
 			}if (emojiItem === "❤️"){
-				return 1
+				return mes.emoji[1].length;
 			}if (emojiItem === "👍🏻"){
-				return 2
+				return mes.emoji[2].length;
 			}if (emojiItem === "👌🏻"){
-				return 3
+				return mes.emoji[3].length;
 			}if (emojiItem === "💅"){
-				return 4
+				return mes.emoji[4].length;
 			}
 
 		},
@@ -197,7 +200,30 @@ export default {
 		closeReply() {
 			this.reply = false;
 			this.messageReplied = -1;
-		},
+			},
+		showEmojiTooltip(mes, emojiItem) {
+            this.tooltipVisible = true;
+            this.tooltipEmoji = emojiItem;
+            this.tooltipMessageId = mes.id_mess;
+        },
+        hideEmojiTooltip() {
+            this.tooltipVisible = false;
+            this.tooltipEmoji = null;
+            this.tooltipMessageId = null;
+        },
+        getEmojiUsers(emojiItem, mes) {
+            if (emojiItem === "👠") {
+                return mes.emoji[0];
+            } if (emojiItem === "❤️") {
+                return mes.emoji[1];
+            } if (emojiItem === "👍🏻") {
+                return mes.emoji[2];
+            } if (emojiItem === "👌🏻") {
+                return mes.emoji[3];
+            } if (emojiItem === "💅") {
+                return mes.emoji[4];
+            }
+        },
 		
 	},
 	
@@ -286,14 +312,30 @@ export default {
 					<div class="row pe-0">
 
 						<div class="emoji-checkbox-container col-auto ps-0">
-							<div v-for="emojiItem in emoji" :key="emojiItem" :value="emojiItem" class="emoji-item"> 
+							<div v-for="emojiItem in emoji" :key="emojiItem" :value="emojiItem" class="emoji-item" style="position: relative;"> 
 								<div v-if="emojiItem === mes.myEmoji">
 									<input  type="checkbox" class="btn-check" :id="'btn-check-' + mes.id_mess + '-' + emojiItem" autocomplete="off" @change="handleCheckboxChangeUncomment(mes, $event)">
-									<label class="btn btn-primary mb-2" :for="'btn-check-' + mes.id_mess + '-' + emojiItem">{{ emojiItem }} {{mes.emoji[getEmojiCount(emojiItem)]}}</label>	
+									<label class="btn btn-primary mb-2" :for="'btn-check-' + mes.id_mess + '-' + emojiItem"
+										   @mouseover="showEmojiTooltip(mes, emojiItem)" 
+										   @mouseleave="hideEmojiTooltip">
+										{{ emojiItem }} {{getEmojiCount(emojiItem,mes)}}</label>	
 								</div>
 								<div v-else>
 									<input  type="checkbox" class="btn-check" :id="'btn-check-' + mes.id_mess + '-' + emojiItem" autocomplete="off" @change="handleCheckboxChange(mes, emojiItem, $event)">
-									<label class="btn btn-secondary mb-2" :for="'btn-check-' + mes.id_mess + '-' + emojiItem">{{ emojiItem }} {{mes.emoji[getEmojiCount(emojiItem)]}}</label>	
+									<label class="btn btn-secondary mb-2" :for="'btn-check-' + mes.id_mess + '-' + emojiItem"
+										   @mouseover="showEmojiTooltip(mes, emojiItem)" 
+										   @mouseleave="hideEmojiTooltip">
+										{{ emojiItem }} {{getEmojiCount(emojiItem,mes)}}</label>	
+								</div>
+
+								<!-- Tooltip -->
+								<div v-if="tooltipVisible && tooltipEmoji === emojiItem && tooltipMessageId === mes.id_mess" class="emoji-tooltip">
+									<template v-if="getEmojiUsers(emojiItem, mes).length > 0">
+										<p v-for="user in getEmojiUsers(emojiItem, mes)" :key="user">{{ user }}</p>
+									</template>
+									<template v-else>
+										<p>Nessuno user ha inviato questa emoji</p>
+									</template>
 								</div>
 							</div>
 						</div>
@@ -367,14 +409,30 @@ export default {
 					<div class="row pe-0">
 
 						<div class="emoji-checkbox-container col-auto ps-0">
-							<div v-for="emojiItem in emoji" :key="emojiItem" :value="emojiItem" class="emoji-item"> 
+							<div v-for="emojiItem in emoji" :key="emojiItem" :value="emojiItem" class="emoji-item" style="position: relative;"> 
 								<div v-if="emojiItem === mes.myEmoji">
 									<input  type="checkbox" class="btn-check" :id="'btn-check-' + mes.id_mess + '-' + emojiItem" autocomplete="off" @change="handleCheckboxChangeUncomment(mes, $event)">
-									<label class="btn btn-primary mb-2" :for="'btn-check-' + mes.id_mess + '-' + emojiItem">{{ emojiItem }} {{mes.emoji[getEmojiCount(emojiItem)]}}</label>	
+									<label class="btn btn-primary mb-2" :for="'btn-check-' + mes.id_mess + '-' + emojiItem"
+										   @mouseover="showEmojiTooltip(mes, emojiItem)" 
+										   @mouseleave="hideEmojiTooltip">
+										{{ emojiItem }} {{getEmojiCount(emojiItem,mes)}}</label>	
 								</div>
 								<div v-else>
 									<input  type="checkbox" class="btn-check" :id="'btn-check-' + mes.id_mess + '-' + emojiItem" autocomplete="off" @change="handleCheckboxChange(mes, emojiItem, $event)">
-									<label class="btn btn-secondary mb-2" :for="'btn-check-' + mes.id_mess + '-' + emojiItem">{{ emojiItem }} {{mes.emoji[getEmojiCount(emojiItem)]}}</label>	
+									<label class="btn btn-secondary mb-2" :for="'btn-check-' + mes.id_mess + '-' + emojiItem"
+										   @mouseover="showEmojiTooltip(mes, emojiItem)" 
+										   @mouseleave="hideEmojiTooltip">
+										{{ emojiItem }} {{getEmojiCount(emojiItem,mes)}}</label>	
+								</div>
+
+								<!-- Tooltip -->
+								<div v-if="tooltipVisible && tooltipEmoji === emojiItem && tooltipMessageId === mes.id_mess" class="emoji-tooltip">
+									<template v-if="getEmojiUsers(emojiItem, mes).length > 0">
+										<p v-for="user in getEmojiUsers(emojiItem, mes)" :key="user">{{ user }}</p>
+									</template>
+									<template v-else>
+										<p>Nessuno user ha inviato questa emoji</p>
+									</template>
 								</div>
 							</div>
 						</div>
@@ -559,5 +617,17 @@ body, html {
     border-radius: 4px;
     display: inline-block;
     margin-top: 5px;
+}
+.emoji-tooltip {
+    position: absolute;
+    top: -50px; /* Regola la posizione verticale */
+    left: 0;
+    background-color: #333;
+    color: #fff;
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 1000;
+    white-space: nowrap;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 </style>

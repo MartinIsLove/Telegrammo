@@ -430,12 +430,34 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying emojis: %w", err)
 		}
 
-		var counts [5]int
-
+		counts := make([][]string, 5)
+		for i := range counts {
+			counts[i] = []string{} // Inizializza ogni posizione con un array vuoto
+		}
 		// conto per ogni tipo di emoji quante ne sono state lasciate per ciascun messaggio
-		err = db.c.QueryRow("SELECT COALESCE(SUM(CASE WHEN emoji = '👠' AND id_messaggio=$1 THEN 1 ELSE 0 END),0) AS tacchi, COALESCE(SUM(CASE WHEN emoji = '❤️' AND id_messaggio=$1 THEN 1 ELSE 0 END),0) AS cuore, COALESCE(SUM(CASE WHEN emoji = '👍🏻' AND id_messaggio=$1 THEN 1 ELSE 0 END),0) AS dito_in_su, COALESCE(SUM(CASE WHEN emoji = '👌🏻' AND id_messaggio=$1 THEN 1 ELSE 0 END),0) AS ok, COALESCE(SUM(CASE WHEN emoji = '💅' AND id_messaggio=$1 THEN 1 ELSE 0 END),0) AS manicure FROM emoticon;", m.IdMess).Scan(&counts[0], &counts[1], &counts[2], &counts[3], &counts[4])
+		row_, err := db.c.Query("SELECT e.emoji AS emoji_type,u.username AS username FROM emoticon e LEFT JOIN utenti u ON e.id_utente = u.id WHERE e.id_messaggio = $1 AND e.emoji IN ('👠', '❤️', '👍🏻', '👌🏻', '💅');", m.IdMess)
 		if err != nil {
 			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error querying emojis: %w", err)
+		}
+
+		defer row_.Close()
+		emojiMap := map[string]int{
+			"👠":  0, // Scarpetta
+			"❤️": 1, // Cuore
+			"👍🏻": 2, // Pollice su
+			"👌🏻": 3, // OK
+			"💅":  4, // Manicure
+		}
+		for row_.Next() {
+			var emojiType, username string
+			if err := row_.Scan(&emojiType, &username); err != nil {
+				return false, "", []MessDb{}, fmt.Errorf("GetConversation: error scanning emojis: %w", err)
+			}
+
+			// Aggiungi l'username alla posizione corretta nella slice
+			if pos, exists := emojiMap[emojiType]; exists {
+				counts[pos] = append(counts[pos], username)
+			}
 		}
 
 		// aggiungo dei messaggi speciali, riconosciuti per la non presenza ne di testo ne di foto nei quali sono presenti solo le indicazioni di data, che servono per separare nella chat i diversi giorni

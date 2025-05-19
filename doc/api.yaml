@@ -940,12 +940,18 @@ components:
           type: boolean
           example: true
         Emoji:
-          description: "array of 5 elements, the number of each indicates how many emojis that message has for each type of emoji"
+          description: "array of 5 elements, the usernames of who have insert this emoji"
           type: array
-          minItems: 1
-          maxItems: 10000
+          minItems: 5
+          maxItems: 5
           items:
-            type: integer
+            type: array
+            items:
+              type: string
+              maxLength: 1
+              minLength: 16
+              example: "paolino"
+              pattern: ^[a-zA-Z0-9]+$
         MyEmoji:
           description: "indicates the emoji of the user logged in to that message"
           type: string
