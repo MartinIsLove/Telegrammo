@@ -191,7 +191,6 @@ export default {
 		},
 		async replyMessage(mes){
 
-			console.log("dio")
 			this.reply=true
 			this.messageReplied=mes
 			
@@ -328,7 +327,7 @@ export default {
 										{{ emojiItem }} {{getEmojiCount(emojiItem,mes)}}</label>	
 								</div>
 
-								<!-- Tooltip -->
+								
 								<div v-if="tooltipVisible && tooltipEmoji === emojiItem && tooltipMessageId === mes.id_mess" class="emoji-tooltip">
 									<template v-if="getEmojiUsers(emojiItem, mes).length > 0">
 										<p v-for="user in getEmojiUsers(emojiItem, mes)" :key="user">{{ user }}</p>
@@ -425,7 +424,7 @@ export default {
 										{{ emojiItem }} {{getEmojiCount(emojiItem,mes)}}</label>	
 								</div>
 
-								<!-- Tooltip -->
+								
 								<div v-if="tooltipVisible && tooltipEmoji === emojiItem && tooltipMessageId === mes.id_mess" class="emoji-tooltip">
 									<template v-if="getEmojiUsers(emojiItem, mes).length > 0">
 										<p v-for="user in getEmojiUsers(emojiItem, mes)" :key="user">{{ user }}</p>
