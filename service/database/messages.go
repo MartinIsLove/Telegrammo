@@ -102,6 +102,9 @@ func (db *appdbimpl) ForwardMessage(cs int, id_chat []int, id_mes int, id_utente
 			JOIN membri m2 ON m2.id_chat = c.id AND m2.id_utenti = $2
 			WHERE c.gruppo = 0
 		`, cs, c).Scan(&num_righe)
+		if err != nil {
+			return fmt.Errorf("ForwardMessage: error querying chat count: %w", err)
+		}
 		if num_righe == 0 {
 			res, err := db.c.Exec("INSERT INTO chat (nome, propic , gruppo) VALUES (null, null, 0);")
 			if err != nil {

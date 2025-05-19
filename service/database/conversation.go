@@ -459,6 +459,9 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 				counts[pos] = append(counts[pos], username)
 			}
 		}
+		if err := row_.Err(); err != nil {
+			return false, "", []MessDb{}, fmt.Errorf("GetConversation: error iterating over emojis: %w", err)
+		}
 
 		// aggiungo dei messaggi speciali, riconosciuti per la non presenza ne di testo ne di foto nei quali sono presenti solo le indicazioni di data, che servono per separare nella chat i diversi giorni
 		localTime := m.Data.Local().Add(+1 * time.Hour)
@@ -473,7 +476,7 @@ func (db *appdbimpl) GetConversation(cs int, id_chat int) (bool, string, []MessD
 		if emoji != "" {
 			m.MyEmoji = emoji
 		}
-		m.Emoji = counts[:]
+		m.Emoji = counts
 		result = append(result, m)
 	}
 
@@ -701,6 +704,9 @@ func (db *appdbimpl) GetGroupUsers(cs int, idGroup int) ([]UtenteDb, error) {
 
 		utenti = append(utenti, c)
 	}
+	if err := rows.Err(); err != nil {
+		return []UtenteDb{}, fmt.Errorf("GetGroupUsers: error iterating over rows: %w", err)
+	}
 	return utenti, nil
 }
 
@@ -724,6 +730,10 @@ func (db *appdbimpl) GetForwardChat(cs int) ([]ChatUtenteDb, error) {
 			return []ChatUtenteDb{}, fmt.Errorf(" GetForwardChat: error scanning chats: %w", err)
 		}
 		chat = append(chat, c)
+	}
+
+	if err := rows.Err(); err != nil {
+		return []ChatUtenteDb{}, fmt.Errorf("GetForwardChat: error iterating over rows: %w", err)
 	}
 
 	var count int
@@ -752,6 +762,9 @@ func (db *appdbimpl) GetForwardChat(cs int) ([]ChatUtenteDb, error) {
 			return []ChatUtenteDb{}, fmt.Errorf(" GetForwardChat: error scanning users: %w", err)
 		}
 		chat = append(chat, c)
+	}
+	if err := rows.Err(); err != nil {
+		return []ChatUtenteDb{}, fmt.Errorf("GetForwardChat: error iterating over rows: %w", err)
 	}
 
 	return chat, nil
