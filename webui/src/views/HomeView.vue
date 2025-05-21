@@ -8,7 +8,7 @@ export default {
 		}
 	},
 	mounted() {
-		this.id = sessionStorage.getItem("cs")
+		this.id = sessionStorage.getItem("authorization")
 		if (this.id == null){
 			this.$router.push("/");
 		}

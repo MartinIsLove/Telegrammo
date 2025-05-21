@@ -14,7 +14,7 @@ export default {
         }
 	},
     async mounted() {
-        this.id = sessionStorage.getItem("cs")
+        this.id = sessionStorage.getItem("authorization")
 		if (this.id == null){
 			this.$router.push("/");
 		}
@@ -26,8 +26,8 @@ export default {
 		},
         async fetchUserData(){
             try{
-                this.id = sessionStorage.getItem("cs")
-                let response = await this.$axios.get(`/users/${this.id}`, {headers: {cs:this.id}});
+                this.id = sessionStorage.getItem("authorization")
+                let response = await this.$axios.get(`/users/${this.id}`, {headers: {authorization:this.id}});
                 this.username = response.data.username;
                 this.propic = 'data:image/png;base64,' + response.data.propic;
             }
@@ -44,7 +44,7 @@ export default {
             this.error=''
                 if (this.chPhoto === null && this.chUsername !== '' ){
                     try{
-                        let response = await this.$axios.put(`/user/name`,{username:this.chUsername}, {headers: {cs:this.id}});
+                        let response = await this.$axios.put(`/user/name`,{username:this.chUsername}, {headers: {authorization:this.id}});
                         if (response.status === 200){
                             this.message = 'Username changed successfully';
                         }
@@ -65,7 +65,7 @@ export default {
                         let response = await this.$axios.put(`/user/photo`, formData, {
                         headers: {
                             'Content-Type': 'multipart/form-data',
-                            'cs': this.id
+                            'authorization': this.id
                         }});
                         if (response.status === 200){
                             this.message = 'photo changed successfully';
@@ -82,7 +82,7 @@ export default {
                     let formData = new FormData();
                     formData.append('photo', this.chPhoto);
                     try{
-                        let response = await this.$axios.put(`/user/name`,{username:this.chUsername}, {headers: {cs:this.id}});
+                        let response = await this.$axios.put(`/user/name`,{username:this.chUsername}, {headers: {authorization:this.id}});
                         if (response.status === 200){
                             this.message = ' username changed successfully';
                         }
@@ -97,7 +97,7 @@ export default {
                         let response2 = await this.$axios.put(`/user/photo`, formData, {
                         headers: {
                             'Content-Type': 'multipart/form-data',
-                            'cs': this.id
+                            'authorization': this.id
                         }});
                         if (response2.status === 200){
                             this.message = 'photo changed successfully';

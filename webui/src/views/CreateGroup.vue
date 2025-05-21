@@ -27,7 +27,7 @@ export default {
         }
     },
     mounted() {
-        this.id = sessionStorage.getItem("cs")
+        this.id = sessionStorage.getItem("authorization")
         if (this.id == null){
 			this.$router.push("/");
 		}
@@ -37,7 +37,7 @@ export default {
         async refresh() {
             this.loading = true;
             this.errormsg = null;
-            this.id = sessionStorage.getItem("cs")
+            this.id = sessionStorage.getItem("authorization")
             this.chatId = parseInt(this.$route.params.id, 10);
         },
         async getUsers() {
@@ -45,12 +45,12 @@ export default {
                 this.message=''
                 this.error=''
                 this.users=[]
-                this.id = sessionStorage.getItem("cs")
+                this.id = sessionStorage.getItem("authorization")
                 if (this.chUsername === ''){
                     let tmp = '$'
-                    await this.$axios.get(`/user/${tmp}`, {headers: {cs:this.id}});
+                    await this.$axios.get(`/user/${tmp}`, {headers: {authorization:this.id}});
                 }else{
-                let response = await this.$axios.get(`/user/${this.chUsername}`, {headers: {cs:this.id}});
+                let response = await this.$axios.get(`/user/${this.chUsername}`, {headers: {authorization:this.id}});
                 this.searchCompleted=true
                 this.users = response.data
                 if (response.status === 200){
@@ -75,8 +75,8 @@ export default {
                     formData.append('membri', user.id.toString());
                 });
 
-                this.id = sessionStorage.getItem("cs")
-                let response = await this.$axios.post(`/conversation/group`,formData ,{headers: {'Content-Type': 'multipart/form-data', cs:this.id}});
+                this.id = sessionStorage.getItem("authorization")
+                let response = await this.$axios.post(`/conversation/group`,formData ,{headers: {'Content-Type': 'multipart/form-data', authorization:this.id}});
                 if (response.status === 200){
                         this.message = 'chat created';
                         this.group_id = response.data

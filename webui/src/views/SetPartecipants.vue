@@ -25,7 +25,7 @@ export default {
         }
     },
     mounted() {
-        this.id = sessionStorage.getItem("cs")
+        this.id = sessionStorage.getItem("authorization")
 		if (this.id == null){
 			this.$router.push("/");
 		}
@@ -35,7 +35,7 @@ export default {
         async refresh() {
             this.loading = true;
             this.errormsg = null;
-            this.id = sessionStorage.getItem("cs")
+            this.id = sessionStorage.getItem("authorization")
             this.chatId = parseInt(this.$route.params.id, 10);
         },
         async getUsers() {
@@ -43,12 +43,12 @@ export default {
                 this.message = ''
                 this.error = ''
                 this.users = []
-                this.id = sessionStorage.getItem("cs")
+                this.id = sessionStorage.getItem("authorization")
                 if (this.chUsername === '') {
                     let tmp = '$'
-                    await this.$axios.get(`/user/${tmp}`, {headers: {cs: this.id}});
+                    await this.$axios.get(`/user/${tmp}`, {headers: {authorization: this.id}});
                 } else {
-                    let response = await this.$axios.get(`/user/${this.chUsername}`, {headers: {cs: this.id}});
+                    let response = await this.$axios.get(`/user/${this.chUsername}`, {headers: {authorization: this.id}});
                     this.searchCompleted = true
                     this.users = response.data
                     if (response.status === 200) {
@@ -62,13 +62,13 @@ export default {
         },
         async handleSelectedUser() {
             try {
-                this.id = sessionStorage.getItem("cs")
+                this.id = sessionStorage.getItem("authorization")
                 const membriIds = this.selectedUser.map(user => user.id);
                 await this.$axios.put(`/conversation/group/user`, {
                     id_chat: this.chatId,
                     membri: membriIds
                 }, {
-                    headers: {cs: this.id}
+                    headers: {authorization: this.id}
                 });
 
                 this.$router.push("/chat/" + this.chatId);

@@ -1114,4 +1114,4 @@ components:
     bearerAuth: # arbitrary name for the security scheme
       type: apiKey
       in: header
-      name: cs
+      name: authorization

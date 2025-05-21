@@ -57,7 +57,7 @@
         },
     },
     mounted() {
-        this.id = sessionStorage.getItem("cs")
+        this.id = sessionStorage.getItem("authorization")
 		if (this.id == null){
 			this.$router.push("/");
 		}
@@ -68,13 +68,13 @@
             this.loading = true;
             this.errormsg = null;
 
-            this.id = sessionStorage.getItem("cs")
+            this.id = sessionStorage.getItem("authorization")
             this.id_chat = parseInt(this.$route.params.idchat, 10);
             this.id_mes = parseInt(this.$route.params.idmes, 10);
             this.id_utente= parseInt(this.$route.params.idutente, 10);
 
             try {
-                let response = await this.$axios.get("/conversations/forward", { headers: { cs: this.id } });
+                let response = await this.$axios.get("/conversations/forward", { headers: { authorization: this.id } });
                 this.chats = response.data;
                 this.searchedChat = response.data.filter(chat => chat.id_chat !== 0 && chat.id_utenti !== 0);
                 this.searchedUser = response.data.filter(chat => chat.id_chat === 0 || chat.id_utenti === 0);
@@ -88,7 +88,7 @@
         async forwardMessageToSelectedChats() {
             try {
                 
-                this.id = sessionStorage.getItem("cs")
+                this.id = sessionStorage.getItem("authorization")
                 
                 const selectedChatIds = this.selectedChat
                     .filter(chat => chat.id_chat !== 0)
@@ -106,7 +106,7 @@
                     id_utenti: selectedUserIds, 
                     id_for: this.id_utente
                 }, 
-                { headers: { cs: this.id } });
+                { headers: { authorization: this.id } });
                 
                 if (response.status === 204) {
                     this.message = 'chat created';

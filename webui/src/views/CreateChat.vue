@@ -18,7 +18,7 @@ export default {
         }
     },
     mounted() {
-        this.cs = sessionStorage.getItem("cs")
+        this.cs = sessionStorage.getItem("authorization")
 		if (this.cs == null){
 			this.$router.push("/");
 		}
@@ -29,7 +29,7 @@ export default {
                 this.message=''
                 this.error=''
                 this.users=[]
-                let response = await this.$axios.get(`/user/${this.chUsername}`, {headers: {cs:this.cs}});
+                let response = await this.$axios.get(`/user/${this.chUsername}`, {headers: {authorization:this.cs}});
                 if (response.status === 200){
                         this.message = 'usernames find';
                     }
@@ -47,8 +47,8 @@ export default {
         },
         async handleSelectedUser(){
             try{
-                this.cs = sessionStorage.getItem("cs")
-                let response = await this.$axios.post(`/conversation`,{id: this.selectedUser.id} ,{headers: {cs:this.cs}});
+                this.cs = sessionStorage.getItem("authorization")
+                let response = await this.$axios.post(`/conversation`,{id: this.selectedUser.id} ,{headers: {authorization:this.cs}});
                 if (response.status === 200){
                         this.message = 'chat created';
                         this.chat_id=response.data

@@ -15,7 +15,7 @@ export default {
 		}
 	},
     mounted() {
-        this.id = sessionStorage.getItem("cs")
+        this.id = sessionStorage.getItem("authorization")
 		if (this.id == null){
 			this.$router.push("/");
 		}
@@ -25,17 +25,17 @@ export default {
 		async refresh() {
 			this.loading = true;
 			this.errormsg = null;
-            this.id = sessionStorage.getItem("cs");
+            this.id = sessionStorage.getItem("authorization");
             this.chatId = parseInt(this.$route.params.id, 10);
 			this.loadusers();
 		},
         async loadusers(){
-            let response = await this.$axios.get(`/conversation/${this.chatId}/group/users`, {headers:{cs:this.id}});
+            let response = await this.$axios.get(`/conversation/${this.chatId}/group/users`, {headers:{authorization:this.id}});
 			this.users = response.data;
-            console.log("diocane")
+            
         },
 		async leavegroup(){
-			await this.$axios.delete(`/conversation/leave/${this.chatId}`, {headers:{cs:this.id}});
+			await this.$axios.delete(`/conversation/leave/${this.chatId}`, {headers:{authorization:this.id}});
 
 			this.$router.push("/home");
 		},
@@ -47,7 +47,7 @@ export default {
             this.error=''
                 if (this.chPhoto === null && this.group_name !== '' ){
                     try{
-                        let response = await this.$axios.put(`/conversation/group/name`,{nome_chat:this.group_name, id_chat:this.chatId}, {headers: {cs:this.id}});
+                        let response = await this.$axios.put(`/conversation/group/name`,{nome_chat:this.group_name, id_chat:this.chatId}, {headers: {authorization:this.id}});
                         if (response.status === 200){
                             this.message = 'group name changed successfully';
                         }
@@ -69,7 +69,7 @@ export default {
                         let response = await this.$axios.put(`/conversation/group/photo`, formData, {
                         headers: {
                             'Content-Type': 'multipart/form-data',
-                            'cs': this.id
+                            'authorization': this.id
                         }});
                         if (response.status === 200){
                             this.message = 'group photo changed successfully';
@@ -88,7 +88,7 @@ export default {
 					formData.append('id_chat', this.chatId);
 
                     try{
-                        let response = await this.$axios.put(`/conversation/group/name`,{nome_chat:this.group_name, id_chat:this.chatId}, {headers: {cs:this.id}});
+                        let response = await this.$axios.put(`/conversation/group/name`,{nome_chat:this.group_name, id_chat:this.chatId}, {headers: {authorization:this.id}});
                         if (response.status === 200){
                             this.message = 'group name changed successfully';
                         }
@@ -103,7 +103,7 @@ export default {
                         let response2 = await this.$axios.put(`conversation/group/photo`, formData, {
                         headers: {
                             'Content-Type': 'multipart/form-data',
-                            'cs': this.id
+                            'authorization': this.id
                         }});
                         if (response2.status === 200){
                             this.message = 'group photo changed successfully';

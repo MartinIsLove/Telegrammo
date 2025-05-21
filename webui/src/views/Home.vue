@@ -11,7 +11,7 @@ export default {
 		}
 	},
 	mounted() {
-		this.id = sessionStorage.getItem("cs")
+		this.id = sessionStorage.getItem("authorization")
 		if (this.id == null){
 			this.$router.push("/");
 		}
@@ -26,8 +26,8 @@ export default {
 			this.loading = true;
 			this.errormsg = null;
 			try {
-				this.id = sessionStorage.getItem("cs")
-				let response = await this.$axios.get("/conversations", {headers: {cs:this.id}});
+				this.id = sessionStorage.getItem("authorization")
+				let response = await this.$axios.get("/conversations", {headers: {authorization:this.id}});
 				this.chats = response.data;
 			} catch (e) {
 				this.errormsg = e.toString();
@@ -41,7 +41,7 @@ export default {
 			this.$router.push("/creategroup");
 		},
 		async fetchMessageNoBottom(){
-            let response = await this.$axios.get(`/conversations`, {headers:{cs:this.id}});
+            let response = await this.$axios.get(`/conversations`, {headers:{authorization:this.id}});
 			this.chats = response.data;
         },
 		formatDate(dateString) {

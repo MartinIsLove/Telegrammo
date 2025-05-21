@@ -23,7 +23,7 @@ export default {
 		}
 	},
 	mounted() {
-		this.id = sessionStorage.getItem("cs")
+		this.id = sessionStorage.getItem("authorization")
 		if (this.id == null){
 			this.$router.push("/");
 		}
@@ -44,14 +44,14 @@ export default {
 
 		},
 		async fetchMessageNoBottom(){
-            let response = await this.$axios.get(`/conversation/${this.chatId}`, {headers:{cs:this.id}});
+            let response = await this.$axios.get(`/conversation/${this.chatId}`, {headers:{authorization:this.id}});
 			this.messaggi = response.data
 			this.messaggi.message.forEach(mes => {
 				mes.showEmoji = false; 
 			});
         },
         async fetchMessage(){
-            let response = await this.$axios.get(`/conversation/${this.chatId}`, {headers:{cs:this.id}});
+            let response = await this.$axios.get(`/conversation/${this.chatId}`, {headers:{authorization:this.id}});
 			this.messaggi = response.data
 			this.messaggi.message.forEach(mes => {
 				mes.showEmoji = false; 
@@ -71,11 +71,11 @@ export default {
 			formData.append('testo', this.message)
 			if (this.messageReplied === -1){
 				formData.append('id_reply', this.messageReplied)
-				await this.$axios.post("/message", formData, {headers: {'Content-Type': 'multipart/form-data', cs: this.id}});
+				await this.$axios.post("/message", formData, {headers: {'Content-Type': 'multipart/form-data', authorization: this.id}});
 
 			}else{
 				formData.append('id_reply', this.messageReplied.id_forward)
-				await this.$axios.post("/message", formData, {headers: {'Content-Type': 'multipart/form-data', cs: this.id}});
+				await this.$axios.post("/message", formData, {headers: {'Content-Type': 'multipart/form-data', authorization: this.id}});
 			}
 			this.message = ''
 			this.photo = null 
@@ -128,7 +128,7 @@ export default {
 						emoji: emojiItem, 
 						id_mes: mes.id_mess
 					}, {
-						headers: {cs: this.id}
+						headers: {authorization: this.id}
 					});
 				}
 				this.fetchMessageNoBottom();
@@ -157,7 +157,7 @@ export default {
 					id_chat: this.chatId,
 					id_mes: mes.id_mess
 				}, {
-					headers: {cs: this.id}
+					headers: {authorization: this.id}
 				});
 				this.fetchMessageNoBottom();
 			} catch(e) {
@@ -180,7 +180,7 @@ export default {
 						id_chat: this.chatId,
 					},
 					headers: {
-						cs: this.id, 
+						authorization: this.id, 
 					},
         		});
 				this.fetchMessageNoBottom()

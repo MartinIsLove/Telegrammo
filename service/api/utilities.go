@@ -20,7 +20,7 @@ func defaultPhoto() ([]byte, error) {
 }
 
 func (rt *_router) AuthenticationApi(r *http.Request) (int, error) {
-	cs := r.Header.Get("cs") // cs stà per check session
+	cs := r.Header.Get("authorization") // cs stà per check session
 	if cs == "" {
 
 		return -1, fmt.Errorf("non è stato restituito alcun autenticatore")
