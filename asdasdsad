@@ -1,0 +1,106 @@
+[33m9711b07[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m formattazione
+[33m2006a4d[m errors checked
+[33m0367dde[m almost nothing
+[33m2956bbb[m aggiunta visione di chi ha inviatao un emoji
+[33m165410f[m funzione checkchatnames cancellata
+[33m565af64[m ricerca forward chat (wippy sei il mio idolo)
+[33m52a03a6[m minor bug fixes
+[33m4ea4e62[m possibilita' di forwardare a piu chat and minor bug fixes
+[33mee2912d[m aggiunta api e sistemata visualizzazione immagine snippet( altri minor bug fixes)
+[33mcf219a4[m aggiunto foto ai lastmessage, icona che mostra la foto inserita e i membri che appartengono al gruppo e le tick che mostrano chi visualizza i messaggi sono messe solo al sender.
+[33m76733ac[m api mancante
+[33m3737caf[m sistemato errore data messaggi forwardati e qualche cosa di sintassi go
+[33mb6adca9[m frontend aggiustato (prego dio)
+[33m873a869[m miglioramento warnings
+[33m8d2883e[m sistemazione errori finale
+[33m7df82ae[m le api funzionano (speriamo)
+[33me28b4ff[m sistemate api fino a SetGroupName
+[33m55fb8b9[m sistemazione errori prof
+[33m0debb10[m aua
+[33m9cb7c06[m api yaml completato
+[33m3f4b8de[m sistemato controllo appartenenza chat quando invii messaggio e aggiunto in api yaml
+[33mad7aafc[m aggiunti i dockerfile
+[33m6848e00[m file conversation aggiunto alle api
+[33m5d92053[m apy yaml checkchatnames
+[33m2f6fa15[m api yaml
+[33m4dc65e3[m errori ultimati
+[33ma578507[m conversation errori api sistema e piccoli accorgimenti quando elimini un utente da un gruppo
+[33m4cb087d[m fine commenti e correzione errore database
+[33m0028a2c[m manca solo il file messages da commentare e da visionari gli errori
+[33mbaae467[m completati errori e commenti file conversation database
+[33m4d58bd3[m commenti e ritorno errori backend file conversation(da completare)
+[33m5f1fa6b[m aua
+[33m457f04f[m prima versione completa(beta)
+[33ma8b50b3[m reply completato
+[33me6be514[m back end reply
+[33m005b5d5[m parte grafica del reply e front end
+[33mfd4f575[m chat con due if
+[33macbdd83[m front end sistemato (ZLSSB grazie)
+[33md2910bf[m cancellazione messaggi 2
+[33m05228d5[m cancellazione messaggi
+[33mf8d604b[m aggiunta nome quando si e' loggati
+[33m6488654[m forwarding risolto sul serio (spero)
+[33m0baa21b[m bug forward
+[33md5bc86d[m visualizzazione e riordinamento messaggi con il forward
+[33m8d1620e[m ora id dell'utente che fa il forward e username sono passati al front end
+[33m0fba439[m forwarding completato, manca solo visualizzazione
+[33m1a1ab4f[m funzione di inoltro messaggi
+[33m66cbf0d[m pagina scelta forward
+[33m3d79630[m passaggio da portatile a fisso
+[33m56bf09e[m aggiustamento bug emoji e logout
+[33mba9858b[m DC
+[33m4d9faf7[m commenti ultimati frontend e backend
+[33m2da5552[m sviluppo commento migliorato
+[33m8039b36[m ora invio anche le emoji che ho nel database
+[33meeccd63[m ricarica i messaggi ogni 2 sec
+[33mbd3c09d[m ora i commenti si aggiornano, non va piu eliminato il vecchio per metterne uno nuovo
+[33mbb1ac4c[m funzione aggiunta commenti e visualizzazione nel frontend dell'aggiunta di questi ultimi
+[33m0f0707e[m correzione bug invio messaggi
+[33m62be213[m implementata funzione aggiunta utenti al gruppo
+[33m88d79ce[m cambio foto gruppo implementato
+[33m7c5f134[m aggiornamento bug
+[33m679df81[m aggiustati bug nuova funzione
+[33m2fec4f7[m funzione setGroupName creata
+[33md4137d7[m sistemato bug orari
+[33m291e392[m ora i messaggi gestiscono anche le foto
+[33med424d9[m aggiornato sendMessage per l'invio di foto
+[33m95cf515[m sistemato bag mittente ultimo messaggio gruppi
+[33m295e428[m creazione gruppo ultimata
+[33m692a3c7[m creazione gruppo in via di sviluppo
+[33m1de6ad9[m fatta funzione per uscire dai gruppi
+[33m5655289[m aggiunto file messages
+[33ma66e618[m aggiunto bottone options gruppo
+[33m2bf0179[m openapi autorization
+[33m1544aab[m aggiunta autenticazione openApi
+[33m5a5fbab[m creata funzione crea gruppo
+[33m4ed1e6e[m migliorato frontend chat
+[33m6493188[m sistemata lunghezza massima username funzione per prendere i messaggi prende anche il nome della chat ora, aggiornato openapi
+[33ma3473a9[m funzione per ricevere i messaggi da una chat aggiornata: aggiunto un messaggio che separa i giorni, aggiunto inoltre il controllo per messaggi nulli e per utenti nulli
+[33m3080241[m funzione per ricevere i messaggi di una chat completata
+[33m8480e91[m aggiunto limite lunghezza messagio nella home
+[33mdd016f6[m sistemata interfaccia home e creata funzione invio messaggio
+[33m3a9a369[m inizio funzione getconversation e front end di scelta chat dalla home
+[33m2437cb8[m cambiato foto placeholder
+[33m6364d1f[m ordinato le chat e aggiunto l'immagine profilo placeholder
+[33m4675a3e[m front end recupero chat
+[33mb4aaa4e[m fatta funzione che prende tutte le chat e i gruppi di un utente
+[33m325a792[m inizio funzio prendi chat utente
+[33m9b3bb44[m sistemato lo yaml e la maggior parte degli errori nelle api
+[33mbd0e775[m aua
+[33m829b66b[m completata creazione chat
+[33m6627435[m interfaccia semi scura
+[33m131e71c[m funzione ricerca utenti
+[33mf08326a[m aggiunta funzione createChat
+[33m3955f2c[m creazione funzione IsChatDuplicate
+[33me39d07f[m refactor API endpoint and enhance database schema for messaging features
+[33mf322ba5[m implementazione API per recupero dati utente e aggiornamento foto profilo, username
+[33mcbe332f[m implementazione api aggiunta foto e front end profilo
+[33mc7c6637[m implementazione front end login
+[33m04c13ea[m completato il cambio username
+[33mbde86ee[m terminato login iniziato cambio username
+[33m95db021[m inizio implementazione api login
+[33m9d9e871[m aua
+[33m22fc2c0[m creazione api login
+[33m765e62e[m aggiunta collegamento mio github inizio costruzione database
+[33m3fc862a[m implementato struttura API creazione gruppi/chat
+[33m7bfdbd1[m first commit
