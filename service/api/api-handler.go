@@ -13,7 +13,7 @@ func (rt *_router) Handler() http.Handler {
 	rt.router.PUT("/user/name", rt.setMyUserName)
 	rt.router.PUT("/user/photo", rt.setMyPhoto)
 	rt.router.GET("/users/:id", rt.getMyUser)
-	rt.router.GET("/search/users/:username", rt.checknames)
+	rt.router.GET("/user/:username", rt.checknames)
 
 	// --- conversazioni e gruppi ---
 	rt.router.GET("/conversations/forward", rt.getForwardChat)

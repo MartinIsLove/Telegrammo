@@ -222,7 +222,7 @@ paths:
           $ref: "#/components/responses/404_NotFound"
         "500":
           $ref: "#/components/responses/500_ISE"
-  /search/users/{username}:
+  /user/{username}:
     get:  
       tags: ["user"]
       security:
@@ -948,8 +948,8 @@ components:
             type: array
             items:
               type: string
-              maxLength: 1
-              minLength: 16
+              maxLength: 16
+              minLength: 1
               example: "paolino"
               pattern: ^[a-zA-Z0-9]+$
         MyEmoji:

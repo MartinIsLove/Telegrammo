@@ -29,7 +29,7 @@ export default {
                 this.message=''
                 this.error=''
                 this.users=[]
-                let response = await this.$axios.get(`/search/users/${this.chUsername}`, {headers: {cs:this.cs}});
+                let response = await this.$axios.get(`/user/${this.chUsername}`, {headers: {cs:this.cs}});
                 if (response.status === 200){
                         this.message = 'usernames find';
                     }

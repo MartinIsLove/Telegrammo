@@ -46,9 +46,9 @@ export default {
                 this.id = sessionStorage.getItem("cs")
                 if (this.chUsername === '') {
                     let tmp = '$'
-                    await this.$axios.get(`/search/users/${tmp}`, {headers: {cs: this.id}});
+                    await this.$axios.get(`/user/${tmp}`, {headers: {cs: this.id}});
                 } else {
-                    let response = await this.$axios.get(`/search/users/${this.chUsername}`, {headers: {cs: this.id}});
+                    let response = await this.$axios.get(`/user/${this.chUsername}`, {headers: {cs: this.id}});
                     this.searchCompleted = true
                     this.users = response.data
                     if (response.status === 200) {
