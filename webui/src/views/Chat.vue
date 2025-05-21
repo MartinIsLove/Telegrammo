@@ -203,8 +203,9 @@ export default {
 		showEmojiTooltip(mes, emojiItem) {
             this.tooltipVisible = true;
             this.tooltipEmoji = emojiItem;
-            this.tooltipMessageId = mes.id_mess;
+            this.tooltipMessageId = mes.id_forward;
         },
+
         hideEmojiTooltip() {
             this.tooltipVisible = false;
             this.tooltipEmoji = null;
@@ -328,7 +329,7 @@ export default {
 								</div>
 
 								
-								<div v-if="tooltipVisible && tooltipEmoji === emojiItem && tooltipMessageId === mes.id_mess" class="emoji-tooltip">
+								<div v-if="tooltipVisible && tooltipEmoji === emojiItem && tooltipMessageId === mes.id_forward" class="emoji-tooltip">
 									<template v-if="getEmojiUsers(emojiItem, mes).length > 0">
 										<p v-for="user in getEmojiUsers(emojiItem, mes)" :key="user">{{ user }}</p>
 									</template>
@@ -425,7 +426,7 @@ export default {
 								</div>
 
 								
-								<div v-if="tooltipVisible && tooltipEmoji === emojiItem && tooltipMessageId === mes.id_mess" class="emoji-tooltip">
+								<div v-if="tooltipVisible && tooltipEmoji === emojiItem && tooltipMessageId === mes.id_forward" class="emoji-tooltip">
 									<template v-if="getEmojiUsers(emojiItem, mes).length > 0">
 										<p v-for="user in getEmojiUsers(emojiItem, mes)" :key="user">{{ user }}</p>
 									</template>

@@ -44,6 +44,23 @@ export default {
             let response = await this.$axios.get(`/conversations`, {headers:{cs:this.id}});
 			this.chats = response.data;
         },
+		formatDate(dateString) {
+        if (!dateString) return '';
+        
+        // Converte la stringa in oggetto Date
+        const date = new Date(dateString);
+        
+        // Aggiunge 2 ore
+        
+        
+        // Formatta la data
+        return date.toLocaleString('it-IT', {
+            day: '2-digit',
+            month: '2-digit', 
+            hour: '2-digit', 
+            minute: '2-digit'
+        });
+    },
 	},
 	beforeRouteLeave(to, from, next) {
         clearInterval(this.intervalId); 
@@ -78,19 +95,24 @@ export default {
 					
 					<div class="col-md-11 col-10">
 						<div class="card-body">
-							
 							<h5>{{chat.nome}}</h5>
 							
 							<div class="d-flex justify-content-between">
-								<p v-if="chat.gruppo && chat.lastmsg !== ''" class="text-wrap">
-									<span class="text-capitalize fw-bold">{{ chat.username }}</span>: <img v-if="chat.lastimg" :src="'data:image/png;base64,'+ chat.lastimg" class="me-2" width="30" height="30"  role="img" focusable="false" style="object-fit: cover;"><span v-if="chat.lastmsg !== ''">{{ chat.lastmsg }}</span>  
-								</p>
+								<div>
+									<p v-if="chat.gruppo && chat.lastmsg !== ''" class="text-wrap mb-0">
+										<span class="text-capitalize fw-bold">{{ chat.username }}</span>: <img v-if="chat.lastimg" :src="'data:image/png;base64,'+ chat.lastimg" class="me-2" width="30" height="30" role="img" focusable="false" style="object-fit: cover;"><span v-if="chat.lastmsg !== ''">{{ chat.lastmsg }}</span>  
+									</p>
+									
+									<p v-else class="mb-0"> 
+										<img v-if="chat.lastimg" :src="'data:image/png;base64,'+ chat.lastimg" class="me-2" width="30" height="30" role="img" focusable="false" style="object-fit: cover;"> <span v-if="chat.lastmsg !== ''">{{ chat.lastmsg }}</span>
+									</p>
+								</div>
 								
-								<p v-else> 
-									<img v-if="chat.lastimg" :src="'data:image/png;base64,'+ chat.lastimg" class="  me-2" width="30" height="30"  role="img" focusable="false" style="object-fit: cover;"> <span v-if="chat.lastmsg !== ''">{{ chat.lastmsg }}</span>
-								</p>
+								<!-- Data allineata completamente a destra -->
+								<div class="text-end">
+									<small v-if="chat.data" class="text-muted">{{ formatDate(chat.data) }}</small>
+								</div>
 							</div>
-							
 						</div>
 					</div>
 					
