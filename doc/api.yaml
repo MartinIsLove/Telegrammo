@@ -222,46 +222,46 @@ paths:
           $ref: "#/components/responses/404_NotFound"
         "500":
           $ref: "#/components/responses/500_ISE"
-  # /search/chat/{nomeChat}:
-  #   get:
-  #     tags: ['conversation']
-  #     security:
-  #       - bearerAuth: []
-  #     operationId: checkChatNames
-  #     summary: "take some chats"
-  #     description: "takes all the chat's parameters that username input is substring of chat"
-  #     parameters:
-  #       - name: nomeChat
-  #         in: path
-  #         required: true
-  #         description: "chat to find"
-  #         schema:
-  #           description: "chat to find"
-  #           type: string
-  #           minLength: 1
-  #           pattern: ^[a-zA-Z0-9]+$
-  #           maxLength: 16
-  #           example: "giorgio"
-  #     responses:
-  #       "200": 
-  #         description: "return found chats"
-  #         content:
-  #           application/json:
-  #             schema:
-  #               description: "return a ChatUtente object"
-  #               type: array
-  #               maxItems: 10000
-  #               minItems: 1
-  #               items:
-  #                 $ref: "#/components/schemas/ChatUtente"
-  #       "400":
-  #         $ref: "#/components/responses/Bad_Input"
-  #       "401":
-  #         $ref: "#/components/responses/401_Unauthorized"
-  #       "404":
-  #         $ref: "#/components/responses/404_NotFound"
-  #       "500":
-  #         $ref: "#/components/responses/500_ISE"
+  /search/users/{username}:
+    get:  
+      tags: ["user"]
+      security:
+        - bearerAuth: []
+      operationId: checknames
+      summary: "takes some users"
+      description: "gives all the user's parameters(id, username, propic) that username input is substring of username"
+      parameters:
+        - name: username
+          in: path
+          required: true
+          description: "username to find"
+          schema:
+            description: "username to find"
+            type: string
+            minLength: 1
+            pattern: ^[a-zA-Z0-9]+$
+            maxLength: 16
+            example: "giorgio"
+      responses:
+        "200":
+          description: "return username, propic and id of all users who meet the requirement "
+          content:
+            application/json:
+              schema:
+                description: "return a user array object"
+                type: array
+                maxItems: 10000
+                minItems: 1
+                items: 
+                  $ref: "#/components/schemas/user"
+        "400":
+          $ref: "#/components/responses/Bad_Input"
+        "401":
+          $ref: "#/components/responses/401_Unauthorized"
+        "404":
+          $ref: "#/components/responses/404_NotFound"
+        "500":
+          $ref: "#/components/responses/500_ISE"
   /conversations:
     get:
       tags: ["conversation"]
