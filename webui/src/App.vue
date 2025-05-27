@@ -16,7 +16,7 @@ export default {
 	methods:
 	{
 		ButtonHandler() {
-			sessionStorage.removeItem("cs");
+			sessionStorage.removeItem("authorization");
 			this.refresh()
 			this.$router.push("/");
 		},
@@ -24,10 +24,10 @@ export default {
 			this.user = null
             this.loading = true;
             this.errormsg = null;
-            this.id = sessionStorage.getItem("cs")
+            this.id = sessionStorage.getItem("authorization")
             
             try {
-                let response = await this.$axios.get("/users/"+this.id, { headers: { cs: this.id } });
+                let response = await this.$axios.get("/users/"+this.id, { headers: { authorization: this.id } });
                 this.user = response.data;
             } catch (e) {
                 this.errormsg = e.toString();

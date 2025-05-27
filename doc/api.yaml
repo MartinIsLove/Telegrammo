@@ -5,6 +5,17 @@ info:
   title: Telegrammo
   description: Telegrammo's API
   version: 1.0.0
+tags:
+  - name: login
+    description: Operazioni di autenticazione
+  - name: user
+    description: Operazioni relative agli utenti
+  - name: conversation
+    description: Operazioni relative alle conversazioni singolarmente
+  - name: message
+    description: Operazioni relative ai messaggi
+  - name: conversations
+    description: Operazioni relative a gruppi di conversazioni
 paths:
   /user:
     post:
@@ -352,7 +363,6 @@ paths:
                   pattern: ^[a-zA-Z0-9]+$
                 membri: 
                   type: array
-                  default: []
                   minItems: 0
                   maxItems: 10000
                   items:                    
@@ -464,7 +474,6 @@ paths:
                 membri:
                   description: "new group member/s(id)"
                   type: array
-                  default: []
                   minItems: 1
                   maxItems: 10000
                   items:                   
@@ -542,6 +551,8 @@ paths:
                   description: "photo of the message to be sent"
                   type: string 
                   format: binary
+                  minLength: 0
+                  maxLength: 1048576
                 id_chat:
                   description: "chat id where the message should be sent"
                   type: integer
@@ -648,8 +659,8 @@ paths:
                 emoji: 
                   description: "the effective comment to the message"
                   type: string
-                  maxLength: 1
-                  minLength: 1
+                  maxLength: 30
+                  minLength: 10
                   pattern: ^(👠|❤️|👍🏻|👌🏻|💅)$
                   example: "❤️"
       responses:
@@ -791,6 +802,8 @@ components:
       description: "user profile photo"
       type: string
       format: binary
+      minLength: 0
+      maxLength: 1048576
     user:
       description: "type user object with username, id and propic inside"
       type: object
@@ -801,36 +814,6 @@ components:
           $ref: "#/components/schemas/username"
         propic:
           $ref: "#/components/schemas/propic"
-    Group:
-      type: object
-      properties:
-        NomeChat:
-          description: "chat name"
-          type: string
-          pattern: ^[a-zA-Z0-9]+$
-          maxLength: 16
-          minLength: 1
-          example: "pluto"
-        Propric:
-          description: "group propic"
-          type: string
-          format: binary
-        Membri:
-          description: "group members id"
-          type: array
-          minItems: 1
-          maxItems: 10000
-          items:
-            type: integer
-            minimum: 1
-            maximum: 10000
-            example: 1
-        IdChat:
-          description: "chat(group) id"
-          type: integer
-          minimum: 1
-          maximum: 10000
-          example: 1
     ChatUtente:
       type: object
       properties:
@@ -870,7 +853,7 @@ components:
         LastMsg:
           description: "last message text"
           type: string
-          pattern: ^[a-zA-Z0-9]+$
+          pattern: "^.*?$"
           maxLength: 100
           minLength: 0
           example: "ciao come ti chiami?$"
@@ -910,7 +893,7 @@ components:
         Testo:
           description: "message text"
           type: string
-          pattern: ^[a-zA-Z0-9]+$
+          pattern: "^.*?$"
           minLength: 0
           maxLength: 10000
           example: "ciao, sono pippo"
@@ -929,6 +912,8 @@ components:
           description: "photo in send message"
           type: string
           format: binary
+          minLength: 0
+          maxLength: 1048576
         IdChat:
           description: "chat id"
           type: integer
@@ -946,7 +931,11 @@ components:
           maxItems: 5
           items:
             type: array
+            minItems: 0
+            maxItems: 10000
+            description: "usernames array for every emoji type"
             items:
+              description: "user username that insert this emoji"
               type: string
               maxLength: 16
               minLength: 1
@@ -956,7 +945,7 @@ components:
           description: "indicates the emoji of the user logged in to that message"
           type: string
           pattern: ^(👠|❤️|👍🏻|👌🏻|💅)$
-          minLength: 1
+          minLength: 10
           maxLength: 30
           example: "❤️"
         ForwardUsername:
@@ -978,7 +967,7 @@ components:
           format: date-time
           minLength: 20
           maxLength: 30
-          example: "2021-06-01T10:00:00Z"
+          example: "20210601100000"
         ForwardIdMit: 
           description: "id of the person who made the forward"
           type: integer
@@ -1007,7 +996,7 @@ components:
         TestoReply:
           description: "text of reply message"
           type: string
-          pattern: ^[a-zA-Z0-9]+$
+          pattern: "^.*?$"
           minLength: 1
           maxLength: 10000
           example: "ciao amico mio, come stai?"
@@ -1028,7 +1017,8 @@ components:
           description: "photo in reply message"
           type: string
           format: binary
-
+          minLength: 0
+          maxLength: 1048576
       
   responses:
 
@@ -1041,6 +1031,7 @@ components:
             type: object
             properties:
               error: 
+                description: "error message"
                 type: string
                 pattern: ^[a-zA-Z0-9]+$
                 minLength: 1
@@ -1058,7 +1049,7 @@ components:
             type: object
             properties:
               message:
-                description: Unauthorized message
+                description: "Unauthorized message"
                 type: string
                 example: "Unauthorized"
                 minLength: 0
@@ -1069,11 +1060,11 @@ components:
       content:
         application/json:
           schema:
-            description: Not Found response
+            description: "Not Found response"
             type: object
             properties:
               message:
-                description: Not Found message
+                description: "Not Found message"
                 type: string
                 example: "Not Found"
                 minLength: 0
@@ -1111,7 +1102,8 @@ components:
                 maxLength: 10000
                 pattern: "^.*?$" 
   securitySchemes:
-    bearerAuth: # arbitrary name for the security scheme
+    bearerAuth: 
       type: apiKey
       in: header
       name: authorization
+      description: "authentication with API key in Authorization header "
