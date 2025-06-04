@@ -90,7 +90,7 @@ export default {
                 <p v-if="message">
                     {{ message }}
                 </p>
-                <p v-if="error">
+                <p v-if="error && error.response && error.response.status !== 404">
                     {{ error.response.data }}
                 </p>
             </div>
